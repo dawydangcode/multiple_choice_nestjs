@@ -1,36 +1,41 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Account } from './account.entity';
+import { AccountEntity } from './entities/account.entity';
+import { AccountModel } from './models/account.model';
 
 @Injectable()
 export class AccountService {
-    constructor(
-        @InjectRepository(Account)
-        private readonly accountRepository: Repository<Account>
-    ){}
+  constructor(
+    @InjectRepository(AccountEntity)
+    private readonly accountRepository: Repository<AccountEntity>,
+  ) {}
 
-    findAll(): Promise<Account[]>{
-        return this.accountRepository.find();
+  async findAll(): Promise<AccountModel[]> {
+    const accounts = await this.accountRepository.find();
+    return accounts.map((account: AccountEntity) => account.toModel());
+  }
+
+  create(account: AccountEntity): Promise<AccountEntity> {
+    account.createdAt = new Date();
+    account.updatedAt = new Date();
+    return this.accountRepository.save(account);
+  }
+
+  async update(id: number, account: AccountEntity): Promise<AccountEntity> {
+    const existingAccount = await this.accountRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+    if (!existingAccount) {
+      throw new Error('Account not found');
     }
-
-    create(account: Account): Promise<Account> {
-        account.createdAt = new Date();
-        account.updatedAt = new Date();
-        return this.accountRepository.save(account);
-    }
-
-    async update(id: string, account: Account): Promise<Account>{
-        const existingAccount = await this.accountRepository.findOneBy({ id  });
-        if(!existingAccount) {
-            throw new Error('Account not found');
-        }
-        existingAccount.userName = account.userName;
-        existingAccount.password = account.password;
-        existingAccount.updatedAt = new Date();
-        existingAccount.updatedBy = account.updatedBy;
-        existingAccount.roleId = account.roleId;
-        return this.accountRepository.save(existingAccount);
-    }
-
+    existingAccount.userName = account.userName;
+    existingAccount.password = account.password;
+    existingAccount.updatedAt = new Date();
+    existingAccount.updatedBy = account.updatedBy;
+    existingAccount.roleId = account.roleId;
+    return this.accountRepository.save(existingAccount);
+  }
 }
