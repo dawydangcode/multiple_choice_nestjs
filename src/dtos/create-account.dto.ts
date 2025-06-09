@@ -17,7 +17,7 @@ export class CreateAccountDto{
 
     @IsNumber()
     @IsNotEmpty()
-    roleId: string;
+    roleId: number;
 
     @IsNumber()
     @Optional()

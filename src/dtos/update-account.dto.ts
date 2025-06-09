@@ -13,7 +13,7 @@ export class UpdateAccountDto{
 
     @IsString()
     @IsNotEmpty()
-    roleId: string;
+    roleId: number;
 
     @IsString()
     @Optional()

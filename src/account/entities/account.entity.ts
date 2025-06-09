@@ -20,7 +20,7 @@ export class AccountEntity {
   password: string;
 
   @Column('bigint', { name: 'role_id' })
-  roleId: string;
+  roleId: number;
 
   @Column('timestamp', { name: 'created_at', nullable: true })
   createdAt: Date | undefined;
@@ -48,6 +48,6 @@ export class AccountEntity {
   role: Role | undefined;
 
   toModel(): AccountModel {
-    return new AccountModel(this.id, this.userName, this.password);
+    return new AccountModel(this.id, this.userName, this.password, this.roleId);
   }
 }
