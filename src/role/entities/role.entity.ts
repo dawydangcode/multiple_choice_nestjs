@@ -7,7 +7,7 @@ export class RoleEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
   id: number;
 
-  @Column({ type: 'bigint', name: 'name' })
+  @Column({ type: 'varchar', name: 'name' })
   name: string;
 
   @Column('timestamp', { name: 'created_at', nullable: true })

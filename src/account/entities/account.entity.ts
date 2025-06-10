@@ -1,4 +1,3 @@
-import { Role } from 'src/role/role.entity';
 import {
   Entity,
   Column,
@@ -7,6 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { AccountModel } from '../models/account.model';
+import { RoleEntity } from 'src/role/entities/role.entity';
 
 @Entity('account')
 export class AccountEntity {
@@ -40,12 +40,12 @@ export class AccountEntity {
   @Column('bigint', { name: 'deleted_by', nullable: true })
   deletedBy: number | undefined;
 
-  @ManyToOne(() => Role, (role) => role.accounts, {
+  @ManyToOne(() => RoleEntity, (role) => role.accounts, {
     onDelete: 'RESTRICT',
     onUpdate: 'RESTRICT',
   })
   @JoinColumn([{ name: 'role_id', referencedColumnName: 'id' }])
-  role: Role | undefined;
+  role: RoleEntity | undefined;
 
   toModel(): AccountModel {
     return new AccountModel(this.id, this.username, this.password, this.roleId);
