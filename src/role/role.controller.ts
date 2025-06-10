@@ -10,31 +10,31 @@ import {
 import { RoleService } from './role.service';
 import { CreateRoleBodyDto } from './dtos/role.dto';
 
-@Controller('api/v1/role')
+@Controller('api/v1')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
-  @Get('')
+  @Get('roles')
   async getAllRole() {
     return this.roleService.getAll();
   }
 
-  @Post('create')
+  @Post('role/create')
   async createRole(@Body() body: CreateRoleBodyDto) {
-    return this.roleService.create(body.name);
+    return await this.roleService.create(body.name);
   }
 
-  @Put(':roleId/update')
+  @Put('role/:roleId/update')
   async updateRole(@Param() params: any, @Body() body: any) {
     await this.roleService.update(
       { id: params.roleId, name: body.name },
       params.roleId,
       body.name,
     );
-    return this.roleService.getById(params.roleId);
+    return await this.roleService.getById(params.roleId);
   }
 
-  @Delete(':roleId/delete')
+  @Delete('role/:roleId/delete')
   async deleteRole(@Param() params: any) {
     await this.roleService.delete(params.roleId);
     return { message: 'Role deleted successfully' };

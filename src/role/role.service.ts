@@ -36,7 +36,6 @@ export class RoleService {
     entity.name = name;
     entity.createdAt = new Date();
     entity.createdBy = 1;
-    entity.createdAt = new Date();
     return await this.roleRepository.save(entity);
   }
 
@@ -57,10 +56,16 @@ export class RoleService {
   }
 
   async delete(roleId: number): Promise<RoleEntity | null> {
-    await this.roleRepository.update(roleId, {
-      deletedAt: new Date(),
-      deletedBy: 1,
-    });
+    await this.roleRepository.update(
+      {
+        id: roleId,
+        deletedAt: IsNull(),
+      },
+      {
+        deletedAt: new Date(),
+        deletedBy: 1,
+      },
+    );
     return await this.roleRepository.findOne({ where: { id: roleId } });
   }
 }

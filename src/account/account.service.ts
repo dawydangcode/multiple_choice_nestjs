@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
@@ -12,65 +12,80 @@ export class AccountService {
     private readonly accountRepository: Repository<AccountEntity>,
   ) {}
 
-  async findAll(): Promise<AccountModel[]> {
-    const accounts = await this.accountRepository.find();
+  async getAccounts(): Promise<AccountModel[]> {
+    const accounts = await this.accountRepository.find({
+      where: {
+        deletedAt: IsNull(),
+      },
+    });
     return accounts.map((account: AccountEntity) => account.toModel());
   }
 
-  async findById(accountId: number): Promise<AccountModel> {
+  async getAccount(accountId: number): Promise<AccountModel> {
     const account = await this.accountRepository.findOne({
-      where: { id: accountId, deletedAt: IsNull() }, // only get non-deleted accounts
+      where: {
+        id: accountId,
+        deletedAt: IsNull(),
+      },
     });
     if (!account) {
-      throw new Error('Account not found');
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
     return account.toModel();
   }
 
-  async create(
+  async createAccount(
     username: string,
     password: string,
     roleId: number,
     reqAccountId: number,
-  ): Promise<AccountEntity> {
+  ): Promise<AccountModel> {
     const entity = new AccountEntity();
     entity.username = username;
     entity.password = password;
     entity.roleId = roleId;
     entity.createdAt = new Date();
     entity.createdBy = reqAccountId;
-
-    return await this.accountRepository.save(entity);
+    const newAccount = await this.accountRepository.save(entity);
+    return await this.getAccount(newAccount.id);
   }
 
-  async update(
+  async updateAccount(
     account: AccountModel,
     username: string | undefined,
     password: string | undefined,
     roleId: number | undefined,
     reqAccountId: number | undefined,
-  ): Promise<AccountModel | null> {
+  ): Promise<AccountModel> {
     await this.accountRepository.update(
       {
         id: account.id,
+        deletedAt: IsNull(),
       },
       {
-        username: account.username,
-        password: account.password,
-        roleId: account.roleId,
+        username: username,
+        password: password,
+        roleId: roleId,
+        updatedAt: new Date(),
+        updatedBy: reqAccountId,
       },
     );
 
-    return await this.accountRepository.findOne({
-      where: { id: account.id, deletedAt: IsNull() }, // only get non-deleted accounts
-    });
+    return await this.getAccount(account.id);
   }
 
-  async delete(accountId: number): Promise<AccountEntity | null> {
-    await this.accountRepository.update(accountId, {
-      deletedAt: new Date(),
-      deletedBy: 1,
-    });
-    return await this.accountRepository.findOne({ where: { id: accountId } });
+  async deleteAccount(account: AccountModel): Promise<boolean> {
+    await this.accountRepository.update(
+      {
+        id: account.id,
+        deletedAt: IsNull(),
+      },
+      {
+        deletedAt: new Date(),
+        deletedBy: 1,
+      },
+    );
+
+    return true;
   }
 }

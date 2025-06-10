@@ -8,25 +8,35 @@ import {
   Put,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
-import { CreateAccountBodyDto } from './dtos/account.dto';
+import {
+  CreateAccountBodyDto,
+  GetAccountParamsDto,
+  UpdateAccountParamsDto,
+} from './dtos/account.dto';
+import { AccountModel } from './models/account.model';
 
 @Controller('api/v1/account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
   @Get('all')
-  async getAllAccount() {
-    return this.accountService.findAll();
+  async getAllAccount(): Promise<AccountModel[]> {
+    return await this.accountService.getAccounts();
   }
 
-  @Get(':accountId')
-  async getAccountById(@Param() params: any) {
-    return this.accountService.findById(params.accountId);
+  @Get(':accountId/detail')
+  async getAccountById(@Param() params: GetAccountParamsDto) {
+    return await this.accountService.getAccount(params.accountId);
   }
 
   @Post('create')
   async createAccount(@Body() body: CreateAccountBodyDto) {
-    return this.accountService.create(body.username, body.password, 1, 1);
+    return await this.accountService.createAccount(
+      body.username,
+      body.password,
+      body.roleId,
+      1,
+    );
   }
 
   // @Put(':accountId/update')
@@ -35,25 +45,23 @@ export class AccountController {
   // }
 
   @Put(':accountId/update')
-  async updateAccount(@Param() params: any, @Body() body: any) {
-    await this.accountService.update(
-      {
-        id: params.accountId,
-        username: body.username,
-        password: body.password,
-        roleId: 1,
-      },
+  async updateAccount(
+    @Param() params: UpdateAccountParamsDto,
+    @Body() body: any,
+  ) {
+    const account = await this.accountService.getAccount(params.accountId);
+    return await this.accountService.updateAccount(
+      account,
       body.username,
       body.password,
-      1,
+      body.roleId,
       1,
     );
-    return this.accountService.findById(params.accountId);
   }
 
   @Delete(':accountId/delete')
   async deleteAccount(@Param() params: any) {
-    await this.accountService.delete(params.accountId);
-    return { message: 'Account deleted successfully' };
+    const account = await this.accountService.getAccount(params.accountId);
+    return await this.accountService.deleteAccount(account);
   }
 }
