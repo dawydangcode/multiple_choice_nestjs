@@ -1,10 +1,11 @@
 import { AccountEntity } from 'src/account/entities/account.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { RoleModel } from '../models/role.model';
 
 @Entity('role', { schema: 'multiple_choice' })
-export class Role {
+export class RoleEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: string;
+  id: number;
 
   @Column({ type: 'bigint', name: 'name' })
   name: string;
@@ -29,4 +30,8 @@ export class Role {
 
   @OneToMany(() => AccountEntity, (account) => account.role)
   accounts: AccountEntity[];
+
+  toModel(): RoleModel {
+    return new RoleModel(this.id, this.name);
+  }
 }
