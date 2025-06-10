@@ -12,23 +12,23 @@ export class AccountDto {
   @IsString()
   @Max(32)
   @Min(8)
-  username: string;
+  username!: string;
 
   @ApiProperty()
   @IsString()
   @Max(32)
   @Min(8)
-  password: string;
+  password!: string;
 
   @ApiProperty()
   @Type(() => Number)
   @IsNumber()
-  roleId: number;
+  roleId!: number;
 
   @ApiProperty()
   @Type(() => Number)
   @IsNumber()
-  accountId: number;
+  accountId!: number;
 }
 
 export class CreateAccountBodyDto extends PickType(AccountDto, [

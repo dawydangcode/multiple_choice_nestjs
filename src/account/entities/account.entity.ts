@@ -11,16 +11,16 @@ import { RoleEntity } from 'src/role/entities/role.entity';
 @Entity('account')
 export class AccountEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: number;
+  id!: number;
 
   @Column('varchar', { name: 'user_name' })
-  username: string;
+  username!: string;
 
   @Column('varchar', { name: 'password' })
-  password: string;
+  password!: string;
 
   @Column('bigint', { name: 'role_id' })
-  roleId: number;
+  roleId!: number;
 
   @Column('timestamp', { name: 'created_at', nullable: true })
   createdAt: Date | undefined;

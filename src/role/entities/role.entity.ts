@@ -5,31 +5,31 @@ import { RoleModel } from '../models/role.model';
 @Entity('role', { schema: 'multiple_choice' })
 export class RoleEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
-  id: number;
+  id!: number;
 
   @Column({ type: 'varchar', name: 'name' })
-  name: string;
+  name!: string;
 
   @Column('timestamp', { name: 'created_at', nullable: true })
-  createdAt: Date;
+  createdAt: Date | undefined;
 
   @Column('bigint', { name: 'created_by', nullable: true })
-  createdBy: number;
+  createdBy: number | undefined;
 
   @Column('timestamp', { name: 'updated_at', nullable: true })
-  updatedAt: Date;
+  updatedAt: Date | undefined;
 
   @Column('bigint', { name: 'updated_by', nullable: true })
-  updatedBy: number;
+  updatedBy: number | undefined;
 
   @Column('timestamp', { name: 'deleted_at', nullable: true })
-  deletedAt: Date;
+  deletedAt: Date | undefined;
 
   @Column('bigint', { name: 'deleted_by', nullable: true })
-  deletedBy: number;
+  deletedBy: number | undefined;
 
   @OneToMany(() => AccountEntity, (account) => account.role)
-  accounts: AccountEntity[];
+  accounts: AccountEntity[] | undefined;
 
   toModel(): RoleModel {
     return new RoleModel(this.id, this.name);

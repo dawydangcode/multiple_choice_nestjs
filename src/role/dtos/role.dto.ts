@@ -5,7 +5,7 @@ export class RoleDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 }
 
 export class CreateRoleBodyDto extends PickType(RoleDto, ['name']) {}
