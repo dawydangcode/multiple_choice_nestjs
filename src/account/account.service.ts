@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
 import { AccountModel } from './models/account.model';
+import { isNull } from 'util';
 
 @Injectable()
 export class AccountService {
@@ -16,6 +17,16 @@ export class AccountService {
     return accounts.map((account: AccountEntity) => account.toModel());
   }
 
+  async findById(id: number): Promise<AccountModel> {
+    const account = await this.accountRepository.findOne({
+      where: { id, deletedAt: IsNull() }, // only get non-deleted accounts
+    });
+    if (!account) {
+      throw new Error('Account not found');
+    }
+    return account.toModel();
+  }
+
   async create(
     username: string,
     password: string,
@@ -23,11 +34,12 @@ export class AccountService {
     reqAccountId: number,
   ): Promise<AccountEntity> {
     const entity = new AccountEntity();
-    entity.userName = username;
+    entity.username = username;
     entity.password = password;
     entity.roleId = roleId;
     entity.createdAt = new Date();
     entity.createdBy = reqAccountId;
+
     return await this.accountRepository.save(entity);
   }
 
@@ -36,35 +48,21 @@ export class AccountService {
     username: string | undefined,
     password: string | undefined,
     roleId: number | undefined,
-    reqAccountId: number,
-  ): Promise<AccountEntity> {
+    reqAccountId: number | undefined,
+  ): Promise<AccountModel | null> {
     await this.accountRepository.update(
       {
         id: account.id,
-        deletedAt: IsNull(),
       },
-<<<<<<< HEAD
-    });
-    if (!existingAccount) {
-      throw new Error('Account not found');
-    }
-    existingAccount.username = account.username;
-    existingAccount.password = account.password;
-    existingAccount.updatedAt = new Date();
-    existingAccount.updatedBy = account.updatedBy;
-    existingAccount.roleId = account.roleId;
-    return this.accountRepository.save(existingAccount);
-=======
       {
-        userName: username,
-        password: password,
-        roleId: roleId,
-        updatedAt: new Date(),
-        updatedBy: reqAccountId,
+        username: account.username,
+        password: account.password,
+        roleId: account.roleId,
       },
     );
 
-    return await this.findAll();
->>>>>>> aa3c5d834337f3214146de665887fbc671cceb0e
+    return await this.accountRepository.findOne({
+      where: { id: account.id, deletedAt: IsNull() }, // only get non-deleted accounts
+    });
   }
 }
