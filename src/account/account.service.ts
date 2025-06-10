@@ -17,9 +17,9 @@ export class AccountService {
     return accounts.map((account: AccountEntity) => account.toModel());
   }
 
-  async findById(id: number): Promise<AccountModel> {
+  async findById(accountId: number): Promise<AccountModel> {
     const account = await this.accountRepository.findOne({
-      where: { id, deletedAt: IsNull() }, // only get non-deleted accounts
+      where: { id : accountId, deletedAt: IsNull() }, // only get non-deleted accounts
     });
     if (!account) {
       throw new Error('Account not found');
@@ -64,5 +64,11 @@ export class AccountService {
     return await this.accountRepository.findOne({
       where: { id: account.id, deletedAt: IsNull() }, // only get non-deleted accounts
     });
+  }
+
+  async delete(accountId: number): Promise<AccountEntity | null> {
+    return await this.accountRepository.findOne({
+      where: { id: accountId, deletedAt: IsNull() },
+    }); 
   }
 }

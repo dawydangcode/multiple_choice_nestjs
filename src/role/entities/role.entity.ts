@@ -26,7 +26,7 @@ export class RoleEntity {
   deletedAt: Date;
 
   @Column('bigint', { name: 'deleted_by', nullable: true })
-  deletedBy: string;
+  deletedBy: number;
 
   @OneToMany(() => AccountEntity, (account) => account.role)
   accounts: AccountEntity[];

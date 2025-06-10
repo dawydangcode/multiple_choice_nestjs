@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleBodyDto } from './dtos/role.dto';
 
@@ -24,5 +24,11 @@ export class RoleController {
       body.name,
     );
     return this.roleService.getById(params.roleId);
+  }
+
+  @Delete(':roleId/delete')
+  async deleteRole(@Param() params: any) {
+    await this.roleService.delete(params.roleId);
+    return { message: 'Role deleted successfully' };
   }
 }

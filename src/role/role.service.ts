@@ -18,9 +18,9 @@ export class RoleService {
     return roles.map((role: RoleEntity) => role.toModel());
   }
 
-  async getById(id: number): Promise<RoleModel> {
+  async getById(roleId: number): Promise<RoleModel> {
     const role = await this.roleRepository.findOne({
-      where: { id },
+      where: { id: roleId },
     });
     if (!role) {
       throw new error('Role not found!');
@@ -45,10 +45,22 @@ export class RoleService {
     id: number,
     name: string,
   ): Promise<RoleModel | null> {
-    await this.roleRepository.update(id, { name, updatedAt: new Date(), updatedBy: 1 });
+    await this.roleRepository.update(id, {
+      name,
+      updatedAt: new Date(),
+      updatedBy: 1,
+    });
 
     return await this.roleRepository.findOne({
       where: { id: role.id, deletedAt: IsNull() },
     });
+  }
+
+  async delete(roleId: number): Promise<RoleEntity | null> {
+    await this.roleRepository.update(roleId, {
+      deletedAt: new Date(),
+      deletedBy: 1,
+    });
+    return await this.roleRepository.findOne({ where: { id: roleId } });
   }
 }
