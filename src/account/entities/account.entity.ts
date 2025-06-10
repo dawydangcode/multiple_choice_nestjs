@@ -26,19 +26,19 @@ export class AccountEntity {
   createdAt: Date | undefined;
 
   @Column('bigint', { name: 'created_by', nullable: true })
-  createdBy: string | undefined;
+  createdBy: number | undefined;
 
   @Column('timestamp', { name: 'updated_at', nullable: true })
   updatedAt: Date | undefined;
 
   @Column('bigint', { name: 'updated_by', nullable: true })
-  updatedBy: string | undefined;
+  updatedBy: number | undefined;
 
   @Column('timestamp', { name: 'deleted_at', nullable: true })
   deletedAt: Date | undefined;
 
   @Column('bigint', { name: 'deleted_by', nullable: true })
-  deletedBy: string | undefined;
+  deletedBy: number | undefined;
 
   @ManyToOne(() => Role, (role) => role.accounts, {
     onDelete: 'RESTRICT',

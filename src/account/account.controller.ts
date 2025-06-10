@@ -1,22 +1,34 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { AccountService } from './account.service';
+import { CreateAccountBodyDto } from './dtos/account.dto';
 
-@Controller('account')
+@Controller('api/v1/account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  @Get('/all')
-  getAllAccount() {
+  @Get('all')
+  async getAllAccount() {
     return this.accountService.findAll();
   }
 
-  @Post('/create')
-  createAccount(@Body() account: any) {
-    return this.accountService.create(account);
+  @Post('create')
+  async createAccount(@Body() body: CreateAccountBodyDto) {
+    return this.accountService.create(body.username, body.password, 1, 1);
   }
 
-  @Put('/update/:id')
-  updateAccount(@Param('id') id: number, @Body() account: any) {
-    return this.accountService.update(id, account);
+  @Put(':accountId/update')
+  async updateAccount(@Param() params: any, @Body() body: any) {
+    return this.accountService.update(params.accountId, account);
   }
+
+  @Delete(':accountId/delete')
+  async deleteAccount() {}
 }
