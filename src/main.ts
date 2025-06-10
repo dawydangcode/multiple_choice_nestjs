@@ -3,10 +3,18 @@ declare const module: any;
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { throwError } from './utils/function';
+import { ConfigService } from '@nestjs/config';
+import { INestApplication } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  setupSwagger(app);
+  const port = app.get(ConfigService).get<number>('app.port') ?? throwError();
+  await app.listen(port);
+}
 
+function setupSwagger(app: INestApplication<any>) {
   const config = new DocumentBuilder()
     .setTitle('Cats example')
     .setDescription('The cats API description')
@@ -15,12 +23,6 @@ async function bootstrap() {
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/documentation', app, documentFactory);
-
-  await app.listen(process.env.PORT ?? 3000);
-
-  if (module.hot) {
-    module.hot.accept();
-    module.hot.dispose(() => app.close());
-  }
 }
+
 bootstrap();
