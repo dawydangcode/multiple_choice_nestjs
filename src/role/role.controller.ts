@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleBodyDto } from './dtos/role.dto';
 
@@ -7,13 +7,22 @@ export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @Get('')
-  async getAllRole(){
+  async getAllRole() {
     return this.roleService.getAll();
   }
 
   @Post('create')
-  async createRole(@Body() body: CreateRoleBodyDto){
+  async createRole(@Body() body: CreateRoleBodyDto) {
     return this.roleService.create(body.name);
   }
-  
+
+  @Put(':roleId/update')
+  async updateRole(@Param() params: any, @Body() body: any) {
+    await this.roleService.update(
+      { id: params.roleId, name: body.name },
+      params.roleId,
+      body.name,
+    );
+    return this.roleService.getById(params.roleId);
+  }
 }

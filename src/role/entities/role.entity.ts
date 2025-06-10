@@ -14,13 +14,13 @@ export class RoleEntity {
   createdAt: Date;
 
   @Column('bigint', { name: 'created_by', nullable: true })
-  createdBy: string;
+  createdBy: number;
 
   @Column('timestamp', { name: 'updated_at', nullable: true })
   updatedAt: Date;
 
   @Column('bigint', { name: 'updated_by', nullable: true })
-  updatedBy: string;
+  updatedBy: number;
 
   @Column('timestamp', { name: 'deleted_at', nullable: true })
   deletedAt: Date;
