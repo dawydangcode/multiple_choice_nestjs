@@ -14,7 +14,7 @@ export class AccountEntity {
   id: number;
 
   @Column('varchar', { name: 'user_name' })
-  userName: string;
+  username: string;
 
   @Column('varchar', { name: 'password' })
   password: string;
@@ -48,6 +48,6 @@ export class AccountEntity {
   role: Role | undefined;
 
   toModel(): AccountModel {
-    return new AccountModel(this.id, this.userName, this.password, this.roleId);
+    return new AccountModel(this.id, this.username, this.password, this.roleId);
   }
 }

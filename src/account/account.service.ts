@@ -31,7 +31,7 @@ export class AccountService {
     if (!existingAccount) {
       throw new Error('Account not found');
     }
-    existingAccount.userName = account.userName;
+    existingAccount.username = account.username;
     existingAccount.password = account.password;
     existingAccount.updatedAt = new Date();
     existingAccount.updatedBy = account.updatedBy;
