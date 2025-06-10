@@ -52,5 +52,8 @@ export class AccountController {
   }
 
   @Delete(':accountId/delete')
-  async deleteAccount() {}
+  async deleteAccount(@Param() params: any) {
+    await this.accountService.delete(params.accountId);
+    return { message: 'Account deleted successfully' };
+  }
 }
