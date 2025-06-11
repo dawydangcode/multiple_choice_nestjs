@@ -8,35 +8,36 @@ import {
   Put,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
-import { CreateRoleBodyDto } from './dtos/role.dto';
+import {
+  CreateRoleBodyDto,
+  UpdateRoleBodyDto,
+  UpdateRoleParamsDto,
+} from './dtos/role.dto';
+import { RoleModel } from './models/role.model';
 
 @Controller('api/v1')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
-  @Get('roles')
-  async getAllRole() {
-    return this.roleService.getAll();
+  @Get('list')
+  async getAllRole(): Promise<RoleModel[]> {
+    return await this.roleService.getRoles();
   }
 
   @Post('role/create')
   async createRole(@Body() body: CreateRoleBodyDto) {
-    return await this.roleService.create(body.name);
+    return await this.roleService.createRole(body.name);
   }
 
   @Put('role/:roleId/update')
-  async updateRole(@Param() params: any, @Body() body: any) {
-    await this.roleService.update(
-      { id: params.roleId, name: body.name },
-      params.roleId,
-      body.name,
-    );
-    return await this.roleService.getById(params.roleId);
+  async updateRole(@Param() params: UpdateRoleParamsDto, @Body() body: any) {
+    const role = await this.roleService.getRole(params.roleId);
+    return await this.roleService.updateRole(role, body.name);
   }
 
   @Delete('role/:roleId/delete')
   async deleteRole(@Param() params: any) {
-    await this.roleService.delete(params.roleId);
-    return { message: 'Role deleted successfully' };
+    const role = await this.roleService.getRole(params.roleId);
+    return await this.roleService.deleteRole(role);
   }
 }

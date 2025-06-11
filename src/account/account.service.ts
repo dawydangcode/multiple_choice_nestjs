@@ -85,7 +85,6 @@ export class AccountService {
         deletedBy: 1,
       },
     );
-
     return true;
   }
 }

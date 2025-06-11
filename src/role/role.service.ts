@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleModel } from './models/role.model';
 import { RoleEntity } from './entities/role.entity';
 import { throwError } from 'rxjs';
 import { error } from 'console';
+import { isNull } from 'util';
 
 @Injectable()
 export class RoleService {
@@ -13,52 +14,57 @@ export class RoleService {
     private readonly roleRepository: Repository<RoleEntity>,
   ) {}
 
-  async getAll(): Promise<RoleModel[]> {
-    const roles = await this.roleRepository.find();
+  async getRoles(): Promise<RoleModel[]> {
+    const roles = await this.roleRepository.find({
+      where: {
+        deletedAt: IsNull(),
+      },
+    });
     return roles.map((role: RoleEntity) => role.toModel());
   }
 
-  async getById(roleId: number): Promise<RoleModel> {
+  async getRole(roleId: number): Promise<RoleModel> {
     const role = await this.roleRepository.findOne({
-      where: { id: roleId },
+      where: { id: roleId, deletedAt: IsNull() },
     });
     if (!role) {
-      throw new error('Role not found!');
+      throw new HttpException('Role not found', HttpStatus.NOT_FOUND);
     }
     return role.toModel();
   }
 
-  async create(name: string): Promise<RoleEntity> {
-    if (!name || name.trim() === '') {
-      throw new Error('Role name must not be empty!');
-    }
+  async createRole(name: string): Promise<RoleModel> {
     const entity = new RoleEntity();
     entity.name = name;
     entity.createdAt = new Date();
     entity.createdBy = 1;
-    return await this.roleRepository.save(entity);
+    const newRole = await this.roleRepository.save(entity);
+    return await this.getRole(newRole.id);
   }
 
-  async update(
+  async updateRole(
     role: RoleModel,
-    id: number,
-    name: string,
-  ): Promise<RoleModel | null> {
-    await this.roleRepository.update(id, {
-      name,
-      updatedAt: new Date(),
-      updatedBy: 1,
-    });
-
-    return await this.roleRepository.findOne({
-      where: { id: role.id, deletedAt: IsNull() },
-    });
-  }
-
-  async delete(roleId: number): Promise<RoleEntity | null> {
+    name: string | undefined,
+  ): Promise<RoleModel> {
     await this.roleRepository.update(
       {
-        id: roleId,
+        id: role.id,
+        deletedAt: IsNull(),
+      },
+      {
+        name: name,
+        updatedAt: new Date(),
+        updatedBy: 1,
+      },
+    );
+
+    return await this.getRole(role.id);
+  }
+
+  async deleteRole(role: RoleModel): Promise<boolean> {
+    await this.roleRepository.update(
+      {
+        id: role.id,
         deletedAt: IsNull(),
       },
       {
@@ -66,6 +72,6 @@ export class RoleService {
         deletedBy: 1,
       },
     );
-    return await this.roleRepository.findOne({ where: { id: roleId } });
+    return true;
   }
 }

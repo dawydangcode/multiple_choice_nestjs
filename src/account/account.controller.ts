@@ -15,21 +15,23 @@ import {
 } from './dtos/account.dto';
 import { AccountModel } from './models/account.model';
 
-@Controller('api/v1/account')
+@Controller('api/v1')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  @Get('all')
+  @Get('list')
   async getAllAccount(): Promise<AccountModel[]> {
     return await this.accountService.getAccounts();
   }
 
-  @Get(':accountId/detail')
-  async getAccountById(@Param() params: GetAccountParamsDto) {
+  @Get('account/:accountId/detail')
+  async getAccountById(
+    @Param() params: GetAccountParamsDto,
+  ): Promise<AccountModel> {
     return await this.accountService.getAccount(params.accountId);
   }
 
-  @Post('create')
+  @Post('account/create')
   async createAccount(@Body() body: CreateAccountBodyDto) {
     return await this.accountService.createAccount(
       body.username,
@@ -39,12 +41,7 @@ export class AccountController {
     );
   }
 
-  // @Put(':accountId/update')
-  // async updateAccount(@Param() params: any, @Body() body: any) {
-  //   return this.accountService.update(params.accountId, account);
-  // }
-
-  @Put(':accountId/update')
+  @Put('account/:accountId/update')
   async updateAccount(
     @Param() params: UpdateAccountParamsDto,
     @Body() body: any,
@@ -59,7 +56,7 @@ export class AccountController {
     );
   }
 
-  @Delete(':accountId/delete')
+  @Delete('account/:accountId/delete')
   async deleteAccount(@Param() params: any) {
     const account = await this.accountService.getAccount(params.accountId);
     return await this.accountService.deleteAccount(account);

@@ -5,19 +5,27 @@ import {
   PickType,
 } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class AccountDto {
   @ApiProperty()
   @IsString()
-  @Max(32)
-  @Min(8)
+  @MinLength(8)
+  @MaxLength(32)
   username!: string;
 
   @ApiProperty()
   @IsString()
-  @Max(32)
-  @Min(8)
+  @MinLength(8)
+  @MaxLength(32)
   password!: string;
 
   @ApiProperty()

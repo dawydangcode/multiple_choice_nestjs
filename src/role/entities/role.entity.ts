@@ -32,6 +32,15 @@ export class RoleEntity {
   accounts: AccountEntity[] | undefined;
 
   toModel(): RoleModel {
-    return new RoleModel(this.id, this.name);
+    return new RoleModel(
+      this.id,
+      this.name,
+      this.createdAt,
+      this.createdBy,
+      this.deletedAt,
+      this.deletedBy,
+      this.updatedAt,
+      this.updatedBy,
+    );
   }
 }
