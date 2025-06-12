@@ -3,6 +3,7 @@ import { AccountDetailService } from './account-detail.service';
 import { AccountDetailModel } from './models/account-detail.model';
 import {
   CreateAccountDetailBodyDto,
+  GetAccountDetailByAccountIdParamsDto,
   GetAccountDetailParamsDto,
   UpdateAccountDetailBodyDto,
   UpdateAccountDetailParamsDto,
@@ -49,7 +50,6 @@ export class AccountDetailController {
       body.gender,
       body.imageUrl,
       body.accountId,
-      body.reqAccountId,
     );
   }
 }

@@ -8,13 +8,13 @@ import { AccountDetailModel } from './models/account-detail.model';
 export class AccountDetailService {
   constructor(
     @InjectRepository(AccountDetailEntity)
-    private readonly accountDetaiRepository: Repository<AccountDetailEntity>,
+    private readonly accountDetailRepository: Repository<AccountDetailEntity>,
   ) {}
 
   async getAccountDetails(): Promise<AccountDetailModel[]> {
-    const accountDetails = this.accountDetaiRepository.find({
+    const accountDetails = this.accountDetailRepository.find({
       where: {
-        deteledAt: IsNull(),
+        deletedAt: IsNull(),
       },
     });
     return (await accountDetails).map((accountDetail: AccountDetailEntity) =>
@@ -23,11 +23,26 @@ export class AccountDetailService {
   }
 
   async getAccountDetail(accountDetailId: number): Promise<AccountDetailModel> {
-    const accountDetail = await this.accountDetaiRepository.findOne({
-      where: { id: accountDetailId, deteledAt: IsNull() },
+    const accountDetail = await this.accountDetailRepository.findOne({
+      where: { id: accountDetailId, deletedAt: IsNull() },
     });
     if (!accountDetail) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+    return accountDetail.toModel();
+  }
+
+  async getAccountDetailByAccountId(
+    accountId: number,
+  ): Promise<AccountDetailModel> {
+    const accountDetail = await this.accountDetailRepository.findOne({
+      where: { accountId, deletedAt: IsNull() },
+    });
+    if (!accountDetail) {
+      throw new HttpException(
+        'Account detail not found :D',
+        HttpStatus.NOT_FOUND,
+      );
     }
     return accountDetail.toModel();
   }
@@ -47,7 +62,7 @@ export class AccountDetailService {
     entity.imageUrl = imageUrl;
     entity.createdAt = new Date();
     entity.createdBy = accountId;
-    const newAccountDetail = await this.accountDetaiRepository.save(entity);
+    const newAccountDetail = await this.accountDetailRepository.save(entity);
     return await this.getAccountDetail(newAccountDetail.id);
   }
 
@@ -58,12 +73,11 @@ export class AccountDetailService {
     gender: string | undefined,
     imageUrl: string | undefined,
     accountId: number | undefined,
-    reqAccountId: number | undefined,
   ): Promise<AccountDetailModel> {
-    await this.accountDetaiRepository.update(
+    await this.accountDetailRepository.update(
       {
         id: accountDetail.id,
-        deteledAt: IsNull(),
+        deletedAt: IsNull(),
       },
       {
         name: name,
@@ -71,7 +85,7 @@ export class AccountDetailService {
         gender: gender,
         imageUrl: imageUrl,
         accountId: accountId,
-        updatedBy: reqAccountId,
+        updatedBy: accountId,
         updatedAt: new Date(),
       },
     );

@@ -16,8 +16,12 @@ import {
 import { AccountModel } from './models/account.model';
 import { AccountDetailService } from './modules/account_detail/account-detail.service';
 import { AccountDetailModule } from './modules/account_detail/account-detail.module';
-import { GetAccountDetailParamsDto } from './modules/account_detail/dtos/account-detail.dto';
+import {
+  GetAccountDetailByAccountIdParamsDto,
+  GetAccountDetailParamsDto,
+} from './modules/account_detail/dtos/account-detail.dto';
 import { AccountModule } from './account.module';
+import { AccountDetailModel } from './modules/account_detail/models/account-detail.model';
 
 @Controller('api/v1')
 export class AccountController {
@@ -38,12 +42,12 @@ export class AccountController {
     return await this.accountService.getAccount(params.accountId);
   }
 
-  @Get('account/:accountDetailId/details')
-  async getAccountDetailById(
-    @Param() params: GetAccountDetailParamsDto,
-  ): Promise<AccountDetailModule> {
-    return await this.accountDetailService.getAccountDetail(
-      params.accountDetailId,
+  @Get('account/:accountId/account-detail')
+  async getAccountDetailByAccountId(
+    @Param() params: GetAccountDetailByAccountIdParamsDto,
+  ): Promise<AccountDetailModel> {
+    return await this.accountDetailService.getAccountDetailByAccountId(
+      params.accountId,
     );
   }
 

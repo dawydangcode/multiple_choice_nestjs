@@ -1,6 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsDateString, IsNumber, IsString } from 'class-validator';
 
 export class AccountDetailDto {
   @ApiProperty()
@@ -18,7 +18,7 @@ export class AccountDetailDto {
   name!: string;
 
   @ApiProperty()
-  @IsString()
+  @IsDateString()
   dob!: string;
 
   @ApiProperty()
@@ -53,3 +53,8 @@ export class UpdateAccountDetailBodyDto extends PickType(AccountDetailDto, [
 export class UpdateAccountDetailParamsDto extends PickType(AccountDetailDto, [
   'accountDetailId',
 ]) {}
+
+export class GetAccountDetailByAccountIdParamsDto extends PickType(
+  AccountDetailDto,
+  ['accountId'],
+) {}

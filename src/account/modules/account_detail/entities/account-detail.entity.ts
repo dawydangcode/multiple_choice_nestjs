@@ -24,9 +24,9 @@ export class AccountDetailEntity {
   @Column({ name: 'updated_by' })
   updatedBy!: number;
   @Column({ name: 'deleted_at' })
-  deteledAt!: Date;
+  deletedAt!: Date;
   @Column({ name: 'deleted_by' })
-  deteledBy!: number;
+  deletedBy!: number;
 
   toModel(): AccountDetailModel {
     return new AccountDetailModel(
@@ -40,8 +40,8 @@ export class AccountDetailEntity {
       this.createdBy,
       this.updatedAt,
       this.updatedBy,
-      this.deteledAt,
-      this.deteledBy,
+      this.deletedAt,
+      this.deletedBy,
     );
   }
 }
