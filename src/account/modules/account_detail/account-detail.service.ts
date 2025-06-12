@@ -22,6 +22,13 @@ export class AccountDetailService {
     );
   }
 
+  async checkAccountDetailExists(accountId: number): Promise<boolean> {
+    const accountDetail = await this.accountDetailRepository.findOne({
+      where: { id: accountId, deletedAt: IsNull() },
+    });
+    return !!accountDetail;
+  }
+
   async getAccountDetail(accountDetailId: number): Promise<AccountDetailModel> {
     const accountDetail = await this.accountDetailRepository.findOne({
       where: { id: accountDetailId, deletedAt: IsNull() },

@@ -6,6 +6,8 @@ import {
   Body,
   Post,
   Delete,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { AccountDetailService } from './account-detail.service';
 import { AccountDetailModel } from './models/account-detail.model';
@@ -30,9 +32,18 @@ export class AccountDetailController {
       params.accountDetailId,
     );
   }
-
   @Post('account-detail/create')
   async createAccountDetail(@Body() body: CreateAccountDetailBodyDto) {
+    const existing =
+      await this.accountDetailService.getAccountDetailByAccountId(
+        body.accountId,
+      );
+    if (existing) {
+      throw new HttpException(
+        'Account detail already exists for this account',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     return await this.accountDetailService.createAccountDetail(
       body.accountId,
       body.name,
