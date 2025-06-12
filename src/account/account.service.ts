@@ -27,9 +27,11 @@ export class AccountService {
         deletedAt: IsNull(),
       },
     });
+
     if (!account) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
+
     return account.toModel();
   }
 
@@ -45,6 +47,7 @@ export class AccountService {
     entity.roleId = roleId;
     entity.createdAt = new Date();
     entity.createdBy = reqAccountId;
+
     const newAccount = await this.accountRepository.save(entity);
     return await this.getAccount(newAccount.id);
   }

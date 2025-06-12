@@ -14,41 +14,31 @@ import {
   UpdateAccountParamsDto,
 } from './dtos/account.dto';
 import { AccountModel } from './models/account.model';
-import { AccountDetailService } from './modules/account_detail/account-detail.service';
-import { AccountDetailModule } from './modules/account_detail/account-detail.module';
+import { AccountDetailService } from './modules/account-detail/account-detail.service';
+import { AccountDetailModule } from './modules/account-detail/account-detail.module';
 import {
   GetAccountDetailByAccountIdParamsDto,
   GetAccountDetailParamsDto,
-} from './modules/account_detail/dtos/account-detail.dto';
+} from './modules/account-detail/dtos/account-detail.dto';
 import { AccountModule } from './account.module';
-import { AccountDetailModel } from './modules/account_detail/models/account-detail.model';
+import { AccountDetailModel } from './modules/account-detail/models/account-detail.model';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Account')
 @Controller('api/v1')
 export class AccountController {
-  constructor(
-    private readonly accountService: AccountService,
-    private readonly accountDetailService: AccountDetailService,
-  ) {}
+  constructor(private readonly accountService: AccountService) {}
 
-  @Get('list')
+  @Get('account/list')
   async getAllAccount(): Promise<AccountModel[]> {
     return await this.accountService.getAccounts();
   }
 
-  @Get('account/:accountId/details')
+  @Get('account/:accountId/detail')
   async getAccountById(
     @Param() params: GetAccountParamsDto,
   ): Promise<AccountModel> {
     return await this.accountService.getAccount(params.accountId);
-  }
-
-  @Get('account/:accountId/account-detail')
-  async getAccountDetailByAccountId(
-    @Param() params: GetAccountDetailByAccountIdParamsDto,
-  ): Promise<AccountDetailModel> {
-    return await this.accountDetailService.getAccountDetailByAccountId(
-      params.accountId,
-    );
   }
 
   @Post('account/create')

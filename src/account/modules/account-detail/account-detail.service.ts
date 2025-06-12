@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { AccountDetailEntity } from './entities/account-detail.entity';
 import { AccountDetailModel } from './models/account-detail.model';
+import { GenderType } from './enums/gender.type';
 
 @Injectable()
 export class AccountDetailService {
@@ -43,14 +44,19 @@ export class AccountDetailService {
     accountId: number,
   ): Promise<AccountDetailModel> {
     const accountDetail = await this.accountDetailRepository.findOne({
-      where: { accountId, deletedAt: IsNull() },
+      where: {
+        accountId: accountId,
+        deletedAt: IsNull(),
+      },
     });
+
     if (!accountDetail) {
       throw new HttpException(
         'Account detail not found :D',
         HttpStatus.NOT_FOUND,
       );
     }
+
     return accountDetail.toModel();
   }
 
@@ -58,7 +64,7 @@ export class AccountDetailService {
     accountId: number,
     name: string,
     dob: string,
-    gender: string,
+    gender: GenderType,
     imageUrl: string,
   ): Promise<AccountDetailModel> {
     const entity = new AccountDetailEntity();
@@ -77,7 +83,7 @@ export class AccountDetailService {
     accountDetail: AccountDetailModel,
     name: string | undefined,
     dob: string | undefined,
-    gender: string | undefined,
+    gender: GenderType | undefined,
     imageUrl: string | undefined,
     accountId: number | undefined,
   ): Promise<AccountDetailModel> {

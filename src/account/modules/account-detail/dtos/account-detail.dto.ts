@@ -1,6 +1,14 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsDateString, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsDateString,
+  IsEnum,
+  IsNumber,
+  IsString,
+} from 'class-validator';
+import { GenderType } from '../enums/gender.type';
 
 export class AccountDetailDto {
   @ApiProperty()
@@ -22,8 +30,8 @@ export class AccountDetailDto {
   dob!: string;
 
   @ApiProperty()
-  @IsString()
-  gender!: string;
+  @IsEnum(GenderType)
+  gender!: GenderType;
 
   @ApiProperty()
   @IsString()

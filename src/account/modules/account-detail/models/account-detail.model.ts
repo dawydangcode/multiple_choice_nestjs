@@ -1,9 +1,11 @@
+import { GenderType } from '../enums/gender.type';
+
 export class AccountDetailModel {
   public readonly id: number;
   public readonly accountId: number;
   public readonly name: string;
   public readonly dob: string;
-  public readonly gender: string;
+  public readonly gender: GenderType;
   public readonly imageUrl: string;
   public readonly created_at: Date;
   public readonly created_by: number;
@@ -17,7 +19,7 @@ export class AccountDetailModel {
     accountId: number,
     name: string,
     dob: string,
-    gender: string,
+    gender: GenderType,
     imageUrl: string,
     created_at: Date,
     created_by: number,
