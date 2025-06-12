@@ -35,7 +35,7 @@ export class AccountController {
     return await this.accountService.getAccounts();
   }
 
-  @Get(':accountId/account')
+  @Get('account/:accountId/details')
   async getAccountById(
     @Param() params: GetAccountParamsDto,
   ): Promise<AccountModel> {

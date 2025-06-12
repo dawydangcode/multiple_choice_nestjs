@@ -91,4 +91,21 @@ export class AccountDetailService {
     );
     return this.getAccountDetail(accountDetail.id);
   }
+
+  async deleteAccountDetail(
+    accountDetail: AccountDetailModel,
+    accountId: number,
+  ): Promise<boolean> {
+    await this.accountDetailRepository.update(
+      {
+        id: accountDetail.id,
+        deletedAt: IsNull(),
+      },
+      {
+        deletedAt: new Date(),
+        deletedBy: accountId,
+      },
+    );
+    return true;
+  }
 }

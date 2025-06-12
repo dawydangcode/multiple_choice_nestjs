@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Put, Body, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Put,
+  Body,
+  Post,
+  Delete,
+} from '@nestjs/common';
 import { AccountDetailService } from './account-detail.service';
 import { AccountDetailModel } from './models/account-detail.model';
 import {
@@ -50,6 +58,17 @@ export class AccountDetailController {
       body.gender,
       body.imageUrl,
       body.accountId,
+    );
+  }
+
+  @Delete('account-detail/:accountDetailId/delete')
+  async deleteAccountDetail(@Param() params: any) {
+    const accountDetail = await this.accountDetailService.getAccountDetail(
+      params.accountDetailId,
+    );
+    return await this.accountDetailService.deleteAccountDetail(
+      accountDetail,
+      accountDetail.accountId,
     );
   }
 }
