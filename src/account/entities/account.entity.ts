@@ -23,22 +23,22 @@ export class AccountEntity {
   roleId!: number;
 
   @Column('timestamp', { name: 'created_at', nullable: true })
-  createdAt: Date | undefined;
+  createdAt!: Date | undefined;
 
   @Column('bigint', { name: 'created_by', nullable: true })
-  createdBy: number | undefined;
+  createdBy!: number | undefined;
 
   @Column('timestamp', { name: 'updated_at', nullable: true })
-  updatedAt: Date | undefined;
+  updatedAt!: Date | undefined;
 
   @Column('bigint', { name: 'updated_by', nullable: true })
-  updatedBy: number | undefined;
+  updatedBy!: number | undefined;
 
   @Column('timestamp', { name: 'deleted_at', nullable: true })
-  deletedAt: Date | undefined;
+  deletedAt!: Date | undefined;
 
   @Column('bigint', { name: 'deleted_by', nullable: true })
-  deletedBy: number | undefined;
+  deletedBy!: number | undefined;
 
   @ManyToOne(() => RoleEntity, (role) => role.accounts, {
     onDelete: 'RESTRICT',
@@ -48,6 +48,17 @@ export class AccountEntity {
   role: RoleEntity | undefined;
 
   toModel(): AccountModel {
-    return new AccountModel(this.id, this.username, this.password, this.roleId);
+    return new AccountModel(
+      this.id,
+      this.username,
+      this.password,
+      this.roleId,
+      this.createdAt,
+      this.createdBy,
+      this.updatedAt,
+      this.updatedBy,
+      this.deletedAt,
+      this.deletedBy,
+    );
   }
 }

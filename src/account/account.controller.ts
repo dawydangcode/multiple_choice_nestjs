@@ -14,21 +14,37 @@ import {
   UpdateAccountParamsDto,
 } from './dtos/account.dto';
 import { AccountModel } from './models/account.model';
+import { AccountDetailService } from './modules/account_detail/account-detail.service';
+import { AccountDetailModule } from './modules/account_detail/account-detail.module';
+import { GetAccountDetailParamsDto } from './modules/account_detail/dtos/account-detail.dto';
+import { AccountModule } from './account.module';
 
 @Controller('api/v1')
 export class AccountController {
-  constructor(private readonly accountService: AccountService) {}
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly accountDetailService: AccountDetailService,
+  ) {}
 
   @Get('list')
   async getAllAccount(): Promise<AccountModel[]> {
     return await this.accountService.getAccounts();
   }
 
-  @Get('account/:accountId/detail')
+  @Get(':accountId/account')
   async getAccountById(
     @Param() params: GetAccountParamsDto,
   ): Promise<AccountModel> {
     return await this.accountService.getAccount(params.accountId);
+  }
+
+  @Get('account/:accountDetailId/details')
+  async getAccountDetailById(
+    @Param() params: GetAccountDetailParamsDto,
+  ): Promise<AccountDetailModule> {
+    return await this.accountDetailService.getAccountDetail(
+      params.accountDetailId,
+    );
   }
 
   @Post('account/create')

@@ -22,8 +22,8 @@ async function bootstrap() {
 
 function setupSwagger(app: INestApplication<any>) {
   const config = new DocumentBuilder()
-    .setTitle('Cats example')
-    .setDescription('The cats API description')
+    .setTitle('Intern Hired')
+    .setDescription('Description')
     .setVersion('1.0')
     .build();
 

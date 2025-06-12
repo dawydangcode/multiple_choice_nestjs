@@ -1,0 +1,80 @@
+import { HttpException, HttpStatus, Injectable, Param } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Repository } from 'typeorm';
+import { AccountDetailEntity } from './entities/account-detail.entity';
+import { AccountDetailModel } from './models/account-detail.model';
+
+@Injectable()
+export class AccountDetailService {
+  constructor(
+    @InjectRepository(AccountDetailEntity)
+    private readonly accountDetaiRepository: Repository<AccountDetailEntity>,
+  ) {}
+
+  async getAccountDetails(): Promise<AccountDetailModel[]> {
+    const accountDetails = this.accountDetaiRepository.find({
+      where: {
+        deteledAt: IsNull(),
+      },
+    });
+    return (await accountDetails).map((accountDetail: AccountDetailEntity) =>
+      accountDetail.toModel(),
+    );
+  }
+
+  async getAccountDetail(accountDetailId: number): Promise<AccountDetailModel> {
+    const accountDetail = await this.accountDetaiRepository.findOne({
+      where: { id: accountDetailId, deteledAt: IsNull() },
+    });
+    if (!accountDetail) {
+      throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+    return accountDetail.toModel();
+  }
+
+  async createAccountDetail(
+    accountId: number,
+    name: string,
+    dob: string,
+    gender: string,
+    imageUrl: string,
+  ): Promise<AccountDetailModel> {
+    const entity = new AccountDetailEntity();
+    entity.accountId = accountId;
+    entity.name = name;
+    entity.dob = dob;
+    entity.gender = gender;
+    entity.imageUrl = imageUrl;
+    entity.createdAt = new Date();
+    entity.createdBy = accountId;
+    const newAccountDetail = await this.accountDetaiRepository.save(entity);
+    return await this.getAccountDetail(newAccountDetail.id);
+  }
+
+  async updateAccountDetail(
+    accountDetail: AccountDetailModel,
+    name: string | undefined,
+    dob: string | undefined,
+    gender: string | undefined,
+    imageUrl: string | undefined,
+    accountId: number | undefined,
+    reqAccountId: number | undefined,
+  ): Promise<AccountDetailModel> {
+    await this.accountDetaiRepository.update(
+      {
+        id: accountDetail.id,
+        deteledAt: IsNull(),
+      },
+      {
+        name: name,
+        dob: dob,
+        gender: gender,
+        imageUrl: imageUrl,
+        accountId: accountId,
+        updatedBy: reqAccountId,
+        updatedAt: new Date(),
+      },
+    );
+    return this.getAccountDetail(accountDetail.id);
+  }
+}
