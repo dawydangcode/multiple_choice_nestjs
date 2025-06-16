@@ -14,14 +14,7 @@ import {
   UpdateAccountParamsDto,
 } from './dtos/account.dto';
 import { AccountModel } from './models/account.model';
-import { AccountDetailService } from './modules/account-detail/account-detail.service';
-import { AccountDetailModule } from './modules/account-detail/account-detail.module';
-import {
-  GetAccountDetailByAccountIdParamsDto,
-  GetAccountDetailParamsDto,
-} from './modules/account-detail/dtos/account-detail.dto';
-import { AccountModule } from './account.module';
-import { AccountDetailModel } from './modules/account-detail/models/account-detail.model';
+
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Account')

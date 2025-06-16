@@ -35,6 +35,21 @@ export class AccountService {
     return account.toModel();
   }
 
+  async getAccountByUsername(username: string): Promise<AccountModel> {
+    const account = await this.accountRepository.findOne({
+      where: {
+        username: username,
+        deletedAt: IsNull(),
+      },
+    });
+
+    if (!account) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return account.toModel();
+  }
+
   async createAccount(
     username: string,
     password: string,
