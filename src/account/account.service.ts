@@ -4,6 +4,7 @@ import { IsNull, Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
 import { AccountModel } from './models/account.model';
 import * as bcrypt from 'bcrypt';
+import { SALT_OR_ROUNDS } from 'src/auth/constants/auth.const';
 
 @Injectable()
 export class AccountService {
@@ -45,10 +46,14 @@ export class AccountService {
     });
 
     if (!account) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND); //TO DO
     }
 
     return account.toModel();
+  }
+
+  async checkExistUsername(username: string) {
+    return true; // TO DO
   }
 
   async createAccount(
@@ -57,9 +62,7 @@ export class AccountService {
     roleId: number,
     reqAccountId: number,
   ): Promise<AccountModel> {
-    const saltOrRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltOrRounds);
-
+    const hashedPassword = await bcrypt.hash(password, SALT_OR_ROUNDS);
     const entity = new AccountEntity();
     entity.username = username;
     entity.password = hashedPassword;

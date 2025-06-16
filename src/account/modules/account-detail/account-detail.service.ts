@@ -66,15 +66,16 @@ export class AccountDetailService {
     dob: string | undefined,
     gender: GenderType | undefined,
     imageUrl: string | undefined,
+    reqAccountId: number,
   ): Promise<AccountDetailModel> {
     const entity = new AccountDetailEntity();
     entity.accountId = accountId;
-    entity.name = '';
-    entity.dob = '';
-    entity.gender = GenderType.MALE;
-    entity.imageUrl = '';
+    entity.name = name;
+    entity.dob = dob;
+    entity.gender = gender;
+    entity.imageUrl = imageUrl;
     entity.createdAt = new Date();
-    entity.createdBy = accountId;
+    entity.createdBy = reqAccountId;
     const newAccountDetail = await this.accountDetailRepository.save(entity);
 
     return await this.getAccountDetail(newAccountDetail.id);

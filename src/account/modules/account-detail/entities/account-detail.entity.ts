@@ -11,16 +11,16 @@ export class AccountDetailEntity {
   accountId!: number;
 
   @Column({ name: 'name' })
-  name!: string;
+  name?: string;
 
   @Column({ name: 'dob' })
-  dob!: string;
+  dob?: string;
 
   @Column({ name: 'gender' })
-  gender!: GenderType;
+  gender?: GenderType;
 
   @Column({ name: 'image_url' })
-  imageUrl!: string;
+  imageUrl?: string;
 
   @Column({ name: 'created_at' })
   createdAt!: Date;

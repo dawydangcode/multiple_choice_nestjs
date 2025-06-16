@@ -4,19 +4,20 @@ import { AuthSignInBodyDto, AuthSignUpBodyDto } from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleModule } from 'src/role/role.module';
+import { RoleService } from 'src/role/role.service';
 
 @ApiTags('Auth')
 @Controller('api/v1/')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly roleService: RoleService,
+  ) {}
 
   @Post('auth/signup')
   async signUp(@Body() body: AuthSignUpBodyDto) {
-    return await this.authService.signUp(
-      body.username,
-      body.password,
-      body.roleId,
-    );
+    const role = await this.roleService.getRole(body.roleId);
+    return await this.authService.signUp(body.username, body.password, role);
   }
 
   @Post('auth/signin')

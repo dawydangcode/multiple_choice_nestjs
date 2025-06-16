@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AccountService } from 'src/account/account.service';
 import * as bcrypt from 'bcrypt';
@@ -7,41 +12,31 @@ import { AccountModel } from 'src/account/models/account.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AccountDetailService } from 'src/account/modules/account-detail/account-detail.service';
+import { SALT_OR_ROUNDS } from './constants/auth.const';
+import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
+import { RoleModel } from 'src/role/models/role.model';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly accountService: AccountService,
-    @InjectRepository(AccountEntity)
-    private readonly accountRepository: Repository<AccountEntity>,
-    private readonly jwtService: JwtService,
     private readonly accountDetailService: AccountDetailService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async signUp(
     username: string,
     password: string,
-    roleId: number,
+    role: RoleModel,
   ): Promise<AccountModel> {
-    const existingAccount =
-      await this.accountService.getAccountByUsername(username);
-    if (existingAccount) {
-      throw new UnauthorizedException('Username already exists');
-    }
-    const saltOrRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltOrRounds);
+    await this.accountService.checkExistUsername(username);
 
-    const entity = new AccountEntity();
-    entity.username = username;
-    entity.password = hashedPassword;
-    entity.createdAt = new Date();
-    entity.roleId = roleId;
-
-    const newAccount = await this.accountRepository.save(entity);
-
-    await this.accountRepository.update(newAccount.id, {
-      createdBy: newAccount.id,
-    });
+    const newAccount = await this.accountService.createAccount(
+      username,
+      password,
+      role.id,
+      ADMIN_ACCOUNT_ID,
+    );
 
     await this.accountDetailService.createAccountDetail(
       newAccount.id,
@@ -49,29 +44,31 @@ export class AuthService {
       undefined,
       undefined,
       undefined,
+      newAccount.id,
     );
 
-    return await this.accountService.getAccountByUsername(newAccount.username);
+    return await this.accountService.getAccount(newAccount.id);
   }
 
   async signIn(
     username: string,
-    pass: string,
+    password: string,
   ): Promise<{ access_token: string }> {
-    const user = await this.accountService.getAccountByUsername(username);
+    const account = await this.accountService.getAccountByUsername(username);
 
-    if (!user || !(await bcrypt.compare(pass, user.password))) {
+    const isMatch = await bcrypt.compare(password, account.password);
+    if (!isMatch) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const payload = {
-      sub: user.id,
-      username: user.username,
-      roleId: user.roleId,
+      accountId: account.id,
+      roleId: account.roleId,
     };
 
+    const accessToken = await this.jwtService.signAsync(payload); // TO DO
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: accessToken,
     };
   }
 }
