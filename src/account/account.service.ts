@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
 import { AccountModel } from './models/account.model';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AccountService {
@@ -56,15 +57,18 @@ export class AccountService {
     roleId: number,
     reqAccountId: number,
   ): Promise<AccountModel> {
+    const saltOrRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltOrRounds);
+
     const entity = new AccountEntity();
     entity.username = username;
-    entity.password = password;
+    entity.password = hashedPassword;
     entity.roleId = roleId;
     entity.createdAt = new Date();
     entity.createdBy = reqAccountId;
 
     const newAccount = await this.accountRepository.save(entity);
-    return await this.getAccount(newAccount.id);
+    return await this.getAccountByUsername(newAccount.username);
   }
 
   async updateAccount(

@@ -2,13 +2,42 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AccountService } from 'src/account/account.service';
 import * as bcrypt from 'bcrypt';
+import { AccountEntity } from 'src/account/entities/account.entity';
+import { AccountModel } from 'src/account/models/account.model';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly accountService: AccountService,
+    @InjectRepository(AccountEntity)
+    private readonly accountRepository: Repository<AccountEntity>,
     private readonly jwtService: JwtService,
   ) {}
+
+  async signUp(
+    username: string,
+    password: string,
+    roleId: number,
+  ): Promise<AccountModel> {
+    const saltOrRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltOrRounds);
+
+    const entity = new AccountEntity();
+    entity.username = username;
+    entity.password = hashedPassword;
+    entity.createdAt = new Date();
+    entity.roleId = roleId;
+
+    const newAccount = await this.accountRepository.save(entity);
+
+    await this.accountRepository.update(newAccount.id, {
+      createdBy: newAccount.id,
+    });
+
+    return await this.accountService.getAccountByUsername(newAccount.username);
+  }
 
   async signIn(
     username: string,

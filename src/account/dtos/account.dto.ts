@@ -43,6 +43,7 @@ export class CreateAccountBodyDto extends PickType(AccountDto, [
   'username',
   'password',
   'roleId',
+  'accountId',
 ]) {}
 
 export class UpdateAccountBodyDto extends PartialType(

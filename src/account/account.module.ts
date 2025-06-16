@@ -4,16 +4,18 @@ import { AccountService } from './account.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountEntity } from './entities/account.entity';
 import { AccountDetailEntity } from './modules/account-detail/entities/account-detail.entity';
-import { AccountDetailController } from './modules/account-detail/account-detail.controller';
-import { AccountDetailService } from './modules/account-detail/account-detail.service';
 import { AccountDetailModule } from './modules/account-detail/account-detail.module';
+import { AuthMechanism } from 'typeorm';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AccountEntity, AccountDetailEntity]),
     forwardRef(() => AccountDetailModule),
+    AuthModule,
   ],
   controllers: [AccountController],
   providers: [AccountService],
+  exports: [AccountService],
 })
 export class AccountModule {}
