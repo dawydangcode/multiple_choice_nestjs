@@ -23,6 +23,11 @@ export class AuthService {
     password: string,
     roleId: number,
   ): Promise<AccountModel> {
+    const existingAccount =
+      await this.accountService.getAccountByUsername(username);
+    if (existingAccount) {
+      throw new UnauthorizedException('Username already exists');
+    }
     const saltOrRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltOrRounds);
 
@@ -59,7 +64,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, username: user.username };
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      roleId: user.roleId,
+    };
 
     return {
       access_token: await this.jwtService.signAsync(payload),
