@@ -6,6 +6,7 @@ import { AccountEntity } from 'src/account/entities/account.entity';
 import { AccountModel } from 'src/account/models/account.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { AccountDetailService } from 'src/account/modules/account-detail/account-detail.service';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,7 @@ export class AuthService {
     @InjectRepository(AccountEntity)
     private readonly accountRepository: Repository<AccountEntity>,
     private readonly jwtService: JwtService,
+    private readonly accountDetailService: AccountDetailService,
   ) {}
 
   async signUp(
@@ -35,6 +37,14 @@ export class AuthService {
     await this.accountRepository.update(newAccount.id, {
       createdBy: newAccount.id,
     });
+
+    await this.accountDetailService.createAccountDetail(
+      newAccount.id,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    );
 
     return await this.accountService.getAccountByUsername(newAccount.username);
   }

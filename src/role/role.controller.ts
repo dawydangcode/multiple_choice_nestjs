@@ -8,11 +8,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
-import {
-  CreateRoleBodyDto,
-  UpdateRoleBodyDto,
-  UpdateRoleParamsDto,
-} from './dtos/role.dto';
+import { CreateRoleBodyDto, UpdateRoleParamsDto } from './dtos/role.dto';
 import { RoleModel } from './models/role.model';
 import { ApiTags } from '@nestjs/swagger';
 

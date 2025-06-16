@@ -21,7 +21,6 @@ export class AuthDto {
   @IsNumber()
   accountId!: number;
 }
-export class AuthSignUpParamsDto extends PickType(AuthDto, ['accountId']) {}
 
 export class AuthSignUpBodyDto extends PickType(AuthDto, [
   'username',
@@ -29,7 +28,7 @@ export class AuthSignUpBodyDto extends PickType(AuthDto, [
   'roleId',
 ]) {}
 
-export class AuthSignInDto extends PickType(AuthDto, [
+export class AuthSignInBodyDto extends PickType(AuthDto, [
   'username',
   'password',
 ]) {}

@@ -15,10 +15,8 @@ import {
   CreateAccountDetailBodyDto,
   GetAccountDetailByAccountIdParamsDto,
   GetAccountDetailParamsDto,
-  UpdateAccountDetailBodyDto,
   UpdateAccountDetailParamsDto,
 } from './dtos/account-detail.dto';
-import { blob } from 'stream/consumers';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Account / Account Detail')

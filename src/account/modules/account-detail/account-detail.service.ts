@@ -62,20 +62,21 @@ export class AccountDetailService {
 
   async createAccountDetail(
     accountId: number,
-    name: string,
-    dob: string,
-    gender: GenderType,
-    imageUrl: string,
+    name: string | undefined,
+    dob: string | undefined,
+    gender: GenderType | undefined,
+    imageUrl: string | undefined,
   ): Promise<AccountDetailModel> {
     const entity = new AccountDetailEntity();
     entity.accountId = accountId;
-    entity.name = name;
-    entity.dob = dob;
-    entity.gender = gender;
-    entity.imageUrl = imageUrl;
+    entity.name = '';
+    entity.dob = '';
+    entity.gender = GenderType.MALE;
+    entity.imageUrl = '';
     entity.createdAt = new Date();
     entity.createdBy = accountId;
     const newAccountDetail = await this.accountDetailRepository.save(entity);
+
     return await this.getAccountDetail(newAccountDetail.id);
   }
 

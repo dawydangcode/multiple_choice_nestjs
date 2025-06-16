@@ -1,6 +1,6 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthSignUpBodyDto, AuthSignUpParamsDto } from './dto/auth.dto';
+import { AuthSignInBodyDto, AuthSignUpBodyDto } from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Auth')
@@ -18,7 +18,7 @@ export class AuthController {
   }
 
   @Post('auth/signin')
-  async signIn(@Body() signInDto: Record<string, any>) {
-    return this.authService.signIn(signInDto.username, signInDto.password);
+  async signIn(@Body() body: AuthSignInBodyDto) {
+    return this.authService.signIn(body.username, body.password);
   }
 }

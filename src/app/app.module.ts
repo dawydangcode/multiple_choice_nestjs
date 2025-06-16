@@ -8,6 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import database from 'src/config/database';
 import app from 'src/config/app';
 import { AuthModule } from 'src/auth/auth.module';
+import { AccountDetailModel } from 'src/account/modules/account-detail/models/account-detail.model';
+import { AccountDetailModule } from 'src/account/modules/account-detail/account-detail.module';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { AuthModule } from 'src/auth/auth.module';
       },
     }),
     AccountModule,
+    AccountDetailModule,
     RoleModule,
     AuthModule,
   ],

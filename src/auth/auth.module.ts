@@ -6,18 +6,20 @@ import { JwtModule } from '@nestjs/jwt';
 import { AccountModule } from '../account/account.module';
 import { jwtConstants } from '../config/constants';
 import { AuthController } from './auth.controller';
+import { AccountDetailService } from 'src/account/modules/account-detail/account-detail.service';
+import { AccountDetailEntity } from 'src/account/modules/account-detail/entities/account-detail.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([AccountEntity, AccountDetailEntity]),
     forwardRef(() => AccountModule),
-    TypeOrmModule.forFeature([AccountEntity]),
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '60s' },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, AccountDetailService],
   exports: [AuthService],
 })
 export class AuthModule {}
