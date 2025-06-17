@@ -15,6 +15,7 @@ import { AccountDetailService } from 'src/account/modules/account-detail/account
 import { SALT_OR_ROUNDS } from './constants/auth.const';
 import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
 import { RoleModel } from 'src/role/models/role.model';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     private readonly accountService: AccountService,
     private readonly accountDetailService: AccountDetailService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async signUp(
@@ -53,7 +55,7 @@ export class AuthService {
   async signIn(
     username: string,
     password: string,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ access_token: string; refresh_token: string }> {
     const account = await this.accountService.getAccountByUsername(username);
 
     const isMatch = await bcrypt.compare(password, account.password);
@@ -66,9 +68,20 @@ export class AuthService {
       roleId: account.roleId,
     };
 
+    const refresh_secret = this.configService.get<string>('auth.jwt.secret');
+    const refresh_expire = this.configService.get<string>(
+      'auth.refreshToken.signOptions.expiresIn',
+    );
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: refresh_secret,
+      expiresIn: refresh_expire,
+    });
     const accessToken = await this.jwtService.signAsync(payload); // TO DO
+
     return {
       access_token: accessToken,
+      refresh_token: refreshToken,
     };
   }
 }

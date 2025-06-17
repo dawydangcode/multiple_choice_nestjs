@@ -2,8 +2,6 @@ import { Body, Controller, Param, Post, Put } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthSignInBodyDto, AuthSignUpBodyDto } from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Roles } from 'src/role/decorator/roles.decorator';
-import { RoleModule } from 'src/role/role.module';
 import { RoleService } from 'src/role/role.service';
 
 @ApiTags('Auth')
