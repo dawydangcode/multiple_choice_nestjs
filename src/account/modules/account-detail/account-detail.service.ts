@@ -49,14 +49,9 @@ export class AccountDetailService {
         deletedAt: IsNull(),
       },
     });
-
     if (!accountDetail) {
-      throw new HttpException(
-        'Account detail not found :D',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('Account detail not found', HttpStatus.NOT_FOUND);
     }
-
     return accountDetail.toModel();
   }
 
