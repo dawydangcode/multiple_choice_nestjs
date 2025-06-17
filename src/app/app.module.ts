@@ -10,6 +10,7 @@ import app from 'src/config/app';
 import { AuthModule } from 'src/auth/auth.module';
 import { AccountDetailModel } from 'src/account/modules/account-detail/models/account-detail.model';
 import { AccountDetailModule } from 'src/account/modules/account-detail/account-detail.module';
+import { TokenModule } from 'src/auth/modules/token/token.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AccountDetailModule } from 'src/account/modules/account-detail/account-
     AccountDetailModule,
     RoleModule,
     AuthModule,
+    TokenModule,
   ],
 
   controllers: [AppController],

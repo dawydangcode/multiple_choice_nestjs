@@ -18,6 +18,9 @@ export class TokenEntity {
   @Column({ name: 'expired_date' })
   expiresAt!: Date;
 
+  @Column({ name: 'refresh_expires_at' })
+  refreshExpiresAt!: Date;
+
   @Column({ name: 'is_revoked' })
   isRevoked!: boolean;
 
@@ -58,6 +61,7 @@ export class TokenEntity {
       this.accessToken,
       this.refreshToken,
       this.expiresAt,
+      this.refreshExpiresAt,
       this.isRevoked,
       this.userAgent,
       this.ipAddress,

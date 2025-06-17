@@ -4,6 +4,7 @@ export class TokenModel {
   public readonly accessToken: string;
   public readonly refreshToken: string;
   public readonly expiresAt: Date;
+  public readonly refreshExpiresAt: Date;
   public readonly isRevoked: boolean;
   public readonly userAgent: string | undefined;
   public readonly ipAddress: string | undefined;
@@ -22,6 +23,7 @@ export class TokenModel {
     accessToken: string,
     refreshToken: string,
     expiresAt: Date,
+    refreshExpiresAt: Date,
     isRevoked: boolean,
     userAgent: string | undefined,
     ipAddress: string | undefined,
@@ -39,6 +41,7 @@ export class TokenModel {
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.expiresAt = expiresAt;
+    this.refreshExpiresAt = refreshExpiresAt;
     this.isRevoked = isRevoked;
     this.userAgent = userAgent;
     this.ipAddress = ipAddress;
