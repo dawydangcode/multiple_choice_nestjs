@@ -77,7 +77,9 @@ export class AuthService {
     const accessExpire = this.configService.get<string>(
       'auth.jwt.signOptions.expiresIn',
     );
-    const refreshSecret = this.configService.get<string>('auth.jwt.secret');
+    const refreshSecret = this.configService.get<string>(
+      'auth.refreshToken.secret',
+    );
     const refreshExpire = this.configService.get<string>(
       'auth.refreshToken.signOptions.expiresIn',
     );
@@ -112,6 +114,76 @@ export class AuthService {
       sessionId,
     );
 
-    return tokenEntity.toModel();
+    return tokenEntity;
+  }
+
+  async refreshToken(refreshToken: string): Promise<TokenModel> {
+    const payload = this.jwtService.verify(refreshToken, {
+      secret: this.configService.get<string>('auth.refreshToken.secret'),
+    }) as {
+      accountId: number;
+      roleId: number;
+    };
+
+    const account = await this.accountService.getAccount(payload.accountId);
+
+    const existingToken = await this.tokenService.getLatestTokenByAccountId(
+      account.id,
+      false,
+    );
+    if (!existingToken || existingToken.refreshToken !== refreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const newAccessToken = this.jwtService.sign(
+      { accountId: account.id, roleId: account.roleId },
+      {
+        secret: this.configService.get<string>('auth.jwt.secret'),
+        expiresIn: this.configService.get<string>(
+          'auth.jwt.signOptions.expiresIn',
+        ),
+      },
+    );
+
+    const newRefreshToken = this.jwtService.sign(
+      { accountId: account.id, roleId: account.roleId },
+      {
+        secret: this.configService.get<string>('auth.refreshToken.secret'),
+        expiresIn: this.configService.get<string>(
+          'auth.refreshToken.signOptions.expiresIn',
+        ),
+      },
+    );
+
+    const expiresAt = add(
+      new Date(),
+      ExpireTimeUtil.parseExpireTimeForDateFns(
+        this.configService.get<string>('auth.jwt.signOptions.expiresIn') ??
+          throwError(),
+      ),
+    );
+
+    const refreshExpiresAt = add(
+      new Date(),
+      ExpireTimeUtil.parseExpireTimeForDateFns(
+        this.configService.get<string>(
+          'auth.refreshToken.signOptions.expiresIn',
+        ) ?? '7d',
+      ),
+    );
+
+    const updatedTokenEntity = await this.tokenService.updateToken(
+      existingToken.id,
+      account.id,
+      newAccessToken,
+      expiresAt,
+      refreshExpiresAt,
+      newRefreshToken,
+      existingToken.userAgent,
+      existingToken.ipAddress,
+      existingToken.sessionId,
+    );
+
+    return updatedTokenEntity.toModel();
   }
 }
