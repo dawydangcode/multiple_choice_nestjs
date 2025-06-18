@@ -6,9 +6,6 @@ export class SessionEntity {
   @PrimaryGeneratedColumn({ name: 'id' })
   id!: number;
 
-  @Column({ name: 'session_id' })
-  sessionId!: number;
-
   @Column({ name: 'account_id' })
   accountId!: number;
 
@@ -42,7 +39,6 @@ export class SessionEntity {
   toModel(): SessionModel {
     return new SessionModel(
       this.id,
-      this.sessionId,
       this.accountId,
       this.isRevoked,
       this.userAgent,

@@ -1,6 +1,5 @@
 export class SessionModel {
   public readonly id: number;
-  public readonly sessionId: number;
   public readonly accountId: number;
   public readonly isRevoked: boolean;
   public readonly userAgent: string | undefined;
@@ -13,7 +12,6 @@ export class SessionModel {
 
   constructor(
     id: number,
-    sessionId: number,
     accountId: number,
     isRevoked: boolean,
     userAgent: string | undefined,
@@ -26,7 +24,6 @@ export class SessionModel {
     deletedBy: number | undefined,
   ) {
     this.id = id;
-    this.sessionId = sessionId;
     this.accountId = accountId;
     this.userAgent = userAgent;
     this.ipAddress = ipAddress;

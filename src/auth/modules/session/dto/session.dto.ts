@@ -5,10 +5,10 @@ import { IsOptional, IsString } from 'class-validator';
 export class SessionDto {
   @ApiProperty()
   @Type(() => Number)
-  id!: number;
-
   accountId!: number;
 
+  @ApiProperty()
+  @Type(() => Number)
   sessionId!: number;
 
   @ApiProperty()
@@ -34,3 +34,7 @@ export class CreateSessionBodyDto extends PickType(SessionDto, [
   'userAgent',
   'isRevoke',
 ]) {}
+
+export class GetSessionParamsDto extends PickType(SessionDto, ['sessionId']) {}
+
+export class Request extends PickType(SessionDto,[]){}
