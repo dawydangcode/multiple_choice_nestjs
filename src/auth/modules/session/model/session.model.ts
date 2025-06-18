@@ -2,9 +2,9 @@ export class SessionModel {
   public readonly id: number;
   public readonly sessionId: number;
   public readonly accountId: number;
-  public readonly userAgent: string;
-  public readonly ipAddress: string;
-  public readonly isRevoke: boolean;
+  public readonly isRevoked: boolean;
+  public readonly userAgent: string | undefined;
+  public readonly ipAddress: string | undefined;
   public readonly createdAt: Date | undefined;
   public readonly createdBy: number | undefined;
   public readonly updatedAt: Date | undefined;
@@ -15,9 +15,9 @@ export class SessionModel {
     id: number,
     sessionId: number,
     accountId: number,
-    userAgent: string,
-    ipAddress: string,
-    isRevoke: boolean,
+    isRevoked: boolean,
+    userAgent: string | undefined,
+    ipAddress: string | undefined,
     createdAt: Date | undefined,
     createdBy: number | undefined,
     updatedAt: Date | undefined,
@@ -30,7 +30,7 @@ export class SessionModel {
     this.accountId = accountId;
     this.userAgent = userAgent;
     this.ipAddress = ipAddress;
-    this.isRevoke = isRevoke;
+    this.isRevoked = isRevoked;
     this.createdAt = createdAt;
     this.createdBy = createdBy;
     this.updatedAt = updatedAt;

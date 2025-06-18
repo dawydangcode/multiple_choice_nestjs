@@ -13,46 +13,46 @@ export class SessionEntity {
   accountId!: number;
 
   @Column({ name: 'user_agent' })
-  userAgent!: string;
+  userAgent?: string;
 
   @Column({ name: 'ip_address' })
-  ipAddress!: string;
+  ipAddress?: string;
 
   @Column({ name: 'is_revoke' })
-  isRevoke!: boolean;
+  isRevoked!: boolean;
 
   @Column({ name: 'created_at' })
-  createdAt!: Date;
+  createdAt?: Date;
 
   @Column({ name: 'created_by' })
-  createdBy!: number;
+  createdBy?: number;
 
   @Column({ name: 'updated_at' })
-  updatedAt!: Date;
+  updatedAt?: Date;
 
   @Column({ name: 'updated_by' })
-  updatedBy!: number;
+  updatedBy?: number;
 
   @Column({ name: 'deleted_at' })
-  deletedAt!: Date;
+  deletedAt?: Date;
 
   @Column({ name: 'deleted_by' })
-  deletedBy!: number;
+  deletedBy?: number;
 
   toModel(): SessionModel {
     return new SessionModel(
       this.id,
       this.sessionId,
       this.accountId,
+      this.isRevoked,
       this.userAgent,
       this.ipAddress,
-      this.isRevoke,
       this.createdAt,
       this.createdBy,
       this.updatedAt,
       this.updatedBy,
       this.deletedAt,
-      this.deletedBy
+      this.deletedBy,
     );
   }
 }
