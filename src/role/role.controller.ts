@@ -17,7 +17,7 @@ import { ApiTags } from '@nestjs/swagger';
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
-  @Get('list')
+  @Get('role/list')
   async getAllRole(): Promise<RoleModel[]> {
     return await this.roleService.getRoles();
   }

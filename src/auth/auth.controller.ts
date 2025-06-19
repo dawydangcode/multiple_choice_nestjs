@@ -12,15 +12,16 @@ export class AuthController {
     private readonly roleService: RoleService,
   ) {}
 
-  @Post('auth/signup')
+  @Post('auth/sign-up')
   async signUp(@Body() body: AuthSignUpBodyDto) {
     const role = await this.roleService.getRole(body.roleId);
     return await this.authService.signUp(body.username, body.password, role);
   }
 
-  @Post('auth/signin')
+  @Post('auth/sign-in')
   async signIn(@Body() body: AuthSignInBodyDto) {
-    return this.authService.signIn(body.username, body.password);
+    const result = await this.authService.signIn(body.username, body.password);
+    return result;
   }
 
   @Post('auth/refresh-token')

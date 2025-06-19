@@ -1,7 +1,7 @@
 import { Body, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SessionEntity } from './entity/session.entity';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { CreateSessionBodyDto } from './dto/session.dto';
 import { SessionModel } from './model/session.model';
 
@@ -28,19 +28,28 @@ export class SessionService {
     return newSession.toModel();
   }
 
-  async getSessionById(id: number): Promise<SessionModel> {
+  async getSessionById(sessionId: number): Promise<SessionModel> {
     const session = await this.sessionRepository.findOne({
-      where: { id, isRevoked: false },
+      where: {
+        id: sessionId,
+        isRevoked: false,
+        deletedAt: IsNull(),
+      },
     });
+
     if (!session) {
       throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
     }
+
     return session.toModel();
   }
 
-  async revokeSession(id: number): Promise<void> {
+  async revokeSession(sessionId: number): Promise<void> {
     const session = await this.sessionRepository.findOne({
-      where: { id, isRevoked: false },
+      where: {
+        id: sessionId,
+        isRevoked: false,
+      },
     });
     if (!session) {
       throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
