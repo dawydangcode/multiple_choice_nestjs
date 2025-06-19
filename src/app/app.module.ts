@@ -11,6 +11,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { AccountDetailModel } from 'src/account/modules/account-detail/models/account-detail.model';
 import { AccountDetailModule } from 'src/account/modules/account-detail/account-detail.module';
 import { TokenModule } from 'src/auth/modules/token/token.module';
+import { SessionModule } from 'src/auth/modules/session/session.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { TokenModule } from 'src/auth/modules/token/token.module';
     RoleModule,
     AuthModule,
     TokenModule,
+    SessionModule,
   ],
 
   controllers: [AppController],

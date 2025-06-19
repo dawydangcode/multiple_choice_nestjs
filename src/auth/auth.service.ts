@@ -17,6 +17,8 @@ import { TokenService } from './modules/token/token.service';
 import { add } from 'date-fns';
 import { ExpireTimeUtil, throwError } from 'src/utils/function';
 import { TokenEntity } from './modules/token/entity/token.entity';
+import { SessionService } from './modules/session/session.service';
+import { SessionModel } from './modules/session/model/session.model';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +26,7 @@ export class AuthService {
     private readonly accountService: AccountService,
     private readonly accountDetailService: AccountDetailService,
     private readonly tokenService: TokenService,
+    private readonly sessionService: SessionService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -54,15 +57,8 @@ export class AuthService {
     return await this.accountService.getAccount(newAccount.id);
   }
 
-  async signIn(
-    username: string,
-    password: string,
-    userAgent?: string,
-    ipAddress?: string,
-    sessionId?: string,
-  ): Promise<TokenModel> {
+  async signIn(username: string, password: string): Promise<SessionModel> {
     const account = await this.accountService.getAccountByUsername(username);
-
     const isMatch = await bcrypt.compare(password, account.password);
     if (!isMatch) {
       throw new UnauthorizedException('Invalid credentials');
@@ -73,15 +69,17 @@ export class AuthService {
       roleId: account.roleId,
     };
 
-    const accessSecret = this.configService.get<string>('auth.jwt.secret');
+    const accessSecret = this.configService.get<string>(
+      'auth.jwt.accessToken.secret',
+    );
     const accessExpire = this.configService.get<string>(
-      'auth.jwt.signOptions.expiresIn',
+      'auth.jwt.accessToken.signOptions.expiresIn',
     );
     const refreshSecret = this.configService.get<string>(
-      'auth.refreshToken.secret',
+      'auth.jwt.refreshToken.secret',
     );
     const refreshExpire = this.configService.get<string>(
-      'auth.refreshToken.signOptions.expiresIn',
+      'auth.jwt.refreshToken.signOptions.expiresIn',
     );
 
     const accessToken = this.jwtService.sign(payload, {
@@ -93,28 +91,18 @@ export class AuthService {
       expiresIn: refreshExpire,
     });
 
-    const expiresAt = add(
-      new Date(),
-      ExpireTimeUtil.parseExpireTimeForDateFns(accessExpire ?? '1h'),
-    );
+    const session = await this.sessionService.createSession({
+      accountId: account.id,
+      userAgent: '',
+      ipAddress: '',
+      isRevoke: false,
+    });
 
-    const refreshExpiresAt = add(
-      new Date(),
-      ExpireTimeUtil.parseExpireTimeForDateFns(refreshExpire ?? '7d'),
-    );
-
-    const tokenEntity = await this.tokenService.createToken(
-      account.id,
-      accessToken,
-      expiresAt,
-      refreshExpiresAt,
-      refreshToken,
-      userAgent,
-      ipAddress,
-      sessionId,
-    );
-
-    return tokenEntity;
+    return {
+      ...session,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    } as SessionModel & { accessToken: string; refreshToken: string };
   }
 
   async refreshToken(refreshToken: string): Promise<TokenModel> {

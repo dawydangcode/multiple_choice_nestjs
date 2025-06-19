@@ -4,12 +4,12 @@ import { ApiTags } from '@nestjs/swagger';
 import { GetSessionParamsDto } from './dto/session.dto';
 import { SessionModel } from './model/session.model';
 
-@ApiTags('session')
+@ApiTags('Session')
 @Controller('api/v1')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
-  @Get('session/:id/get')
+  @Get('session/:sessionId/get')
   async getSession(
     @Param() params: GetSessionParamsDto,
   ): Promise<SessionModel> {
@@ -23,8 +23,8 @@ export class SessionController {
     return this.sessionService.getSessionById(req.sessionId);
   }
 
-  @Delete('session/:id/delete')
-  async revokeSession(@Param('id') id: number): Promise<void> {
-    await this.sessionService.revokeSession(id);
-  }
+  // @Delete('session/:sessopnId/delete')
+  // async revokeSession(@Param('id') id: number): Promise<void> {
+  //   await this.sessionService.revokeSession(id);
+  // }
 }

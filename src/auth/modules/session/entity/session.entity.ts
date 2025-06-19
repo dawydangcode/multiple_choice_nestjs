@@ -9,6 +9,12 @@ export class SessionEntity {
   @Column({ name: 'account_id' })
   accountId!: number;
 
+  @Column({ name: 'access_token' })
+  accessToken!: string;
+
+  @Column({ name: 'refresh_token' })
+  refreshToken!: string;
+
   @Column({ name: 'user_agent' })
   userAgent?: string;
 
@@ -40,6 +46,8 @@ export class SessionEntity {
     return new SessionModel(
       this.id,
       this.accountId,
+      this.accessToken,
+      this.refreshToken,
       this.isRevoked,
       this.userAgent,
       this.ipAddress,

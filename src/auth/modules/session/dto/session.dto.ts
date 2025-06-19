@@ -1,6 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class SessionDto {
   @ApiProperty()
@@ -13,6 +13,14 @@ export class SessionDto {
 
   @ApiProperty()
   @IsString()
+  accessToken!: string;
+
+  @ApiProperty()
+  @IsString()
+  refreshToken!: string;
+
+  @ApiProperty()
+  @IsString()
   @IsOptional()
   userAgent?: string;
 
@@ -22,14 +30,13 @@ export class SessionDto {
   ipAddress?: string;
 
   @ApiProperty()
-  @IsString()
+  @IsBoolean()
   @IsOptional()
-  isRevoke?: string;
+  isRevoke?: boolean;
 }
 
 export class CreateSessionBodyDto extends PickType(SessionDto, [
   'accountId',
-  'sessionId',
   'ipAddress',
   'userAgent',
   'isRevoke',
@@ -37,4 +44,4 @@ export class CreateSessionBodyDto extends PickType(SessionDto, [
 
 export class GetSessionParamsDto extends PickType(SessionDto, ['sessionId']) {}
 
-export class Request extends PickType(SessionDto,[]){}
+export class Request extends PickType(SessionDto, []) {}
