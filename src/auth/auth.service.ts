@@ -19,6 +19,7 @@ import { ExpireTimeUtil, throwError } from 'src/utils/function';
 import { TokenEntity } from './modules/token/entity/token.entity';
 import { SessionService } from './modules/session/session.service';
 import { SessionModel } from './modules/session/model/session.model';
+import { SignInResposeDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -57,7 +58,7 @@ export class AuthService {
     return await this.accountService.getAccount(newAccount.id);
   }
 
-  async signIn(username: string, password: string): Promise<SessionModel> {
+  async signIn(username: string, password: string): Promise<SignInResposeDto> {
     const account = await this.accountService.getAccountByUsername(username);
     const isMatch = await bcrypt.compare(password, account.password);
     if (!isMatch) {
@@ -99,10 +100,10 @@ export class AuthService {
     });
 
     return {
-      ...session,
+      accountId: session.accountId,
       accessToken: accessToken,
       refreshToken: refreshToken,
-    } as SessionModel & { accessToken: string; refreshToken: string };
+    };
   }
 
   async refreshToken(refreshToken: string): Promise<TokenModel> {

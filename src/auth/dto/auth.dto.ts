@@ -25,7 +25,13 @@ export class AuthDto {
   @IsString()
   sessionId?: string;
 
-  
+  @ApiProperty()
+  @IsString()
+  accessToken?: string;
+
+  @ApiProperty()
+  @IsString()
+  refreshToken?: string;
 }
 
 export class AuthSignUpBodyDto extends PickType(AuthDto, [
@@ -39,4 +45,10 @@ export class AuthSignInBodyDto extends PickType(AuthDto, [
   'password',
 ]) {}
 
-export class RefreshTokenBodyDto extends PickType(AuthDto,[]) {}
+export class RefreshTokenBodyDto extends PickType(AuthDto, []) {}
+
+export class SignInResposeDto extends PickType(AuthDto, [
+  'accountId',
+  'accessToken',
+  'refreshToken',
+]) {}
