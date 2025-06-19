@@ -6,6 +6,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { throwError } from './utils/function';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,7 @@ async function bootstrap() {
   );
 
   const port = app.get(ConfigService).get<number>('app.port') ?? throwError();
+  app.use(cookieParser());
   await app.listen(port);
 }
 
