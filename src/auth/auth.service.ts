@@ -106,7 +106,7 @@ export class AuthService {
     };
   }
 
-  async refreshToken(refreshToken: string): Promise<TokenModel> {
+  async refreshAccessToken(refreshToken: string): Promise<TokenModel> {
     const payload = this.jwtService.verify(refreshToken, {
       secret: this.configService.get<string>('auth.refreshToken.secret'),
     }) as {
@@ -120,12 +120,15 @@ export class AuthService {
       account.id,
       false,
     );
-    if (!existingToken || existingToken.refreshToken !== refreshToken) {
+    if (existingToken.refreshToken !== refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
     const newAccessToken = this.jwtService.sign(
-      { accountId: account.id, roleId: account.roleId },
+      {
+        accountId: account.id,
+        roleId: account.roleId,
+      },
       {
         secret: this.configService.get<string>('auth.jwt.secret'),
         expiresIn: this.configService.get<string>(

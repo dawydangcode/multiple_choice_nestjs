@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenEntity } from './entity/token.entity';
-import { Repository, ReturnDocument } from 'typeorm';
+import { IsNull, Repository, ReturnDocument } from 'typeorm';
 import { AccountService } from 'src/account/account.service';
 import { TokenModel } from './model/token.model';
 
@@ -54,15 +54,23 @@ export class TokenService {
   async getLatestTokenByAccountId(
     accountId: number,
     isRevoked: boolean,
-  ): Promise<TokenEntity> {
+  ): Promise<TokenModel> {
     const token = await this.tokenRepository.findOne({
-      where: { accountId, isRevoked },
-      order: { createdAt: 'DESC' },
+      where: {
+        accountId: accountId,
+        isRevoked: isRevoked,
+        deletedAt: IsNull(),
+      },
+      order: {
+        createdAt: 'DESC',
+      },
     });
+
     if (!token) {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
-    return token;
+
+    return token.toModel();
   }
 
   async updateToken(
