@@ -1,34 +1,62 @@
-import { Body, Controller, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Post,
+  Put,
+  Req,
+  Request,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthSignInBodyDto, AuthSignUpBodyDto } from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleService } from 'src/role/role.service';
+import { LocalAuthGuard } from 'src/middlewares/guards/local-auth.guard';
+import { AccountModel } from 'src/account/models/account.model';
 
 @ApiTags('Auth')
-@Controller('api/v1/')
+@Controller('api/v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly roleService: RoleService,
   ) {}
 
-  @Post('auth/sign-up')
-  async signUp(@Body() body: AuthSignUpBodyDto) {
-    const role = await this.roleService.getRole(body.roleId);
-    return await this.authService.signUp(body.username, body.password, role);
+  @Post('login')
+  async login(@Request() req: any, @Body() body: AuthSignInBodyDto) {
+    if (!body.username) {
+      throw new UnauthorizedException('Authentication failed');
+    }
+    const userAgent = req.get('User-Agent') || '';
+    const ipAddress = req.ip || req.get('X-Forwarded-For') || '';
+    const account: AccountModel = await this.authService.validateUser(
+      body.username,
+      body.password,
+    );
+    if (!account) {
+      throw new UnauthorizedException('Invalid username or password');
+    }
+    return this.authService.login(account, userAgent, ipAddress);
   }
 
-  @Post('auth/sign-in')
-  async signIn(@Body() body: AuthSignInBodyDto) {
-    const result = await this.authService.signIn(body.username, body.password);
-    return result;
-  }
+  // @Post('auth/register')
+  // async signUp(@Body() body: AuthSignUpBodyDto) {
+  //   const role = await this.roleService.getRole(body.roleId);
+  //   return await this.authService.signUp(body.username, body.password, role);
+  // }
 
-  @Post('auth/refresh-token')
-  async refreshToken(@Body() body: { refreshToken: string }) {
-    return this.authService.refreshAccessToken(body.refreshToken);
-  }
+  // @Post('auth/login')
+  // async signIn(@Body() body: AuthSignInBodyDto) {
+  //   const result = await this.authService.signIn(body.username, body.password);
+  //   return result;
+  // }
 
+  // @Post('auth/refresh-token')
+  // async refreshToken(@Body() body: { refreshToken: string }) {
+  //   return this.authService.refreshAccessToken(body.refreshToken);
+  // }
   @Put('auth/reset-password')
   async resetPassword() {
     return;

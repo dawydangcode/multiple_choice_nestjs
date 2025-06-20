@@ -3,7 +3,7 @@ export class SessionModel {
   public readonly accountId: number;
   public readonly accessToken: string;
   public readonly refreshToken: string;
-  public readonly isRevoked: boolean;
+  public readonly isActive: boolean;
   public readonly userAgent: string | undefined;
   public readonly ipAddress: string | undefined;
   public readonly createdAt: Date | undefined;
@@ -18,7 +18,7 @@ export class SessionModel {
     accountId: number,
     accessToken: string,
     refreshToken: string,
-    isRevoked: boolean,
+    isActive: boolean,
     userAgent: string | undefined,
     ipAddress: string | undefined,
     createdAt: Date | undefined,
@@ -32,7 +32,7 @@ export class SessionModel {
     this.accountId = accountId;
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
-    this.isRevoked = isRevoked;
+    this.isActive = isActive;
     this.userAgent = userAgent;
     this.ipAddress = ipAddress;
     this.createdAt = createdAt;

@@ -21,8 +21,8 @@ export class SessionEntity {
   @Column({ name: 'ip_address' })
   ipAddress?: string;
 
-  @Column({ name: 'is_revoke' })
-  isRevoked!: boolean;
+  @Column({ name: 'is_active' })
+  isActive!: boolean;
 
   @Column({ name: 'created_at' })
   createdAt?: Date;
@@ -48,7 +48,7 @@ export class SessionEntity {
       this.accountId,
       this.accessToken,
       this.refreshToken,
-      this.isRevoked,
+      this.isActive,
       this.userAgent,
       this.ipAddress,
       this.createdAt,

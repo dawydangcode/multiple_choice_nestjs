@@ -38,12 +38,7 @@ export class AccountService {
   }
 
   async getAccountByUsername(username: string): Promise<AccountModel> {
-    const account = await this.accountRepository.findOne({
-      where: {
-        username: username,
-        deletedAt: IsNull(),
-      },
-    });
+    const account = await this.checkExistUsername(username);
 
     if (!account) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND); //TO DO
@@ -51,9 +46,12 @@ export class AccountService {
 
     return account.toModel();
   }
-
+  
   async checkExistUsername(username: string) {
-    return true; // TO DO
+    const existingUsername = this.accountRepository.findOne({
+      where: { username: username, deletedAt: IsNull() },
+    });
+    return existingUsername;
   }
 
   async createAccount(

@@ -12,27 +12,84 @@ import { AccountDetailService } from 'src/account/modules/account-detail/account
 import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
 import { RoleModel } from 'src/role/models/role.model';
 import { ConfigService } from '@nestjs/config';
-import { TokenModel } from './modules/token/model/token.model';
-import { TokenService } from './modules/token/token.service';
-import { add } from 'date-fns';
-import { ExpireTimeUtil, throwError } from 'src/utils/function';
-import { TokenEntity } from './modules/token/entity/token.entity';
 import { SessionService } from './modules/session/session.service';
-import { SessionModel } from './modules/session/model/session.model';
-import { SignInResposeDto } from './dto/auth.dto';
-
+import ms, { StringValue } from 'ms';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly accountService: AccountService,
     private readonly accountDetailService: AccountDetailService,
-    private readonly tokenService: TokenService,
     private readonly sessionService: SessionService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
-  async signUp(
+  async validateUser(
+    username: string,
+    password: string,
+  ): Promise<AccountModel> {
+    const account = await this.accountService.getAccountByUsername(username);
+    const isMatch = await bcrypt.compare(password, account.password);
+
+    if (!isMatch) {
+      throw new UnauthorizedException('Username or password is invalid');
+    }
+
+    return account;
+  }
+
+  async login(account: AccountModel, userAgent: string, ipAddress: string) {
+    const payload: {
+      username: string;
+      sub: number;
+      roleId: number;
+      sessionId: number | null;
+    } = {
+      username: account.username,
+      sub: account.id,
+      roleId: account.roleId,
+      sessionId: null,
+    };
+
+    const session = await this.sessionService.createSession(
+      account.id,
+      userAgent,
+      ipAddress,
+    );
+
+    payload.sessionId = session.id;
+
+    const accessSecret = this.configService.get<string>(
+      'auth.jwt.accessToken.secret',
+    );
+    const accessExpire = this.configService.get<string>(
+      'auth.jwt.accessToken.signOptions.expiresIn',
+    );
+    const refreshSecret = this.configService.get<string>(
+      'auth.jwt.refreshToken.secret',
+    );
+    const refreshExpire = this.configService.get<string>(
+      'auth.jwt.refreshToken.signOptions.expiresIn',
+    );
+    
+    const accessToken = this.jwtService.sign(payload, {
+      secret: accessSecret,
+      expiresIn: accessExpire,
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: refreshSecret,
+      expiresIn: refreshExpire,
+    });
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      session_id: session.id,
+    };
+  }
+
+  async register(
     username: string,
     password: string,
     role: RoleModel,
@@ -58,124 +115,116 @@ export class AuthService {
     return await this.accountService.getAccount(newAccount.id);
   }
 
-  async signIn(username: string, password: string): Promise<SignInResposeDto> {
-    const account = await this.accountService.getAccountByUsername(username);
-    const isMatch = await bcrypt.compare(password, account.password);
-    if (!isMatch) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+  // async signIn(username: string, password: string): Promise<SessionModel> {
+  //   const account = await this.accountService.getAccountByUsername(username);
+  //   const isMatch = await bcrypt.compare(password, account.password);
+  //   if (!isMatch) {
+  //     throw new UnauthorizedException('Invalid credentials');
+  //   }
 
-    const payload = {
-      accountId: account.id,
-      roleId: account.roleId,
-    };
+  //   const payload = {
+  //     accountId: account.id,
+  //     roleId: account.roleId,
+  //     userAgent: '',
+  //     ipAddress: '',
+  //     isRevoke: false,
+  //   };
 
-    const accessSecret = this.configService.get<string>(
-      'auth.jwt.accessToken.secret',
-    );
-    const accessExpire = this.configService.get<string>(
-      'auth.jwt.accessToken.signOptions.expiresIn',
-    );
-    const refreshSecret = this.configService.get<string>(
-      'auth.jwt.refreshToken.secret',
-    );
-    const refreshExpire = this.configService.get<string>(
-      'auth.jwt.refreshToken.signOptions.expiresIn',
-    );
+  //   const accessSecret = this.configService.get<string>(
+  //     'auth.jwt.accessToken.secret',
+  //   );
+  //   const accessExpire = this.configService.get<string>(
+  //     'auth.jwt.accessToken.signOptions.expiresIn',
+  //   );
+  //   const refreshSecret = this.configService.get<string>(
+  //     'auth.jwt.refreshToken.secret',
+  //   );
+  //   const refreshExpire = this.configService.get<string>(
+  //     'auth.jwt.refreshToken.signOptions.expiresIn',
+  //   ); //TO DO
 
-    const accessToken = this.jwtService.sign(payload, {
-      secret: accessSecret,
-      expiresIn: accessExpire,
-    });
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: refreshSecret,
-      expiresIn: refreshExpire,
-    });
+  //   const accessToken = this.jwtService.sign(payload, {
+  //     secret: accessSecret,
+  //     expiresIn: accessExpire,
+  //   });
+  //   const refreshToken = this.jwtService.sign(payload, {
+  //     secret: refreshSecret,
+  //     expiresIn: refreshExpire,
+  //   });
 
-    const session = await this.sessionService.createSession({
-      accountId: account.id,
-      userAgent: '',
-      ipAddress: '',
-      isRevoke: false,
-    });
+  //   return;
+  // }
 
-    return {
-      accountId: session.accountId,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    };
-  }
+  // async refreshAccessToken(refreshToken: string): Promise<TokenModel> {
+  //   const payload = this.jwtService.verify(refreshToken, {
+  //     secret: this.configService.get<string>('auth.refreshToken.secret'),
+  //   }) as {
+  //     accountId: number;
+  //     roleId: number;
+  //   };
 
-  async refreshAccessToken(refreshToken: string): Promise<TokenModel> {
-    const payload = this.jwtService.verify(refreshToken, {
-      secret: this.configService.get<string>('auth.refreshToken.secret'),
-    }) as {
-      accountId: number;
-      roleId: number;
-    };
+  //   const account = await this.accountService.getAccount(payload.accountId);
 
-    const account = await this.accountService.getAccount(payload.accountId);
+  //   const existingToken = await this.tokenService.getLatestTokenByAccountId(
+  //     account.id,
+  //     false,
+  //   );
+  //   if (existingToken.refreshToken !== refreshToken) {
+  //     throw new UnauthorizedException('Invalid refresh token');
+  //   }
 
-    const existingToken = await this.tokenService.getLatestTokenByAccountId(
-      account.id,
-      false,
-    );
-    if (existingToken.refreshToken !== refreshToken) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+  //   const newAccessToken = this.jwtService.sign(
+  //     {
+  //       accountId: account.id,
+  //       roleId: account.roleId,
+  //     },
+  //     {
+  //       secret: this.configService.get<string>('auth.jwt.secret'),
+  //       expiresIn: this.configService.get<string>(
+  //         'auth.jwt.signOptions.expiresIn',
+  //       ),
+  //     },
+  //   );
 
-    const newAccessToken = this.jwtService.sign(
-      {
-        accountId: account.id,
-        roleId: account.roleId,
-      },
-      {
-        secret: this.configService.get<string>('auth.jwt.secret'),
-        expiresIn: this.configService.get<string>(
-          'auth.jwt.signOptions.expiresIn',
-        ),
-      },
-    );
+  //   const newRefreshToken = this.jwtService.sign(
+  //     { accountId: account.id, roleId: account.roleId },
+  //     {
+  //       secret: this.configService.get<string>('auth.refreshToken.secret'),
+  //       expiresIn: this.configService.get<string>(
+  //         'auth.refreshToken.signOptions.expiresIn',
+  //       ),
+  //     },
+  //   );
 
-    const newRefreshToken = this.jwtService.sign(
-      { accountId: account.id, roleId: account.roleId },
-      {
-        secret: this.configService.get<string>('auth.refreshToken.secret'),
-        expiresIn: this.configService.get<string>(
-          'auth.refreshToken.signOptions.expiresIn',
-        ),
-      },
-    );
+  //   const expiresAt = add(
+  //     new Date(),
+  //     ExpireTimeUtil.parseExpireTimeForDateFns(
+  //       this.configService.get<string>('auth.jwt.signOptions.expiresIn') ??
+  //         throwError(),
+  //     ),
+  //   );
 
-    const expiresAt = add(
-      new Date(),
-      ExpireTimeUtil.parseExpireTimeForDateFns(
-        this.configService.get<string>('auth.jwt.signOptions.expiresIn') ??
-          throwError(),
-      ),
-    );
+  //   const refreshExpiresAt = add(
+  //     new Date(),
+  //     ExpireTimeUtil.parseExpireTimeForDateFns(
+  //       this.configService.get<string>(
+  //         'auth.refreshToken.signOptions.expiresIn',
+  //       ) ?? '7d',
+  //     ),
+  //   );
 
-    const refreshExpiresAt = add(
-      new Date(),
-      ExpireTimeUtil.parseExpireTimeForDateFns(
-        this.configService.get<string>(
-          'auth.refreshToken.signOptions.expiresIn',
-        ) ?? '7d',
-      ),
-    );
+  //   const updatedTokenEntity = await this.tokenService.updateToken(
+  //     existingToken.id,
+  //     account.id,
+  //     newAccessToken,
+  //     expiresAt,
+  //     refreshExpiresAt,
+  //     newRefreshToken,
+  //     existingToken.userAgent,
+  //     existingToken.ipAddress,
+  //     existingToken.sessionId,
+  //   );
 
-    const updatedTokenEntity = await this.tokenService.updateToken(
-      existingToken.id,
-      account.id,
-      newAccessToken,
-      expiresAt,
-      refreshExpiresAt,
-      newRefreshToken,
-      existingToken.userAgent,
-      existingToken.ipAddress,
-      existingToken.sessionId,
-    );
-
-    return updatedTokenEntity.toModel();
-  }
+  //   return updatedTokenEntity.toModel();
+  // }
 }

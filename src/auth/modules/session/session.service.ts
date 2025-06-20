@@ -2,7 +2,6 @@ import { Body, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SessionEntity } from './entity/session.entity';
 import { IsNull, Repository } from 'typeorm';
-import { CreateSessionBodyDto } from './dto/session.dto';
 import { SessionModel } from './model/session.model';
 
 @Injectable()
@@ -13,16 +12,18 @@ export class SessionService {
   ) {}
 
   async createSession(
-    @Body() body: CreateSessionBodyDto, // To Do
+    accountId: number,
+    userAgent: string,
+    ipAddress: string,
   ): Promise<SessionModel> {
     const entity = new SessionEntity();
 
-    entity.accountId = body.accountId;
-    entity.userAgent = body.userAgent;
-    entity.ipAddress = body.ipAddress;
+    entity.accountId = accountId;
+    entity.userAgent = userAgent;
+    entity.ipAddress = ipAddress;
     entity.createdAt = new Date();
-    entity.createdBy = body.accountId;
-    entity.isRevoked = false;
+    entity.createdBy = accountId;
+    entity.isActive = false;
 
     const newSession = await this.sessionRepository.save(entity);
     return newSession.toModel();
@@ -32,7 +33,7 @@ export class SessionService {
     const session = await this.sessionRepository.findOne({
       where: {
         id: sessionId,
-        isRevoked: false,
+        isActive: false,
         deletedAt: IsNull(),
       },
     });
@@ -48,13 +49,13 @@ export class SessionService {
     const session = await this.sessionRepository.findOne({
       where: {
         id: sessionId,
-        isRevoked: false,
+        isActive: false,
       },
     });
     if (!session) {
       throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
     }
-    session.isRevoked = true;
+    session.isActive = true;
     await this.sessionRepository.save(session);
   }
 }

@@ -46,9 +46,3 @@ export class AuthSignInBodyDto extends PickType(AuthDto, [
 ]) {}
 
 export class RefreshTokenBodyDto extends PickType(AuthDto, []) {}
-
-export class SignInResposeDto extends PickType(AuthDto, [
-  'accountId',
-  'accessToken',
-  'refreshToken',
-]) {}
