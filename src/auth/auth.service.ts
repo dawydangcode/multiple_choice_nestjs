@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AccountService } from 'src/account/account.service';
 import * as bcrypt from 'bcrypt';
@@ -14,6 +9,7 @@ import { RoleModel } from 'src/role/models/role.model';
 import { ConfigService } from '@nestjs/config';
 import { SessionService } from './modules/session/session.service';
 import ms, { StringValue } from 'ms';
+import { SessionModel } from './modules/session/model/session.model';
 @Injectable()
 export class AuthService {
   constructor(
@@ -71,7 +67,7 @@ export class AuthService {
     const refreshExpire = this.configService.get<string>(
       'auth.jwt.refreshToken.signOptions.expiresIn',
     );
-    
+
     const accessToken = this.jwtService.sign(payload, {
       secret: accessSecret,
       expiresIn: accessExpire,
@@ -83,10 +79,15 @@ export class AuthService {
     });
 
     return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      session_id: session.id,
+      accountId: account.id,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      sessionId: session.id,
     };
+  }
+
+  async logout(sessionId: number): Promise<SessionModel> {
+    return await this.sessionService.revokeSession(sessionId);
   }
 
   async register(

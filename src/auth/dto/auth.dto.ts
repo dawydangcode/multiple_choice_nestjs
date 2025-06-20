@@ -22,8 +22,8 @@ export class AuthDto {
   accountId!: number;
 
   @ApiProperty()
-  @IsString()
-  sessionId?: string;
+  @IsNumber()
+  sessionId!: number;
 
   @ApiProperty()
   @IsString()
@@ -44,5 +44,5 @@ export class AuthSignInBodyDto extends PickType(AuthDto, [
   'username',
   'password',
 ]) {}
-
+export class AuthLogoutBodyDto extends PickType(AuthDto, ['sessionId']) {}
 export class RefreshTokenBodyDto extends PickType(AuthDto, []) {}

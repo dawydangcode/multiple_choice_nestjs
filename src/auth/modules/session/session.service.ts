@@ -23,7 +23,7 @@ export class SessionService {
     entity.ipAddress = ipAddress;
     entity.createdAt = new Date();
     entity.createdBy = accountId;
-    entity.isActive = false;
+    entity.isActive = true;
 
     const newSession = await this.sessionRepository.save(entity);
     return newSession.toModel();
@@ -37,7 +37,6 @@ export class SessionService {
         deletedAt: IsNull(),
       },
     });
-
     if (!session) {
       throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
     }
@@ -45,17 +44,26 @@ export class SessionService {
     return session.toModel();
   }
 
-  async revokeSession(sessionId: number): Promise<void> {
-    const session = await this.sessionRepository.findOne({
-      where: {
-        id: sessionId,
-        isActive: false,
-      },
-    });
+  async revokeSession(sessionId: number): Promise<SessionModel> {
+    const session = await this.getSessionById(sessionId);
+
     if (!session) {
-      throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Session not found or already revoked',
+        HttpStatus.NOT_FOUND,
+      );
     }
-    session.isActive = true;
-    await this.sessionRepository.save(session);
+
+    await this.sessionRepository.update(
+      {
+        id: sessionId,
+      },
+      {
+        isActive: false,
+        updatedAt: new Date(),
+      },
+    );
+    const updatedSession = await this.getSessionById(sessionId);
+    return updatedSession;
   }
 }

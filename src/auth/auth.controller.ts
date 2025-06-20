@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Post,
   Put,
@@ -10,37 +11,42 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthSignInBodyDto, AuthSignUpBodyDto } from './dto/auth.dto';
+import {
+  AuthLogoutBodyDto,
+  AuthSignInBodyDto,
+  AuthSignUpBodyDto,
+} from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleService } from 'src/role/role.service';
 import { LocalAuthGuard } from 'src/middlewares/guards/local-auth.guard';
 import { AccountModel } from 'src/account/models/account.model';
+import { SessionService } from './modules/session/session.service';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly sessionService: SessionService,
     private readonly roleService: RoleService,
   ) {}
 
   @Post('login')
   async login(@Request() req: any, @Body() body: AuthSignInBodyDto) {
-    if (!body.username) {
-      throw new UnauthorizedException('Authentication failed');
-    }
     const userAgent = req.get('User-Agent') || '';
     const ipAddress = req.ip || req.get('X-Forwarded-For') || '';
     const account: AccountModel = await this.authService.validateUser(
       body.username,
       body.password,
     );
-    if (!account) {
-      throw new UnauthorizedException('Invalid username or password');
-    }
     return this.authService.login(account, userAgent, ipAddress);
   }
 
+  @Post('logout')
+  async logout(@Body() body: AuthLogoutBodyDto) {
+    await this.authService.logout(body.sessionId);
+    return true;
+  }
   // @Post('auth/register')
   // async signUp(@Body() body: AuthSignUpBodyDto) {
   //   const role = await this.roleService.getRole(body.roleId);
