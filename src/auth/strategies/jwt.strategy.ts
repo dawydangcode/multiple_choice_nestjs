@@ -22,9 +22,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!session) {
       throw new UnauthorizedException('Invalid session');
     }
+    
     return {
-      accountId: payload.sub,
-      username: payload.username,
+      accountId: payload.accountId,
       roleId: payload.roleId,
       sessionId: payload.sessionId,
     };

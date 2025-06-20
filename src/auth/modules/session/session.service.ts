@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { SessionEntity } from './entity/session.entity';
 import { IsNull, Repository } from 'typeorm';
 import { SessionModel } from './model/session.model';
+import { AccountModel } from 'src/account/models/account.model';
 
 @Injectable()
 export class SessionService {
@@ -12,17 +13,18 @@ export class SessionService {
   ) {}
 
   async createSession(
-    accountId: number,
-    userAgent: string,
-    ipAddress: string,
+    account: AccountModel,
+    userAgent: string | undefined,
+    ipAddress: string | undefined,
+    reqAccountId: number,
   ): Promise<SessionModel> {
     const entity = new SessionEntity();
 
-    entity.accountId = accountId;
+    entity.accountId = account.id;
     entity.userAgent = userAgent;
     entity.ipAddress = ipAddress;
     entity.createdAt = new Date();
-    entity.createdBy = accountId;
+    entity.createdBy = reqAccountId;
     entity.isActive = true;
 
     const newSession = await this.sessionRepository.save(entity);

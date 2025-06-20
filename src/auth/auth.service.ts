@@ -34,26 +34,24 @@ export class AuthService {
     return account;
   }
 
-  async login(account: AccountModel, userAgent: string, ipAddress: string) {
-    const payload: {
-      username: string;
-      sub: number;
-      roleId: number;
-      sessionId: number | null;
-    } = {
-      username: account.username,
-      sub: account.id,
-      roleId: account.roleId,
-      sessionId: null,
-    };
-
+  async login(
+    account: AccountModel,
+    userAgent: string | undefined,
+    ipAddress: string | undefined,
+    reqAccountId: number,
+  ) {
     const session = await this.sessionService.createSession(
-      account.id,
+      account,
       userAgent,
       ipAddress,
+      reqAccountId,
     );
 
-    payload.sessionId = session.id;
+    const payload = {
+      accountId: account.id,
+      roleId: account.roleId,
+      sessionId: session.id,
+    };
 
     const accessSecret = this.configService.get<string>(
       'auth.jwt.accessToken.secret',
@@ -68,12 +66,12 @@ export class AuthService {
       'auth.jwt.refreshToken.signOptions.expiresIn',
     );
 
-    const accessToken = this.jwtService.sign(payload, {
+    const accessToken = await this.jwtService.signAsync(payload, {
       secret: accessSecret,
       expiresIn: accessExpire,
     });
 
-    const refreshToken = this.jwtService.sign(payload, {
+    const refreshToken = await this.jwtService.signAsync(payload, {
       secret: refreshSecret,
       expiresIn: refreshExpire,
     });
