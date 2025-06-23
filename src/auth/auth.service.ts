@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Request, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AccountService } from 'src/account/account.service';
 import * as bcrypt from 'bcrypt';
@@ -60,8 +60,26 @@ export class AuthService {
     };
   }
 
-  async logout(sessionId: number): Promise<SessionModel> {
-    return await this.sessionService.updateActiveState(sessionId);
+  async logout(@Request() req): Promise<boolean> {
+    const authHeader = req.headers?.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new UnauthorizedException(
+        'Authorization header is missing or invalid',
+      );
+    }
+
+    const token = authHeader.split(' ')[1];
+    console.log('Token:', token);
+    const payload = this.jwtService.verify(token, {
+      secret: this.configService.get<string>('auth.jwt.accessToken.secret'),
+    });
+    console.log('Payload:', payload);
+
+    const sessionId = payload.sessionId;
+
+    await this.sessionService.updateActiveState(sessionId);
+
+    return true;
   }
 
   async register(

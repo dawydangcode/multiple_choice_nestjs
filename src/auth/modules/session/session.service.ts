@@ -1,4 +1,4 @@
-import {  HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SessionEntity } from './entity/session.entity';
 import { IsNull, Repository } from 'typeorm';
@@ -58,7 +58,6 @@ export class SessionService {
         HttpStatus.NOT_FOUND,
       );
     }
-
     await this.sessionRepository.update(
       {
         id: session.id,

@@ -1,10 +1,19 @@
-import { Body, Controller, Post, Put, Req, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Put,
+  Req,
+  Request,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthLogoutBodyDto, AuthSignInBodyDto } from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleService } from 'src/role/role.service';
 import { SessionService } from './modules/session/session.service';
 import { Public } from 'src/middlewares/guards/jwt-auth.guard';
+import { SessionModel } from './modules/session/model/session.model';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -28,11 +37,10 @@ export class AuthController {
     );
   }
 
-  // @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@Body() body: AuthLogoutBodyDto) {
-    await this.authService.logout(body.sessionId);
-    return true;
+  @HttpCode(200)
+  async logout(@Request() req) {
+    return this.authService.logout(req);
   }
 
   // @Post('auth/register')
