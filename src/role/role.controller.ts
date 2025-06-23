@@ -6,11 +6,13 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleBodyDto, UpdateRoleParamsDto } from './dtos/role.dto';
 import { RoleModel } from './models/role.model';
 import { ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
 
 @ApiTags('Role')
 @Controller('api/v1')
@@ -22,6 +24,7 @@ export class RoleController {
     return await this.roleService.getRoles();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('role/create')
   async createRole(@Body() body: CreateRoleBodyDto) {
     return await this.roleService.createRole(body.name);

@@ -8,12 +8,16 @@ import {
   Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthLogoutBodyDto, AuthSignInBodyDto } from './dto/auth.dto';
+import {
+  AuthLogoutBodyDto,
+  AuthSignInBodyDto,
+  AuthSignUpBodyDto,
+} from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleService } from 'src/role/role.service';
 import { SessionService } from './modules/session/session.service';
 import { Public } from 'src/middlewares/guards/jwt-auth.guard';
-import { SessionModel } from './modules/session/model/session.model';
+import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -43,11 +47,17 @@ export class AuthController {
     return this.authService.logout(req);
   }
 
-  // @Post('auth/register')
-  // async signUp(@Body() body: AuthSignUpBodyDto) {
-  //   const role = await this.roleService.getRole(body.roleId);
-  //   return await this.authService.signUp(body.username, body.password, role);
-  // }
+  @Public()
+  @Post('register')
+  async signUp(@Body() body: AuthSignUpBodyDto) {
+    const role = await this.roleService.getDefaultRole();
+    return await this.authService.register(
+      body.username,
+      body.password,
+      role,
+      undefined,
+    );
+  }
 
   // @Post('auth/login')
   // async signIn(@Body() body: AuthSignInBodyDto) {

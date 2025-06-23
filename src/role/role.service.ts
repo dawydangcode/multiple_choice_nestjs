@@ -74,4 +74,14 @@ export class RoleService {
     );
     return true;
   }
+
+  async getDefaultRole(): Promise<RoleModel> {
+    const defaultRole = await this.roleRepository.findOne({
+      where: { name: 'USER', deletedAt: IsNull() },
+    });
+    if (!defaultRole) {
+      throw new HttpException('Default role not found', HttpStatus.NOT_FOUND);
+    }
+    return defaultRole.toModel();
+  }
 }

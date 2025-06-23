@@ -1,4 +1,4 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsNumber, IsString } from 'class-validator';
 
@@ -32,12 +32,16 @@ export class AuthDto {
   @ApiProperty()
   @IsString()
   refreshToken!: string;
+
+  @ApiProperty({ required: false })
+  @Type(() => Number)
+  @IsNumber()
+  reqAccountId?: number;
 }
 
 export class AuthSignUpBodyDto extends PickType(AuthDto, [
   'username',
   'password',
-  'roleId',
 ]) {}
 
 export class AuthSignInBodyDto extends PickType(AuthDto, [

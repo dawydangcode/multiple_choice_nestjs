@@ -86,6 +86,7 @@ export class AuthService {
     username: string,
     password: string,
     role: RoleModel,
+    reqAccountId: number | undefined,
   ): Promise<AccountModel> {
     await this.accountService.checkExistUsername(username);
 
@@ -93,7 +94,7 @@ export class AuthService {
       username,
       password,
       role.id,
-      ADMIN_ACCOUNT_ID,
+      reqAccountId,
     );
 
     await this.accountDetailService.createAccountDetail(
@@ -102,7 +103,7 @@ export class AuthService {
       undefined,
       undefined,
       undefined,
-      newAccount.id,
+      undefined,
     );
 
     return await this.accountService.getAccount(newAccount.id);
