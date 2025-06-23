@@ -49,7 +49,7 @@ export class SessionService {
     return session.toModel();
   }
 
-  async revokeSession(sessionId: number): Promise<SessionModel> {
+  async updateActiveState(sessionId: number): Promise<SessionModel> {
     const session = await this.getSessionById(sessionId, true);
 
     if (!session) {
@@ -59,7 +59,17 @@ export class SessionService {
       );
     }
 
-    const updatedSession = await this.getSessionById(sessionId, false);
-    return updatedSession;
+    await this.sessionRepository.update(
+      {
+        id: session.id,
+        deletedAt: IsNull(),
+      },
+      {
+        isActive: false,
+        updatedAt: new Date(),
+        updatedBy: session.accountId,
+      },
+    );
+    return await this.getSessionById(session.id, false);
   }
 }
