@@ -1,27 +1,10 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  Req,
-  Request,
-  UnauthorizedException,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Post, Put, Req, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import {
-  AuthLogoutBodyDto,
-  AuthSignInBodyDto,
-  AuthSignUpBodyDto,
-} from './dto/auth.dto';
+import { AuthLogoutBodyDto, AuthSignInBodyDto } from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleService } from 'src/role/role.service';
-import { LocalAuthGuard } from 'src/middlewares/guards/local-auth.guard';
-import { AccountModel } from 'src/account/models/account.model';
 import { SessionService } from './modules/session/session.service';
-import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
+import { Public } from 'src/middlewares/guards/jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -32,6 +15,7 @@ export class AuthController {
     private readonly roleService: RoleService,
   ) {}
 
+  @Public()
   @Post('login')
   async login(@Request() req: any, @Body() body: AuthSignInBodyDto) {
     const userAgent = req.get('User-Agent');
@@ -44,7 +28,7 @@ export class AuthController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Body() body: AuthLogoutBodyDto) {
     await this.authService.logout(body.sessionId);

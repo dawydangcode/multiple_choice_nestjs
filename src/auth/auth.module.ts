@@ -7,7 +7,6 @@ import { AuthController } from './auth.controller';
 import { RoleModule } from 'src/role/role.module';
 import { AccountDetailModule } from 'src/account/modules/account-detail/account-detail.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { SessionModel } from './modules/session/model/session.model';
 import { SessionModule } from './modules/session/session.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';

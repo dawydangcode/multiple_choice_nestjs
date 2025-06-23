@@ -10,6 +10,7 @@ import app from 'src/config/app';
 import { AuthModule } from 'src/auth/auth.module';
 import { AccountDetailModule } from 'src/account/modules/account-detail/account-detail.module';
 import { SessionModule } from 'src/auth/modules/session/session.module';
+import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -31,6 +32,12 @@ import { SessionModule } from 'src/auth/modules/session/session.module';
   ],
 
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: 'APP_GUARD',
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

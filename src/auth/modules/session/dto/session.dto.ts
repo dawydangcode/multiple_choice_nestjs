@@ -44,4 +44,3 @@ export class CreateSessionBodyDto extends PickType(SessionDto, [
 
 export class GetSessionParamsDto extends PickType(SessionDto, ['sessionId']) {}
 
-export class Request extends PickType(SessionDto, []) {}
