@@ -33,13 +33,18 @@ export class AuthController {
 
   @Post('login')
   async login(@Request() req: any, @Body() body: AuthSignInBodyDto) {
-    const userAgent = req.get('User-Agent') || '';
-    const ipAddress = req.ip || req.get('X-Forwarded-For') || '';
-    const account: AccountModel = await this.authService.validateUser(
+    const userAgent = req.get('User-Agent');
+    const ipAddress = req.ip || req.get('X-Forwarded-For');
+    const account = await this.authService.validateUser(
       body.username,
       body.password,
     );
-    return this.authService.login(account, userAgent, ipAddress);
+    return await this.authService.login(
+      account,
+      userAgent,
+      ipAddress,
+      account.id,
+    );
   }
 
   @Post('logout')
