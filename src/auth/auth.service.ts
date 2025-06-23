@@ -20,10 +20,12 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async validateUser(
+  async login(
     username: string,
     password: string,
-  ): Promise<AccountModel> {
+    userAgent: string,
+    ipAddress: string,
+  ) {
     const account = await this.accountService.getAccountByUsername(username);
     const isMatch = await bcrypt.compare(password, account.password);
 
@@ -31,10 +33,6 @@ export class AuthService {
       throw new UnauthorizedException('Username or password is invalid');
     }
 
-    return account;
-  }
-
-  async login(account: AccountModel, userAgent: string, ipAddress: string) {
     const payload: {
       username: string;
       sub: number;
