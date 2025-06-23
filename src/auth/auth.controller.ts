@@ -21,6 +21,7 @@ import { RoleService } from 'src/role/role.service';
 import { LocalAuthGuard } from 'src/middlewares/guards/local-auth.guard';
 import { AccountModel } from 'src/account/models/account.model';
 import { SessionService } from './modules/session/session.service';
+import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -35,23 +36,21 @@ export class AuthController {
   async login(@Request() req: any, @Body() body: AuthSignInBodyDto) {
     const userAgent = req.get('User-Agent');
     const ipAddress = req.ip || req.get('X-Forwarded-For');
-    const account = await this.authService.validateUser(
+    return await this.authService.login(
       body.username,
       body.password,
-    );
-    return await this.authService.login(
-      account,
       userAgent,
       ipAddress,
-      account.id,
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Body() body: AuthLogoutBodyDto) {
     await this.authService.logout(body.sessionId);
     return true;
   }
+
   // @Post('auth/register')
   // async signUp(@Body() body: AuthSignUpBodyDto) {
   //   const role = await this.roleService.getRole(body.roleId);

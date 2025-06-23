@@ -14,8 +14,8 @@ export class SessionService {
 
   async createSession(
     account: AccountModel,
-    userAgent: string | undefined,
-    ipAddress: string | undefined,
+    userAgent: string,
+    ipAddress: string,
     reqAccountId: number,
   ): Promise<SessionModel> {
     const entity = new SessionEntity();
@@ -31,11 +31,14 @@ export class SessionService {
     return newSession.toModel();
   }
 
-  async getSessionById(sessionId: number): Promise<SessionModel> {
+  async getSessionById(
+    sessionId: number,
+    isActive: boolean | undefined,
+  ): Promise<SessionModel> {
     const session = await this.sessionRepository.findOne({
       where: {
         id: sessionId,
-        isActive: false,
+        isActive: isActive,
         deletedAt: IsNull(),
       },
     });
@@ -47,7 +50,7 @@ export class SessionService {
   }
 
   async revokeSession(sessionId: number): Promise<SessionModel> {
-    const session = await this.getSessionById(sessionId);
+    const session = await this.getSessionById(sessionId, true);
 
     if (!session) {
       throw new HttpException(
@@ -56,16 +59,7 @@ export class SessionService {
       );
     }
 
-    await this.sessionRepository.update(
-      {
-        id: sessionId,
-      },
-      {
-        isActive: false,
-        updatedAt: new Date(),
-      },
-    );
-    const updatedSession = await this.getSessionById(sessionId);
+    const updatedSession = await this.getSessionById(sessionId, false);
     return updatedSession;
   }
 }

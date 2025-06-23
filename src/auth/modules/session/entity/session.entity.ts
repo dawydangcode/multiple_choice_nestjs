@@ -15,32 +15,38 @@ export class SessionEntity {
   @Column({ name: 'refresh_token' })
   refreshToken!: string;
 
+  @Column({ name: 'expires_at' })
+  accessExpire!: Date;
+
+  @Column({ name: 'refresh_expires_at' })
+  refreshExpire!: Date;
+
   @Column({ name: 'user_agent' })
-  userAgent?: string;
+  userAgent!: string;
 
   @Column({ name: 'ip_address' })
-  ipAddress?: string;
+  ipAddress!: string;
 
   @Column({ name: 'is_active' })
   isActive!: boolean;
 
   @Column({ name: 'created_at' })
-  createdAt?: Date;
+  createdAt!: Date;
 
   @Column({ name: 'created_by' })
-  createdBy?: number;
+  createdBy!: number;
 
   @Column({ name: 'updated_at' })
-  updatedAt?: Date;
+  updatedAt!: Date;
 
   @Column({ name: 'updated_by' })
-  updatedBy?: number;
+  updatedBy!: number;
 
   @Column({ name: 'deleted_at' })
-  deletedAt?: Date;
+  deletedAt!: Date;
 
   @Column({ name: 'deleted_by' })
-  deletedBy?: number;
+  deletedBy!: number;
 
   toModel(): SessionModel {
     return new SessionModel(
@@ -48,6 +54,8 @@ export class SessionEntity {
       this.accountId,
       this.accessToken,
       this.refreshToken,
+      this.accessExpire,
+      this.refreshExpire,
       this.isActive,
       this.userAgent,
       this.ipAddress,

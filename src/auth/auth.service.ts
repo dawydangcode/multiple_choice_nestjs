@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { SessionService } from './modules/session/session.service';
 import ms, { StringValue } from 'ms';
 import { SessionModel } from './modules/session/model/session.model';
+import { Session } from 'inspector/promises';
 @Injectable()
 export class AuthService {
   constructor(
@@ -25,7 +26,7 @@ export class AuthService {
     password: string,
     userAgent: string,
     ipAddress: string,
-  ) {
+  ): Promise<Partial<SessionModel>> {
     const account = await this.accountService.getAccountByUsername(username);
     const isMatch = await bcrypt.compare(password, account.password);
 
@@ -33,54 +34,30 @@ export class AuthService {
       throw new UnauthorizedException('Username or password is invalid');
     }
 
-    const payload: {
-      username: string;
-      sub: number;
-      roleId: number;
-      sessionId: number | null;
-    } = {
+    const session = await this.sessionService.createSession(
+      account,
+      userAgent,
+      ipAddress,
+      account.id,
+    );
+
+    const payload = {
       username: account.username,
       sub: account.id,
       roleId: account.roleId,
-      sessionId: null,
+      sessionId: session.id,
     };
 
-    const session = await this.sessionService.createSession(
-      account.id,
-      userAgent,
-      ipAddress,
-    );
-
-    payload.sessionId = session.id;
-
-    const accessSecret = this.configService.get<string>(
-      'auth.jwt.accessToken.secret',
-    );
-    const accessExpire = this.configService.get<string>(
-      'auth.jwt.accessToken.signOptions.expiresIn',
-    );
-    const refreshSecret = this.configService.get<string>(
-      'auth.jwt.refreshToken.secret',
-    );
-    const refreshExpire = this.configService.get<string>(
-      'auth.jwt.refreshToken.signOptions.expiresIn',
-    );
-
-    const accessToken = this.jwtService.sign(payload, {
-      secret: accessSecret,
-      expiresIn: accessExpire,
-    });
-
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: refreshSecret,
-      expiresIn: refreshExpire,
-    });
+    const { accessToken, refreshToken, accessExpireDate, refreshExpireDate } =
+      await this.generateToken(payload);
 
     return {
+      id: session.id,
       accountId: account.id,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      sessionId: session.id,
+      accessToken,
+      refreshToken,
+      accessExpire: accessExpireDate,
+      refreshExpire: refreshExpireDate,
     };
   }
 
@@ -114,6 +91,46 @@ export class AuthService {
     return await this.accountService.getAccount(newAccount.id);
   }
 
+  async generateToken(payload: any) {
+    const accessSecret = this.configService.get<string>(
+      'auth.jwt.accessToken.secret',
+    );
+    const accessExpire = this.configService.get<string>(
+      'auth.jwt.accessToken.signOptions.expiresIn',
+    );
+    const refreshSecret = this.configService.get<string>(
+      'auth.jwt.refreshToken.secret',
+    );
+    const refreshExpire = this.configService.get<string>(
+      'auth.jwt.refreshToken.signOptions.expiresIn',
+    );
+
+    const accessToken = this.jwtService.sign(payload, {
+      secret: accessSecret,
+      expiresIn: accessExpire,
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: refreshSecret,
+      expiresIn: refreshExpire,
+    });
+
+    const accessExpireDate =
+      typeof accessExpire === 'string'
+        ? new Date(Date.now() + ms(accessExpire as StringValue))
+        : undefined;
+    const refreshExpireDate =
+      typeof refreshExpire === 'string'
+        ? new Date(Date.now() + ms(refreshExpire as StringValue))
+        : undefined;
+
+    return {
+      accessToken,
+      refreshToken,
+      accessExpireDate,
+      refreshExpireDate,
+    };
+  }
   // async signIn(username: string, password: string): Promise<SessionModel> {
   //   const account = await this.accountService.getAccountByUsername(username);
   //   const isMatch = await bcrypt.compare(password, account.password);

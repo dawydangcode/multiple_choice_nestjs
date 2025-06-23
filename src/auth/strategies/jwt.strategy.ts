@@ -18,11 +18,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    const session = await this.sessionService.getSessionById(payload.sessionId);
+    const session = await this.sessionService.getSessionById(
+      payload.sessionId,
+      true,
+    );
     if (!session) {
       throw new UnauthorizedException('Invalid session');
     }
-    
+
     return {
       accountId: payload.accountId,
       roleId: payload.roleId,

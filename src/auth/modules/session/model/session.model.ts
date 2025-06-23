@@ -3,6 +3,8 @@ export class SessionModel {
   public readonly accountId: number;
   public readonly accessToken: string;
   public readonly refreshToken: string;
+  public readonly accessExpire: Date | undefined;
+  public readonly refreshExpire: Date | undefined;
   public readonly isActive: boolean;
   public readonly userAgent: string | undefined;
   public readonly ipAddress: string | undefined;
@@ -18,6 +20,8 @@ export class SessionModel {
     accountId: number,
     accessToken: string,
     refreshToken: string,
+    accessExpire: Date | undefined,
+    refreshExpire: Date | undefined,
     isActive: boolean,
     userAgent: string | undefined,
     ipAddress: string | undefined,
@@ -32,6 +36,8 @@ export class SessionModel {
     this.accountId = accountId;
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
+    this.accessExpire = accessExpire;
+    this.refreshExpire = refreshExpire;
     this.isActive = isActive;
     this.userAgent = userAgent;
     this.ipAddress = ipAddress;
