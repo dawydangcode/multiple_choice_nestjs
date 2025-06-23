@@ -85,7 +85,7 @@ export class AuthService {
   async register(
     username: string,
     password: string,
-    role: RoleModel,
+    role: RoleModel | undefined,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
     await this.accountService.checkExistUsername(username);
@@ -93,7 +93,7 @@ export class AuthService {
     const newAccount = await this.accountService.createAccount(
       username,
       password,
-      role.id,
+      role?.id,
       reqAccountId,
     );
 

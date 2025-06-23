@@ -51,6 +51,7 @@ export class AuthController {
   @Post('register')
   async signUp(@Body() body: AuthSignUpBodyDto) {
     const role = await this.roleService.getDefaultRole();
+
     return await this.authService.register(
       body.username,
       body.password,
