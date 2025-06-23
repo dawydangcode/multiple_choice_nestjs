@@ -11,6 +11,8 @@ import { AuthModule } from 'src/auth/auth.module';
 import { AccountDetailModule } from 'src/account/modules/account-detail/account-detail.module';
 import { SessionModule } from 'src/auth/modules/session/session.module';
 import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
+import { Role } from 'src/role/enum/role.enum';
+import { RolesGuard } from 'src/middlewares/guards/role.guard';
 
 @Module({
   imports: [
@@ -37,6 +39,10 @@ import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
     {
       provide: 'APP_GUARD',
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: 'APP_GUARD',
+      useClass: RolesGuard,
     },
   ],
 })

@@ -5,8 +5,6 @@ import { AccountEntity } from './entities/account.entity';
 import { AccountModel } from './models/account.model';
 import * as bcrypt from 'bcrypt';
 import { SALT_OR_ROUNDS } from 'src/auth/constants/auth.const';
-import { DEFAULT_ROLE_ID } from 'src/utils/constant';
-import { ConfigService } from '@nestjs/config';
 import { RoleService } from 'src/role/role.service';
 
 @Injectable()
@@ -128,5 +126,14 @@ export class AccountService {
       },
     );
     return true;
+  }
+
+  async getAccountRole(accountId: number): Promise<AccountModel> {
+    const account = await this.getAccount(accountId);
+    const role = await this.roleService.getRole(account.roleId);
+    return {
+      ...account,
+      roleId: role.id,
+    };
   }
 }
