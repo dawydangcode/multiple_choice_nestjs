@@ -43,7 +43,7 @@ export class AccountController {
       body.username,
       body.password,
       body.roleId,
-      1,
+      undefined,
     );
   }
 
@@ -58,7 +58,7 @@ export class AccountController {
       body.username,
       body.password,
       body.roleId,
-      1,
+      undefined,
     );
   }
 

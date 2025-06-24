@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { SessionService } from './modules/session/session.service';
 import ms, { StringValue } from 'ms';
 import { SessionModel } from './modules/session/model/session.model';
+import { extractTokenFromHeader } from 'src/utils/function';
 @Injectable()
 export class AuthService {
   constructor(
@@ -61,31 +62,24 @@ export class AuthService {
   }
 
   async logout(@Request() req): Promise<boolean> {
-    const authHeader = req.headers?.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const token = extractTokenFromHeader(req);
+    if (!token) {
       throw new UnauthorizedException(
         'Authorization header is missing or invalid',
       );
     }
-
-    const token = authHeader.split(' ')[1];
-    console.log('Token:', token);
     const payload = this.jwtService.verify(token, {
       secret: this.configService.get<string>('auth.jwt.accessToken.secret'),
     });
-    console.log('Payload:', payload);
-
     const sessionId = payload.sessionId;
-
     await this.sessionService.updateActiveState(sessionId);
-
     return true;
   }
 
   async register(
     username: string,
     password: string,
-    role: RoleModel | undefined,
+    role: RoleModel,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
     await this.accountService.checkExistUsername(username);
@@ -93,7 +87,7 @@ export class AuthService {
     const newAccount = await this.accountService.createAccount(
       username,
       password,
-      role?.id,
+      role.id,
       reqAccountId,
     );
 
@@ -149,6 +143,7 @@ export class AuthService {
       refreshExpireDate,
     };
   }
+
   // async signIn(username: string, password: string): Promise<SessionModel> {
   //   const account = await this.accountService.getAccountByUsername(username);
   //   const isMatch = await bcrypt.compare(password, account.password);

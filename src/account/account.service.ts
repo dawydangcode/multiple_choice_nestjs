@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  UseGuards,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
@@ -66,7 +61,7 @@ export class AccountService {
   async createAccount(
     username: string,
     password: string,
-    roleId: number | undefined,
+    roleId: number,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
     const existingAccount = await this.checkExistUsername(username);

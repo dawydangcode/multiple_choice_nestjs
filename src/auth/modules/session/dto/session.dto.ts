@@ -32,15 +32,5 @@ export class SessionDto {
   @ApiProperty()
   @IsBoolean()
   @IsOptional()
-  isRevoke?: boolean;
+  isActive?: boolean;
 }
-
-export class CreateSessionBodyDto extends PickType(SessionDto, [
-  'accountId',
-  'ipAddress',
-  'userAgent',
-  'isRevoke',
-]) {}
-
-export class GetSessionParamsDto extends PickType(SessionDto, ['sessionId']) {}
-

@@ -49,8 +49,6 @@ export class AuthSignInBodyDto extends PickType(AuthDto, [
   'password',
 ]) {}
 
-export class AuthLogoutBodyDto extends PickType(AuthDto, ['sessionId']) {}
-
 export class ValidateBodyDto extends PickType(AuthDto, [
   'accountId',
   'sessionId',

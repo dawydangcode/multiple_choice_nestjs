@@ -6,6 +6,7 @@ import { RoleEntity } from './entities/role.entity';
 import { throwError } from 'rxjs';
 import { error } from 'console';
 import { isNull } from 'util';
+import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
 
 @Injectable()
 export class RoleService {
@@ -37,7 +38,7 @@ export class RoleService {
     const entity = new RoleEntity();
     entity.name = name;
     entity.createdAt = new Date();
-    entity.createdBy = 1;
+    entity.createdBy = ADMIN_ACCOUNT_ID;
     const newRole = await this.roleRepository.save(entity);
     return await this.getRole(newRole.id);
   }
@@ -54,7 +55,7 @@ export class RoleService {
       {
         name: name,
         updatedAt: new Date(),
-        updatedBy: 1,
+        updatedBy: ADMIN_ACCOUNT_ID,
       },
     );
 
@@ -69,7 +70,7 @@ export class RoleService {
       },
       {
         deletedAt: new Date(),
-        deletedBy: 1,
+        deletedBy: ADMIN_ACCOUNT_ID,
       },
     );
     return true;
@@ -77,7 +78,7 @@ export class RoleService {
 
   async getDefaultRole(): Promise<RoleModel> {
     const defaultRole = await this.roleRepository.findOne({
-      where: { name: 'USER', deletedAt: IsNull() },
+      where: { name: 'user', deletedAt: IsNull() },
     });
     if (!defaultRole) {
       throw new HttpException('Default role not found', HttpStatus.NOT_FOUND);
