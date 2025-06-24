@@ -13,9 +13,12 @@ import { CreateRoleBodyDto, UpdateRoleParamsDto } from './dtos/role.dto';
 import { RoleModel } from './models/role.model';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
+import { Role } from './enum/role.enum';
+import { Roles } from './decorator/roles.decorator';
 
 @ApiTags('Role')
 @Controller('api/v1')
+@Roles(Role.Admin)
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 

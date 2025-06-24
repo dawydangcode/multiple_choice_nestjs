@@ -24,12 +24,13 @@ import { Role } from 'src/role/enum/role.enum';
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  @Get('account/list')
   @Roles(Role.Admin)
+  @Get('account/list')
   async getAllAccount(): Promise<AccountModel[]> {
     return await this.accountService.getAccounts();
   }
 
+  @Roles(Role.Admin)
   @Get('account/:accountId/detail')
   async getAccountById(
     @Param() params: GetAccountParamsDto,
@@ -37,6 +38,7 @@ export class AccountController {
     return await this.accountService.getAccount(params.accountId);
   }
 
+  @Roles(Role.Admin)
   @Post('account/create')
   async createAccount(@Body() body: CreateAccountBodyDto) {
     return await this.accountService.createAccount(
