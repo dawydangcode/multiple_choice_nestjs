@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { SALT_OR_ROUNDS } from 'src/auth/constants/auth.const';
 import { RoleService } from 'src/role/role.service';
 import { Roles } from 'src/role/decorator/roles.decorator';
-import { Role } from 'src/role/enum/role.enum';
+import { RoleIdType, RoleType } from 'src/role/enum/role.enum';
 
 @Injectable()
 export class AccountService {
@@ -72,7 +72,7 @@ export class AccountService {
       );
     }
     const hashedPassword = await bcrypt.hash(password, SALT_OR_ROUNDS);
-    const defaultRole = await this.roleService.getDefaultRole();
+    const defaultRole = await this.roleService.getRoleByName(RoleType.User);
 
     const entity = new AccountEntity();
     entity.username = username;
@@ -116,7 +116,7 @@ export class AccountService {
     return await this.getAccount(account.id);
   }
 
-  @Roles(Role.Admin)
+  @Roles(RoleIdType.Admin)
   async deleteAccount(account: AccountModel): Promise<boolean> {
     await this.accountRepository.update(
       {

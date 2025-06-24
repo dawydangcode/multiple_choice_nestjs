@@ -1,5 +1,5 @@
 import { Injectable, Request, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { AccountService } from 'src/account/account.service';
 import * as bcrypt from 'bcrypt';
 import { AccountModel } from 'src/account/models/account.model';
@@ -11,6 +11,7 @@ import { SessionService } from './modules/session/session.service';
 import ms, { StringValue } from 'ms';
 import { SessionModel } from './modules/session/model/session.model';
 import { extractTokenFromHeader } from 'src/utils/function';
+import * as moment from 'moment';
 @Injectable()
 export class AuthService {
   constructor(
@@ -42,7 +43,7 @@ export class AuthService {
     );
 
     const payload = {
-      username: account.username,
+      username: account.username, // remove
       accountId: Number(account.id),
       roleId: account.roleId,
       sessionId: session.id,
@@ -52,16 +53,15 @@ export class AuthService {
       await this.generateToken(payload);
 
     return {
-      id: session.id,
       accountId: account.id,
-      accessToken,
-      refreshToken,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
       accessExpire: accessExpireDate,
       refreshExpire: refreshExpireDate,
     };
   }
 
-  async logout(@Request() req): Promise<boolean> {
+  async logout(req: any): Promise<boolean> {
     const token = extractTokenFromHeader(req);
     if (!token) {
       throw new UnauthorizedException(
@@ -72,7 +72,11 @@ export class AuthService {
       secret: this.configService.get<string>('auth.jwt.accessToken.secret'),
     });
     const sessionId = payload.sessionId;
-    await this.sessionService.updateActiveState(sessionId);
+    await this.sessionService.updateSession(
+      sessionId,
+      false,
+      payload.accountId,
+    );
     return true;
   }
 
@@ -104,43 +108,28 @@ export class AuthService {
   }
 
   async generateToken(payload: any) {
-    const accessSecret = this.configService.get<string>(
-      'auth.jwt.accessToken.secret',
+    //Add model
+    const accessSecret = this.configService.get<JwtSignOptions>(
+      'auth.jwt.accessToken',
     );
-    const accessExpire = this.configService.get<string>(
-      'auth.jwt.accessToken.signOptions.expiresIn',
-    );
-    const refreshSecret = this.configService.get<string>(
-      'auth.jwt.refreshToken.secret',
-    );
-    const refreshExpire = this.configService.get<string>(
-      'auth.jwt.refreshToken.signOptions.expiresIn',
-    );
+    const accessToken = this.jwtService.sign(payload, accessSecret);
+    const accessExpireDate = moment()
+      .add(ms(accessSecret!.expiresIn as StringValue), 'ms')
+      .toDate();
 
-    const accessToken = this.jwtService.sign(payload, {
-      secret: accessSecret,
-      expiresIn: accessExpire,
-    });
-
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: refreshSecret,
-      expiresIn: refreshExpire,
-    });
-
-    const accessExpireDate =
-      typeof accessExpire === 'string'
-        ? new Date(Date.now() + ms(accessExpire as StringValue))
-        : undefined;
-    const refreshExpireDate =
-      typeof refreshExpire === 'string'
-        ? new Date(Date.now() + ms(refreshExpire as StringValue))
-        : undefined;
+    const refreshSecret = this.configService.get<JwtSignOptions>(
+      'auth.jwt.refreshToken',
+    );
+    const refreshToken = this.jwtService.sign(payload, refreshSecret);
+    const refreshExpireDate = moment()
+      .add(ms(refreshSecret!.expiresIn as StringValue), 'ms')
+      .toDate();
 
     return {
-      accessToken,
-      refreshToken,
-      accessExpireDate,
-      refreshExpireDate,
+      accessToken: accessToken,
+      accessExpireDate: accessExpireDate,
+      refreshToken: refreshToken,
+      refreshExpireDate: refreshExpireDate,
     };
   }
 

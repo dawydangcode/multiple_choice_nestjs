@@ -7,6 +7,7 @@ import { throwError } from 'rxjs';
 import { error } from 'console';
 import { isNull } from 'util';
 import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
+import { RoleIdType, RoleType } from './enum/role.enum';
 
 @Injectable()
 export class RoleService {
@@ -26,11 +27,16 @@ export class RoleService {
 
   async getRole(roleId: number): Promise<RoleModel> {
     const role = await this.roleRepository.findOne({
-      where: { id: roleId, deletedAt: IsNull() },
+      where: {
+        id: roleId,
+        deletedAt: IsNull(),
+      },
     });
+
     if (!role) {
       throw new HttpException('Role not found', HttpStatus.NOT_FOUND);
     }
+
     return role.toModel();
   }
 
@@ -40,6 +46,7 @@ export class RoleService {
     entity.createdAt = new Date();
     entity.createdBy = ADMIN_ACCOUNT_ID;
     const newRole = await this.roleRepository.save(entity);
+
     return await this.getRole(newRole.id);
   }
 
@@ -76,13 +83,17 @@ export class RoleService {
     return true;
   }
 
-  async getDefaultRole(): Promise<RoleModel> {
+  async getRoleByName(role: RoleType): Promise<RoleModel> {
     const defaultRole = await this.roleRepository.findOne({
-      where: { name: 'user', deletedAt: IsNull() },
+      where: {
+        name: role,
+        deletedAt: IsNull(),
+      },
     });
     if (!defaultRole) {
       throw new HttpException('Default role not found', HttpStatus.NOT_FOUND);
     }
+
     return defaultRole.toModel();
   }
 }

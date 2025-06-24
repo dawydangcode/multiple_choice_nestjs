@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { SessionService } from '../modules/session/session.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     configService: ConfigService,
     private sessionService: SessionService,
@@ -26,10 +26,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Invalid session');
     }
     console.log('JWT Payload:', payload);
-    return {
-      accountId: Number(payload.accountId),
-      roleId: payload.roleId,
-      sessionId: payload.sessionId,
-    };
+    return payload;
   }
 }

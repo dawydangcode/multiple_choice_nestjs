@@ -13,12 +13,12 @@ import { CreateRoleBodyDto, UpdateRoleParamsDto } from './dtos/role.dto';
 import { RoleModel } from './models/role.model';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
-import { Role } from './enum/role.enum';
+import { RoleIdType } from './enum/role.enum';
 import { Roles } from './decorator/roles.decorator';
 
 @ApiTags('Role')
 @Controller('api/v1')
-@Roles(Role.Admin)
+@Roles(RoleIdType.Admin)
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
@@ -27,7 +27,6 @@ export class RoleController {
     return await this.roleService.getRoles();
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('role/create')
   async createRole(@Body() body: CreateRoleBodyDto) {
     return await this.roleService.createRole(body.name);

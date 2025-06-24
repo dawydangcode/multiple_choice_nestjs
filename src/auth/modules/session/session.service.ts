@@ -49,8 +49,12 @@ export class SessionService {
     return session.toModel();
   }
 
-  async updateActiveState(sessionId: number): Promise<SessionModel> {
-    const session = await this.getSessionById(sessionId, true);
+  async updateSession(
+    sessionId: number,
+    isActive: boolean,
+    reqAccountId: number,
+  ): Promise<SessionModel> {
+    const session = await this.getSessionById(sessionId, true); //sessionModel
 
     if (!session) {
       throw new HttpException(
@@ -64,11 +68,12 @@ export class SessionService {
         deletedAt: IsNull(),
       },
       {
-        isActive: false,
+        isActive: isActive,
         updatedAt: new Date(),
-        updatedBy: session.accountId,
+        updatedBy: reqAccountId,
       },
     );
-    return await this.getSessionById(session.id, false);
+
+    return await this.getSessionById(session.id, undefined);
   }
 }
