@@ -16,6 +16,8 @@ import {
 import { AccountModel } from './models/account.model';
 
 import { ApiTags } from '@nestjs/swagger';
+import { Roles } from 'src/role/decorator/roles.decorator';
+import { Role } from 'src/role/enum/role.enum';
 
 @ApiTags('Account')
 @Controller('api/v1')
@@ -23,6 +25,7 @@ export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
   @Get('account/list')
+  @Roles(Role.Admin)
   async getAllAccount(): Promise<AccountModel[]> {
     return await this.accountService.getAccounts();
   }

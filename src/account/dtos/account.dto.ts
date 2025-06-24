@@ -7,11 +7,8 @@ import {
 import { Type } from 'class-transformer';
 import {
   IsNumber,
-  IsOptional,
   IsString,
-  Max,
   MaxLength,
-  Min,
   MinLength,
 } from 'class-validator';
 

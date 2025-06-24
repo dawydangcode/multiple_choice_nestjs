@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UseGuards,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
@@ -6,6 +11,8 @@ import { AccountModel } from './models/account.model';
 import * as bcrypt from 'bcrypt';
 import { SALT_OR_ROUNDS } from 'src/auth/constants/auth.const';
 import { RoleService } from 'src/role/role.service';
+import { Roles } from 'src/role/decorator/roles.decorator';
+import { Role } from 'src/role/enum/role.enum';
 
 @Injectable()
 export class AccountService {
@@ -114,6 +121,7 @@ export class AccountService {
     return await this.getAccount(account.id);
   }
 
+  @Roles(Role.Admin)
   async deleteAccount(account: AccountModel): Promise<boolean> {
     await this.accountRepository.update(
       {

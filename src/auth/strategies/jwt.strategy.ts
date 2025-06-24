@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { SessionService } from '../modules/session/session.service';
 import { AccountService } from 'src/account/account.service';
+import { SessionModel } from '../modules/session/model/session.model';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -27,8 +28,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!session) {
       throw new UnauthorizedException('Invalid session');
     }
+    console.log('JWT Payload:', payload);
     return {
-      accountId: payload.accountId,
+      accountId: Number(payload.accountId),
       roleId: payload.roleId,
       sessionId: payload.sessionId,
     };

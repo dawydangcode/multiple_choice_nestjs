@@ -50,4 +50,9 @@ export class AuthSignInBodyDto extends PickType(AuthDto, [
 ]) {}
 
 export class AuthLogoutBodyDto extends PickType(AuthDto, ['sessionId']) {}
-export class RefreshTokenBodyDto extends PickType(AuthDto, []) {}
+
+export class ValidateBodyDto extends PickType(AuthDto, [
+  'accountId',
+  'sessionId',
+  'roleId',
+]) {}
