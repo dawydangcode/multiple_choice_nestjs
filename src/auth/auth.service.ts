@@ -92,38 +92,35 @@ export class AuthService {
     return await this.accountService.getAccount(newAccount.id);
   }
 
-  async generateToken(payload: any) {
+  async generateToken(payload: PayloadModel) {
     const accessSecret = this.configService.get<string>(
       'auth.jwt.accessToken.secret',
     );
     const accessExpire = this.configService.get<string>(
       'auth.jwt.accessToken.signOptions.expiresIn',
     );
+    const accessToken = this.jwtService.sign(payload, {
+      secret: accessSecret,
+      expiresIn: accessExpire,
+    });
+    const accessExpireDate = moment()
+      .add(ms(accessExpire as StringValue), 'ms')
+      .toDate();
+
     const refreshSecret = this.configService.get<string>(
       'auth.jwt.refreshToken.secret',
     );
     const refreshExpire = this.configService.get<string>(
       'auth.jwt.refreshToken.signOptions.expiresIn',
     );
-
-    const accessToken = this.jwtService.sign(payload, {
-      secret: accessSecret,
-      expiresIn: accessExpire,
-    });
-
     const refreshToken = this.jwtService.sign(payload, {
       secret: refreshSecret,
       expiresIn: refreshExpire,
     });
 
-    const accessExpireDate =
-      typeof accessExpire === 'string'
-        ? new Date(Date.now() + ms(accessExpire as StringValue))
-        : undefined;
-    const refreshExpireDate =
-      typeof refreshExpire === 'string'
-        ? new Date(Date.now() + ms(refreshExpire as StringValue))
-        : undefined;
+    const refreshExpireDate = moment()
+      .add(ms(refreshExpire as StringValue), 'ms')
+      .toDate();
 
     return {
       accessToken,
