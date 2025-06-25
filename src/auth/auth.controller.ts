@@ -19,6 +19,7 @@ export class AuthController {
   async login(@Req() req: any, @Body() body: AuthSignInBodyDto) {
     const userAgent = req.get('User-Agent');
     const ipAddress = req.ip || req.get('X-Forwarded-For');
+
     return await this.authService.login(
       body.username,
       body.password,

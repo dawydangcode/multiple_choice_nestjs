@@ -37,6 +37,10 @@ export class AuthDto {
   @Type(() => Number)
   @IsNumber()
   reqAccountId?: number;
+
+  @ApiProperty()
+  @IsString()
+  payload!: string;
 }
 
 export class AuthSignUpBodyDto extends PickType(AuthDto, [

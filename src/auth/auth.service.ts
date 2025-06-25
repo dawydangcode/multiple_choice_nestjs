@@ -12,6 +12,7 @@ import ms, { StringValue } from 'ms';
 import { SessionModel } from './modules/session/model/session.model';
 import { extractTokenFromHeader } from 'src/utils/function';
 import * as moment from 'moment';
+import { PayloadModel } from './model/payload.model';
 @Injectable()
 export class AuthService {
   constructor(
@@ -41,14 +42,12 @@ export class AuthService {
       ipAddress,
       account.id,
     );
-
-    const payload = {
-      username: account.username, // remove
-      accountId: Number(account.id),
+    
+    const payload: PayloadModel = {
+      accountId: account.id,
       roleId: account.roleId,
       sessionId: session.id,
     };
-
     const { accessToken, refreshToken, accessExpireDate, refreshExpireDate } =
       await this.generateToken(payload);
 
@@ -108,28 +107,43 @@ export class AuthService {
   }
 
   async generateToken(payload: any) {
-    //Add model
-    const accessSecret = this.configService.get<JwtSignOptions>(
-      'auth.jwt.accessToken',
+    const accessSecret = this.configService.get<string>(
+      'auth.jwt.accessToken.secret',
     );
-    const accessToken = this.jwtService.sign(payload, accessSecret);
-    const accessExpireDate = moment()
-      .add(ms(accessSecret!.expiresIn as StringValue), 'ms')
-      .toDate();
+    const accessExpire = this.configService.get<string>(
+      'auth.jwt.accessToken.signOptions.expiresIn',
+    );
+    const refreshSecret = this.configService.get<string>(
+      'auth.jwt.refreshToken.secret',
+    );
+    const refreshExpire = this.configService.get<string>(
+      'auth.jwt.refreshToken.signOptions.expiresIn',
+    );
 
-    const refreshSecret = this.configService.get<JwtSignOptions>(
-      'auth.jwt.refreshToken',
-    );
-    const refreshToken = this.jwtService.sign(payload, refreshSecret);
-    const refreshExpireDate = moment()
-      .add(ms(refreshSecret!.expiresIn as StringValue), 'ms')
-      .toDate();
+    const accessToken = this.jwtService.sign(payload, {
+      secret: accessSecret,
+      expiresIn: accessExpire,
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: refreshSecret,
+      expiresIn: refreshExpire,
+    });
+
+    const accessExpireDate =
+      typeof accessExpire === 'string'
+        ? new Date(Date.now() + ms(accessExpire as StringValue))
+        : undefined;
+    const refreshExpireDate =
+      typeof refreshExpire === 'string'
+        ? new Date(Date.now() + ms(refreshExpire as StringValue))
+        : undefined;
 
     return {
-      accessToken: accessToken,
-      accessExpireDate: accessExpireDate,
-      refreshToken: refreshToken,
-      refreshExpireDate: refreshExpireDate,
+      accessToken,
+      refreshToken,
+      accessExpireDate,
+      refreshExpireDate,
     };
   }
 
