@@ -1,3 +1,5 @@
+import { RoleType } from 'src/role/enum/role.enum';
+
 export class AccountModel {
   public readonly id: number;
   public readonly username: string;

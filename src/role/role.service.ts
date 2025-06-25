@@ -3,11 +3,8 @@ import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleModel } from './models/role.model';
 import { RoleEntity } from './entities/role.entity';
-import { throwError } from 'rxjs';
-import { error } from 'console';
-import { isNull } from 'util';
 import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
-import { RoleIdType, RoleType } from './enum/role.enum';
+import { RoleType } from './enum/role.enum';
 
 @Injectable()
 export class RoleService {
