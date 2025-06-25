@@ -52,7 +52,7 @@ export class SessionService {
   async updateSession(
     sessionId: number,
     isActive: boolean,
-    reqAccountId: number,
+    reqAccountId: number | undefined,
   ): Promise<SessionModel> {
     const session = await this.getSessionById(sessionId, true); //sessionModel
 

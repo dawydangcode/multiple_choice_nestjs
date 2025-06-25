@@ -1,6 +1,7 @@
 export class SessionModel {
   public readonly id: number;
   public readonly accountId: number;
+  public readonly roleId: number;
   public readonly accessToken: string;
   public readonly refreshToken: string;
   public readonly accessExpire: Date | undefined;
@@ -18,6 +19,7 @@ export class SessionModel {
   constructor(
     id: number,
     accountId: number,
+    roleId: number,
     accessToken: string,
     refreshToken: string,
     accessExpire: Date | undefined,
@@ -34,6 +36,7 @@ export class SessionModel {
   ) {
     this.id = id;
     this.accountId = accountId;
+    this.roleId = roleId;
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.accessExpire = accessExpire;

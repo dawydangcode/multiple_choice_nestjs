@@ -1,10 +1,21 @@
-import { Body, Controller, HttpCode, Post, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthSignInBodyDto, AuthSignUpBodyDto } from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleService } from 'src/role/role.service';
 import { Public } from 'src/middlewares/guards/jwt-auth.guard';
 import { RoleType } from 'src/role/enum/role.enum';
+import { PayloadModel } from './model/payload.model';
+import { session } from 'passport';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -29,9 +40,9 @@ export class AuthController {
   }
 
   @Post('logout')
-  @HttpCode(200)
   async logout(@Req() req: any) {
-    return this.authService.logout(req);
+    const sessionId = req.user?.sessionId;
+    return await this.authService.logout(Number(sessionId));
   }
 
   @Public()

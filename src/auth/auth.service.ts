@@ -42,7 +42,7 @@ export class AuthService {
       ipAddress,
       account.id,
     );
-    
+
     const payload: PayloadModel = {
       accountId: account.id,
       roleId: account.roleId,
@@ -60,22 +60,8 @@ export class AuthService {
     };
   }
 
-  async logout(req: any): Promise<boolean> {
-    const token = extractTokenFromHeader(req);
-    if (!token) {
-      throw new UnauthorizedException(
-        'Authorization header is missing or invalid',
-      );
-    }
-    const payload = this.jwtService.verify(token, {
-      secret: this.configService.get<string>('auth.jwt.accessToken.secret'),
-    });
-    const sessionId = payload.sessionId;
-    await this.sessionService.updateSession(
-      sessionId,
-      false,
-      payload.accountId,
-    );
+  async logout(sessionId: number): Promise<boolean> {
+    await this.sessionService.updateSession(sessionId, false, undefined);
     return true;
   }
 
