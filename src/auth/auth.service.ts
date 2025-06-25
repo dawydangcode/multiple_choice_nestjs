@@ -10,14 +10,15 @@ import { ConfigService } from '@nestjs/config';
 import { SessionService } from './modules/session/session.service';
 import ms, { StringValue } from 'ms';
 import { SessionModel } from './modules/session/model/session.model';
-import { extractTokenFromHeader } from 'src/utils/function';
 import * as moment from 'moment';
 import { PayloadModel } from './model/payload.model';
+import { RoleService } from 'src/role/role.service';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly accountService: AccountService,
     private readonly accountDetailService: AccountDetailService,
+    private readonly roleService: RoleService,
     private readonly sessionService: SessionService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -30,6 +31,7 @@ export class AuthService {
     ipAddress: string,
   ): Promise<Partial<SessionModel>> {
     const account = await this.accountService.getAccountByUsername(username);
+    const role = await this.roleService.getRole(account.roleId);
     const isMatch = await bcrypt.compare(password, account.password);
 
     if (!isMatch) {
@@ -47,6 +49,7 @@ export class AuthService {
       accountId: account.id,
       roleId: account.roleId,
       sessionId: session.id,
+      role: role.name,
     };
     const { accessToken, refreshToken, accessExpireDate, refreshExpireDate } =
       await this.generateToken(payload);
