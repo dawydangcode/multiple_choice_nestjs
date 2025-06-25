@@ -50,18 +50,10 @@ export class SessionService {
   }
 
   async updateSession(
-    sessionId: number,
+    session: SessionModel,
     isActive: boolean,
-    reqAccountId: number | undefined,
+    reqAccountId: number,
   ): Promise<SessionModel> {
-    const session = await this.getSessionById(sessionId, true); //sessionModel
-
-    if (!session) {
-      throw new HttpException(
-        'Session not found or already revoked',
-        HttpStatus.NOT_FOUND,
-      );
-    }
     await this.sessionRepository.update(
       {
         id: session.id,

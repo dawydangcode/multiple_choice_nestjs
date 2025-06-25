@@ -18,7 +18,7 @@ import { RolesGuard } from 'src/middlewares/guards/role.guard';
     forwardRef(() => AccountDetailModule),
     forwardRef(() => RoleModule),
     forwardRef(() => SessionModule),
-    forwardRef(() => PassportModule),
+    PassportModule,
     ConfigModule.forRoot({
       load: [auth],
     }),

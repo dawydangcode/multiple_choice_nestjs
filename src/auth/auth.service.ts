@@ -45,12 +45,13 @@ export class AuthService {
       account.id,
     );
 
-    const payload: PayloadModel = {
-      accountId: account.id,
-      roleId: account.roleId,
-      sessionId: session.id,
-      role: role.name,
-    };
+    const payload = new PayloadModel(
+      account.id,
+      session.id,
+      account.roleId,
+      role.name,
+    );
+
     const { accessToken, refreshToken, accessExpireDate, refreshExpireDate } =
       await this.generateToken(payload);
 
@@ -63,8 +64,8 @@ export class AuthService {
     };
   }
 
-  async logout(sessionId: number): Promise<boolean> {
-    await this.sessionService.updateSession(sessionId, false, undefined);
+  async logout(session: SessionModel, reqAccountId: number): Promise<boolean> {
+    await this.sessionService.updateSession(session, false, reqAccountId);
     return true;
   }
 

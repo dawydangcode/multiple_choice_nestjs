@@ -16,6 +16,8 @@ import { Public } from 'src/middlewares/guards/jwt-auth.guard';
 import { RoleType } from 'src/role/enum/role.enum';
 import { PayloadModel } from './model/payload.model';
 import { session } from 'passport';
+import { RequestModel } from 'src/utils/models/request.model';
+import { SessionService } from './modules/session/session.service';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -23,6 +25,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly roleService: RoleService,
+    private readonly sessionService: SessionService,
   ) {}
 
   @Public()
@@ -40,9 +43,10 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@Req() req: any) {
-    const sessionId = req.user?.sessionId;
-    return await this.authService.logout(Number(sessionId));
+  async logout(@Req() req: RequestModel) {
+    const sessionId = req.user.sessionId;
+    const session = await this.sessionService.getSessionById(sessionId, true);
+    return await this.authService.logout(session, req.user.accountId);
   }
 
   @Public()

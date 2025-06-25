@@ -1,8 +1,11 @@
+import { RoleType } from 'src/role/enum/role.enum';
+
 export class PayloadModel {
-  accountId: number;
-  roleId: number;
-  role: string;
-  sessionId: number;
+  public readonly accountId: number;
+  public readonly sessionId: number;
+  public readonly roleId: number;
+  public readonly role: string;
+
   constructor(
     accountId: number,
     sessionId: number,
@@ -10,8 +13,8 @@ export class PayloadModel {
     role: string,
   ) {
     this.accountId = accountId;
+    this.sessionId = sessionId;
     this.roleId = roleId;
     this.role = role;
-    this.sessionId = sessionId;
   }
 }
