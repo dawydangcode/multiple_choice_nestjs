@@ -6,18 +6,22 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { CreateRoleBodyDto, UpdateRoleParamsDto } from './dtos/role.dto';
 import { RoleModel } from './models/role.model';
 import { ApiTags } from '@nestjs/swagger';
+import { RoleType } from './enum/role.enum';
+import { Roles } from './decorator/roles.decorator';
 
 @ApiTags('Role')
 @Controller('api/v1')
+@Roles(RoleType.Admin)
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
-  @Get('list')
+  @Get('role/list')
   async getAllRole(): Promise<RoleModel[]> {
     return await this.roleService.getRoles();
   }

@@ -7,14 +7,18 @@ import { AuthController } from './auth.controller';
 import { RoleModule } from 'src/role/role.module';
 import { AccountDetailModule } from 'src/account/modules/account-detail/account-detail.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TokenModule } from './modules/token/token.module';
+import { SessionModule } from './modules/session/session.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { RolesGuard } from 'src/middlewares/guards/role.guard';
 
 @Module({
   imports: [
     forwardRef(() => AccountModule),
     forwardRef(() => AccountDetailModule),
     forwardRef(() => RoleModule),
-    forwardRef(() => TokenModule),
+    forwardRef(() => SessionModule),
+    PassportModule,
     ConfigModule.forRoot({
       load: [auth],
     }),
@@ -22,19 +26,12 @@ import { TokenModule } from './modules/token/token.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        return configService.get('auth.jwt') as JwtModuleOptions;
-      },
-    }),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        return configService.get('auth.refreshToken') as JwtModuleOptions;
+        return configService.get('auth.jwt.accessToken') as JwtModuleOptions;
       },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

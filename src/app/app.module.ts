@@ -5,12 +5,13 @@ import { TypeOrmModule, TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
 import { AccountModule } from '../account/account.module';
 import { RoleModule } from '../role/role.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthModule } from 'src/auth/auth.module';
+import { AccountDetailModule } from 'src/account/modules/account-detail/account-detail.module';
+import { SessionModule } from 'src/auth/modules/session/session.module';
+import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/middlewares/guards/role.guard';
 import database from 'src/config/database';
 import app from 'src/config/app';
-import { AuthModule } from 'src/auth/auth.module';
-import { AccountDetailModel } from 'src/account/modules/account-detail/models/account-detail.model';
-import { AccountDetailModule } from 'src/account/modules/account-detail/account-detail.module';
-import { TokenModule } from 'src/auth/modules/token/token.module';
 
 @Module({
   imports: [
@@ -28,10 +29,20 @@ import { TokenModule } from 'src/auth/modules/token/token.module';
     AccountDetailModule,
     RoleModule,
     AuthModule,
-    TokenModule,
+    SessionModule,
   ],
 
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: 'APP_GUARD',
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: 'APP_GUARD',
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}
