@@ -10,23 +10,23 @@ export class RoleEntity {
   @Column({ type: 'varchar', name: 'name' })
   name!: string;
 
-  @Column('timestamp', { name: 'created_at', nullable: true })
-  createdAt: Date | undefined;
+  @Column('timestamp', { name: 'created_at' })
+  createdAt!: Date;
 
   @Column('bigint', { name: 'created_by', nullable: true })
-  createdBy: number | undefined;
+  createdBy!: number;
 
   @Column('timestamp', { name: 'updated_at', nullable: true })
-  updatedAt: Date | undefined;
+  updatedAt!: Date;
 
   @Column('bigint', { name: 'updated_by', nullable: true })
-  updatedBy: number | undefined;
+  updatedBy!: number;
 
   @Column('timestamp', { name: 'deleted_at', nullable: true })
-  deletedAt: Date | undefined;
+  deletedAt!: Date;
 
   @Column('bigint', { name: 'deleted_by', nullable: true })
-  deletedBy: number | undefined;
+  deletedBy!: number;
 
   @OneToMany(() => AccountEntity, (account) => account.role)
   accounts: AccountEntity[] | undefined;

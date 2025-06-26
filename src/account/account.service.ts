@@ -5,12 +5,16 @@ import { AccountEntity } from './entities/account.entity';
 import { AccountModel } from './models/account.model';
 import * as bcrypt from 'bcrypt';
 import { SALT_OR_ROUNDS } from 'src/auth/constants/auth.const';
+import { RoleService } from 'src/role/role.service';
+import { Roles } from 'src/role/decorator/roles.decorator';
+import { RoleType } from 'src/role/enum/role.enum';
 
 @Injectable()
 export class AccountService {
   constructor(
     @InjectRepository(AccountEntity)
     private readonly accountRepository: Repository<AccountEntity>,
+    private readonly roleService: RoleService,
   ) {}
 
   async getAccounts(): Promise<AccountModel[]> {
@@ -38,12 +42,7 @@ export class AccountService {
   }
 
   async getAccountByUsername(username: string): Promise<AccountModel> {
-    const account = await this.accountRepository.findOne({
-      where: {
-        username: username,
-        deletedAt: IsNull(),
-      },
-    });
+    const account = await this.checkExistUsername(username);
 
     if (!account) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND); //TO DO
@@ -53,24 +52,43 @@ export class AccountService {
   }
 
   async checkExistUsername(username: string) {
-    return true; // TO DO
+    const existingUsername = this.accountRepository.findOne({
+      where: { username: username, deletedAt: IsNull() },
+    });
+    return existingUsername;
   }
 
   async createAccount(
     username: string,
     password: string,
     roleId: number,
-    reqAccountId: number,
+    reqAccountId: number | undefined,
   ): Promise<AccountModel> {
+    const existingAccount = await this.checkExistUsername(username);
+    if (existingAccount) {
+      throw new HttpException(
+        'Username already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const hashedPassword = await bcrypt.hash(password, SALT_OR_ROUNDS);
+    const defaultRole = await this.roleService.getRoleByName(RoleType.User);
+
     const entity = new AccountEntity();
     entity.username = username;
     entity.password = hashedPassword;
-    entity.roleId = roleId;
+    entity.roleId = roleId ?? defaultRole.id;
     entity.createdAt = new Date();
     entity.createdBy = reqAccountId;
 
     const newAccount = await this.accountRepository.save(entity);
+
+    if (!reqAccountId) {
+      await this.accountRepository.update(newAccount.id, {
+        createdBy: newAccount.id,
+      });
+    }
+
     return await this.getAccountByUsername(newAccount.username);
   }
 
@@ -98,6 +116,7 @@ export class AccountService {
     return await this.getAccount(account.id);
   }
 
+  @Roles(RoleType.Admin)
   async deleteAccount(account: AccountModel): Promise<boolean> {
     await this.accountRepository.update(
       {
@@ -110,5 +129,14 @@ export class AccountService {
       },
     );
     return true;
+  }
+
+  async getAccountRole(accountId: number): Promise<AccountModel> {
+    const account = await this.getAccount(accountId);
+    const role = await this.roleService.getRole(account.roleId);
+    return {
+      ...account,
+      roleId: role.id,
+    };
   }
 }

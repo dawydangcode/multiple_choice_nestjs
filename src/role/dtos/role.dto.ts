@@ -20,7 +20,6 @@ export class CreateRoleBodyDto extends PickType(RoleDto, ['name']) {}
 export class UpdateRoleBodyDto extends PartialType(
   PickType(RoleDto, ['roleId', 'name']),
 ) {}
-// export class CreateRoleParamsDto extends PickType(RoleDto, ['roleId']){}
 
 export class GetRoleParamsDto extends PickType(RoleDto, ['roleId']) {}
 

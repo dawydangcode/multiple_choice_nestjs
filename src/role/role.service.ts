@@ -3,9 +3,8 @@ import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleModel } from './models/role.model';
 import { RoleEntity } from './entities/role.entity';
-import { throwError } from 'rxjs';
-import { error } from 'console';
-import { isNull } from 'util';
+import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
+import { RoleType } from './enum/role.enum';
 
 @Injectable()
 export class RoleService {
@@ -25,11 +24,16 @@ export class RoleService {
 
   async getRole(roleId: number): Promise<RoleModel> {
     const role = await this.roleRepository.findOne({
-      where: { id: roleId, deletedAt: IsNull() },
+      where: {
+        id: roleId,
+        deletedAt: IsNull(),
+      },
     });
+
     if (!role) {
       throw new HttpException('Role not found', HttpStatus.NOT_FOUND);
     }
+
     return role.toModel();
   }
 
@@ -37,8 +41,9 @@ export class RoleService {
     const entity = new RoleEntity();
     entity.name = name;
     entity.createdAt = new Date();
-    entity.createdBy = 1;
+    entity.createdBy = ADMIN_ACCOUNT_ID;
     const newRole = await this.roleRepository.save(entity);
+
     return await this.getRole(newRole.id);
   }
 
@@ -54,7 +59,7 @@ export class RoleService {
       {
         name: name,
         updatedAt: new Date(),
-        updatedBy: 1,
+        updatedBy: ADMIN_ACCOUNT_ID,
       },
     );
 
@@ -69,9 +74,23 @@ export class RoleService {
       },
       {
         deletedAt: new Date(),
-        deletedBy: 1,
+        deletedBy: ADMIN_ACCOUNT_ID,
       },
     );
     return true;
+  }
+
+  async getRoleByName(role: RoleType): Promise<RoleModel> {
+    const defaultRole = await this.roleRepository.findOne({
+      where: {
+        name: role,
+        deletedAt: IsNull(),
+      },
+    });
+    if (!defaultRole) {
+      throw new HttpException('Default role not found', HttpStatus.NOT_FOUND);
+    }
+
+    return defaultRole.toModel();
   }
 }

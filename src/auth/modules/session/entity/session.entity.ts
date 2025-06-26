@@ -6,11 +6,23 @@ export class SessionEntity {
   @PrimaryGeneratedColumn({ name: 'id' })
   id!: number;
 
-  @Column({ name: 'session_id' })
-  sessionId!: number;
-
   @Column({ name: 'account_id' })
   accountId!: number;
+
+  @Column({ name: 'role_id' })
+  roleId!: number;
+
+  @Column({ name: 'access_token' })
+  accessToken!: string;
+
+  @Column({ name: 'refresh_token' })
+  refreshToken!: string;
+
+  @Column({ name: 'expires_at' })
+  accessExpire!: Date;
+
+  @Column({ name: 'refresh_expires_at' })
+  refreshExpire!: Date;
 
   @Column({ name: 'user_agent' })
   userAgent!: string;
@@ -18,8 +30,8 @@ export class SessionEntity {
   @Column({ name: 'ip_address' })
   ipAddress!: string;
 
-  @Column({ name: 'is_revoke' })
-  isRevoke!: boolean;
+  @Column({ name: 'is_active' })
+  isActive!: boolean;
 
   @Column({ name: 'created_at' })
   createdAt!: Date;
@@ -42,17 +54,21 @@ export class SessionEntity {
   toModel(): SessionModel {
     return new SessionModel(
       this.id,
-      this.sessionId,
       this.accountId,
+      this.roleId,
+      this.accessToken,
+      this.refreshToken,
+      this.accessExpire,
+      this.refreshExpire,
+      this.isActive,
       this.userAgent,
       this.ipAddress,
-      this.isRevoke,
       this.createdAt,
       this.createdBy,
       this.updatedAt,
       this.updatedBy,
       this.deletedAt,
-      this.deletedBy
+      this.deletedBy,
     );
   }
 }
