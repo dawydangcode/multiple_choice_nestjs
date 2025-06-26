@@ -1,10 +1,9 @@
-import { Injectable, Request, UnauthorizedException } from '@nestjs/common';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { AccountService } from 'src/account/account.service';
 import * as bcrypt from 'bcrypt';
 import { AccountModel } from 'src/account/models/account.model';
 import { AccountDetailService } from 'src/account/modules/account-detail/account-detail.service';
-import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
 import { RoleModel } from 'src/role/models/role.model';
 import { ConfigService } from '@nestjs/config';
 import { SessionService } from './modules/session/session.service';
@@ -97,13 +96,15 @@ export class AuthService {
   }
 
   async generateToken(payload: PayloadModel) {
+    const plainPayload = payload.toString();
+
     const accessSecret = this.configService.get<string>(
       'auth.jwt.accessToken.secret',
     );
     const accessExpire = this.configService.get<string>(
       'auth.jwt.accessToken.signOptions.expiresIn',
     );
-    const accessToken = this.jwtService.sign(payload, {
+    const accessToken = this.jwtService.sign(plainPayload, {
       secret: accessSecret,
       expiresIn: accessExpire,
     });
@@ -117,7 +118,7 @@ export class AuthService {
     const refreshExpire = this.configService.get<string>(
       'auth.jwt.refreshToken.signOptions.expiresIn',
     );
-    const refreshToken = this.jwtService.sign(payload, {
+    const refreshToken = this.jwtService.sign(plainPayload, {
       secret: refreshSecret,
       expiresIn: refreshExpire,
     });

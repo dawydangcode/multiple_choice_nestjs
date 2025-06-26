@@ -17,4 +17,13 @@ export class PayloadModel {
     this.roleId = roleId;
     this.role = role;
   }
+
+  toString() {
+    return {
+      accoutId: this.accountId,
+      sesssionId: this.sessionId,
+      roleId: this.roleId,
+      role: this.role,
+    };
+  }
 }
