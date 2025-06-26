@@ -12,7 +12,7 @@ import {
   CreateAccountBodyDto,
   GetAccountParamsDto,
   UpdateAccountParamsDto,
-} from './dtos/account.dto';
+} from './dto/account.dto';
 import { AccountModel } from './models/account.model';
 
 import { ApiTags } from '@nestjs/swagger';
