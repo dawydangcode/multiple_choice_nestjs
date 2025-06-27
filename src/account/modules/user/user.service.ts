@@ -16,22 +16,30 @@ export class UserService {
     private readonly accountDetailService: AccountDetailService,
   ) {}
 
+  async getUser(userId: number): Promise<UserModel> {
+    return this.userEntity
+      .findOne({
+        where: {
+          id: userId,
+          deletedAt: IsNull(),
+        },
+      })
+      .then((user) => {
+        if (!user) {
+          throw new Error('User not found');
+        }
+        return user.toModel();
+      });
+  }
+
   async getProfile(
     account: AccountModel,
   ): Promise<{ user: UserModel; accountDetail: AccountDetailModel }> {
-    const user = await this.userEntity.findOne({
-      where: {
-        accountId: account.id,
-        deletedAt: IsNull(),
-      },
-    });
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await this.getUser(account.id);
     const accountDetail =
       await this.accountDetailService.getAccountDetailByAccountId(account.id);
     return {
-      user: user.toModel(),
+      user: user,
       accountDetail: accountDetail,
     };
   }
