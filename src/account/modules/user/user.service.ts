@@ -7,6 +7,7 @@ import { AccountDetailService } from '../account-detail/account-detail.service';
 import { AccountModel } from 'src/account/models/account.model';
 import { UserModel } from './model/user.model';
 import { AccountDetailModel } from '../account-detail/models/account-detail.model';
+import { GenderType } from '../account-detail/enums/gender.type';
 
 @Injectable()
 export class UserService {
@@ -64,5 +65,29 @@ export class UserService {
 
     const newUser = await this.userEntity.save(entity);
     return newUser.toModel();
+  }
+
+  async updateProfile(
+    account: AccountModel,
+    name: string | undefined,
+    dob: Date | undefined,
+    gender: GenderType | undefined,
+    imageUrl: string | undefined,
+    reqAccountId: number,
+  ): Promise<AccountDetailModel> {
+    const accountDetail =
+      await this.accountDetailService.getAccountDetailByAccountId(account.id);
+
+    const updateUserProfile =
+      await this.accountDetailService.updateAccountDetail(
+        accountDetail,
+        name,
+        dob,
+        gender,
+        imageUrl,
+        account.id,
+        reqAccountId,
+      );
+    return updateUserProfile;
   }
 }

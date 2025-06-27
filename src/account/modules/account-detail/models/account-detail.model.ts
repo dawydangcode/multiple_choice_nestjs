@@ -4,7 +4,7 @@ export class AccountDetailModel {
   public readonly id: number;
   public readonly accountId: number;
   public readonly name: string | undefined;
-  public readonly dob: string | undefined;
+  public readonly dob: Date | undefined;
   public readonly gender: GenderType | undefined;
   public readonly imageUrl: string | undefined;
   public readonly created_at: Date;
@@ -18,7 +18,7 @@ export class AccountDetailModel {
     id: number,
     accountId: number,
     name: string | undefined,
-    dob: string | undefined,
+    dob: Date | undefined,
     gender: GenderType | undefined,
     imageUrl: string | undefined,
     created_at: Date,
