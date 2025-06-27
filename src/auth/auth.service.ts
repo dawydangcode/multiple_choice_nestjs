@@ -12,6 +12,7 @@ import { SessionModel } from './modules/session/model/session.model';
 import * as moment from 'moment';
 import { PayloadModel } from './model/payload.model';
 import { RoleService } from 'src/role/role.service';
+import { UserService } from 'src/account/modules/user/user.service';
 @Injectable()
 export class AuthService {
   constructor(

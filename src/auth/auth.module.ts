@@ -10,7 +10,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SessionModule } from './modules/session/session.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { RolesGuard } from 'src/middlewares/guards/role.guard';
 
 @Module({
   imports: [

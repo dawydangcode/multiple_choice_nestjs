@@ -12,6 +12,7 @@ import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/middlewares/guards/role.guard';
 import database from 'src/config/database';
 import app from 'src/config/app';
+import { UserModule } from 'src/account/modules/user/user.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import app from 'src/config/app';
     RoleModule,
     AuthModule,
     SessionModule,
+    UserModule,
   ],
 
   controllers: [AppController],

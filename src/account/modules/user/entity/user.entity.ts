@@ -1,5 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { UserModel } from '../model/user.model';
+import { AccountModel } from 'src/account/models/account.model';
+import { AccountDetailModel } from '../../account-detail/models/account-detail.model';
 
 @Entity('user')
 export class UserEntity {

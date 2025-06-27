@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsString } from 'class-validator';
 
@@ -15,3 +15,7 @@ export class UserDto {
   @IsString()
   cvUrl!: string;
 }
+
+export class GetUserProfileParamDto extends PickType(UserDto, ['accountId']) {}
+
+export class UploadCVBodyDto extends PickType(UserDto, ['cvUrl']) {}
