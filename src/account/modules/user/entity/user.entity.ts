@@ -2,6 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { UserModel } from '../model/user.model';
 import { AccountModel } from 'src/account/models/account.model';
 import { AccountDetailModel } from '../../account-detail/models/account-detail.model';
+import { IsOptional } from 'class-validator';
 
 @Entity('user')
 export class UserEntity {
@@ -11,8 +12,8 @@ export class UserEntity {
   @Column({ name: 'account_id' })
   accountId!: number;
 
-  @Column({ name: 'cv_url' })
-  cvUrl!: string;
+  @Column({ name: 'cv_url', nullable: true })
+  cvUrl?: string;
 
   @Column({ name: 'created_at' })
   createdAt!: Date;

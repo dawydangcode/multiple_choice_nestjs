@@ -18,6 +18,7 @@ import { PayloadModel } from './model/payload.model';
 import { session } from 'passport';
 import { RequestModel } from 'src/utils/models/request.model';
 import { SessionService } from './modules/session/session.service';
+import { UserService } from 'src/account/modules/user/user.service';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -26,6 +27,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly roleService: RoleService,
     private readonly sessionService: SessionService,
+    private readonly userService: UserService,
   ) {}
 
   @Public()
@@ -53,13 +55,14 @@ export class AuthController {
   @Post('register')
   async signUp(@Body() body: AuthSignUpBodyDto) {
     const role = await this.roleService.getRoleByName(RoleType.User);
-
-    return await this.authService.register(
+    const account = await this.authService.register(
       body.username,
       body.password,
       role,
       undefined,
     );
+    const user = await this.userService.createUser(account);
+    return account;
   }
 
   @Put('change-password')

@@ -1,7 +1,7 @@
 export class UserModel {
   public readonly id: number;
   public readonly accountId: number;
-  public readonly cvUrl: string;
+  public readonly cvUrl: string | undefined;
   public readonly createAt: Date | undefined;
   public readonly createBy: number | undefined;
   public readonly updatedAt: Date | undefined;
@@ -12,7 +12,7 @@ export class UserModel {
   constructor(
     id: number,
     accountId: number,
-    cvUrl: string,
+    cvUrl: string | undefined,
     createAt: Date | undefined,
     createBy: number | undefined,
     updatedAt: Date | undefined,

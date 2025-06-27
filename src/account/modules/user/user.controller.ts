@@ -12,9 +12,10 @@ export class UserController {
     private readonly accountService: AccountService,
   ) {}
 
-  @Get('profile/:accountId')
-  async getProfile(@Param() params: GetUserProfileParamDto) {
-    return await this.userService.getProfile(params.accountId);
+  @Get('profile')
+  async getProfile(@Req() req: any, @Param() params: GetUserProfileParamDto) {
+    const profile = await this.userService.getProfile(req.user.accountId);
+    return profile;
   }
 
   @Post('upload-cv')

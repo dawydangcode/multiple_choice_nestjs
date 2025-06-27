@@ -6,6 +6,7 @@ import { AccountService } from 'src/account/account.service';
 import { AccountDetailService } from '../account-detail/account-detail.service';
 import { AccountModel } from 'src/account/models/account.model';
 import { UserModel } from './model/user.model';
+import { AccountDetailModel } from '../account-detail/models/account-detail.model';
 
 @Injectable()
 export class UserService {
@@ -15,20 +16,35 @@ export class UserService {
     private readonly accountDetailService: AccountDetailService,
   ) {}
 
-  async getProfile(accountId: number): Promise<UserModel> {
-    const accountDetail =
-      await this.accountDetailService.getAccountDetailByAccountId(accountId);
-
+  async getProfile(
+    account: AccountModel,
+  ): Promise<{ user: UserModel; accountDetail: AccountDetailModel }> {
     const user = await this.userEntity.findOne({
       where: {
-        accountId: accountDetail.id,
+        accountId: account.id,
         deletedAt: IsNull(),
       },
     });
     if (!user) {
       throw new Error('User not found');
     }
-    return user.toModel();
+    const accountDetail =
+      await this.accountDetailService.getAccountDetailByAccountId(account.id);
+    return {
+      user: user.toModel(),
+      accountDetail: accountDetail,
+    };
+  }
+
+  async createUser(account: AccountModel): Promise<UserModel> {
+    const entity = new UserEntity();
+    entity.accountId = account.id;
+    entity.createdAt = new Date();
+    entity.createdBy = account.id;
+    entity.cvUrl = undefined;
+
+    const newUser = await this.userEntity.save(entity);
+    return newUser.toModel();
   }
 
   async uploadCV(account: AccountModel, cvUrl: string): Promise<UserModel> {

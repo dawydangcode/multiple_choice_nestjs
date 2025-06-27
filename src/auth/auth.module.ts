@@ -10,6 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SessionModule } from './modules/session/session.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { UserModule } from 'src/account/modules/user/user.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     forwardRef(() => AccountDetailModule),
     forwardRef(() => RoleModule),
     forwardRef(() => SessionModule),
+    forwardRef(() => UserModule),
     PassportModule,
     ConfigModule.forRoot({
       load: [auth],
