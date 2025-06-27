@@ -14,7 +14,7 @@ export class AccountDetailEntity {
   name?: string;
 
   @Column({ name: 'dob' })
-  dob?: string;
+  dob?: Date;
 
   @Column({ name: 'gender' })
   gender?: GenderType;

@@ -8,6 +8,7 @@ import { SALT_OR_ROUNDS } from 'src/auth/constants/auth.const';
 import { RoleService } from 'src/role/role.service';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
+import { UserService } from './modules/user/user.service';
 
 @Injectable()
 export class AccountService {
@@ -82,7 +83,6 @@ export class AccountService {
     entity.createdBy = reqAccountId;
 
     const newAccount = await this.accountRepository.save(entity);
-
     if (!reqAccountId) {
       await this.accountRepository.update(newAccount.id, {
         createdBy: newAccount.id,

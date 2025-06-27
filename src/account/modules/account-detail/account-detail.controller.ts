@@ -62,6 +62,7 @@ export class AccountDetailController {
       body.gender,
       body.imageUrl,
       body.accountId,
+      ADMIN_ACCOUNT_ID,
     );
   }
 
