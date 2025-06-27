@@ -26,8 +26,8 @@ export class AccountDetailDto {
   name!: string;
 
   @ApiProperty()
-  @IsDateString()
-  dob!: string;
+  @IsDate()
+  dob!: Date;
 
   @ApiProperty()
   @IsEnum(GenderType)

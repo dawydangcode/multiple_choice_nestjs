@@ -1,5 +1,3 @@
-import { RoleType } from 'src/role/enum/role.enum';
-
 export class PayloadModel {
   public readonly accountId: number;
   public readonly sessionId: number;
@@ -20,7 +18,7 @@ export class PayloadModel {
 
   toString() {
     return {
-      accoutId: this.accountId,
+      accountId: this.accountId,
       sesssionId: this.sessionId,
       roleId: this.roleId,
       role: this.role,

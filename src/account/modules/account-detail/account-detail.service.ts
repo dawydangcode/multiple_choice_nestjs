@@ -58,7 +58,7 @@ export class AccountDetailService {
   async createAccountDetail(
     accountId: number,
     name: string | undefined,
-    dob: string | undefined,
+    dob: Date | undefined,
     gender: GenderType | undefined,
     imageUrl: string | undefined,
     reqAccountId: number | undefined,
@@ -79,10 +79,11 @@ export class AccountDetailService {
   async updateAccountDetail(
     accountDetail: AccountDetailModel,
     name: string | undefined,
-    dob: string | undefined,
+    dob: Date | undefined,
     gender: GenderType | undefined,
     imageUrl: string | undefined,
     accountId: number | undefined,
+    reqAccountId: number,
   ): Promise<AccountDetailModel> {
     await this.accountDetailRepository.update(
       {
@@ -95,8 +96,8 @@ export class AccountDetailService {
         gender: gender,
         imageUrl: imageUrl,
         accountId: accountId,
-        updatedBy: accountId,
         updatedAt: new Date(),
+        updatedBy: reqAccountId || accountDetail.accountId,
       },
     );
     return this.getAccountDetail(accountDetail.id);

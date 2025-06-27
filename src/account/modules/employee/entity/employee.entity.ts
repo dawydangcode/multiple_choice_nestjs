@@ -1,26 +1,14 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { AccountDetailModel } from '../models/account-detail.model';
-import { GenderType } from '../enums/gender.type';
+import { EmployeeModel } from '../model/employee.model';
 
-@Entity('account_detail')
-export class AccountDetailEntity {
-  @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
+@Entity('employee')
+export class EmployeeEntity {
+  @PrimaryGeneratedColumn()
+  @Column({ name: 'id' })
   id!: number;
 
   @Column({ name: 'account_id' })
   accountId!: number;
-
-  @Column({ name: 'name' })
-  name?: string;
-
-  @Column({ name: 'dob' })
-  dob?: Date;
-
-  @Column({ name: 'gender' })
-  gender?: GenderType;
-
-  @Column({ name: 'image_url' })
-  imageUrl?: string;
 
   @Column({ name: 'created_at' })
   createdAt!: Date;
@@ -40,14 +28,10 @@ export class AccountDetailEntity {
   @Column({ name: 'deleted_by' })
   deletedBy!: number;
 
-  toModel(): AccountDetailModel {
-    return new AccountDetailModel(
+  toModel(): EmployeeModel {
+    return new EmployeeModel(
       this.id,
       this.accountId,
-      this.name,
-      this.dob,
-      this.gender,
-      this.imageUrl,
       this.createdAt,
       this.createdBy,
       this.updatedAt,

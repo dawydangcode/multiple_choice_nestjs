@@ -8,12 +8,14 @@ import { AccountDetailModule } from './modules/account-detail/account-detail.mod
 import { AuthModule } from 'src/auth/auth.module';
 import { RoleService } from 'src/role/role.service';
 import { RoleModule } from 'src/role/role.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AccountEntity, AccountDetailEntity]),
     forwardRef(() => RoleModule),
     forwardRef(() => AccountDetailModule),
+    forwardRef(() => UserModule),
     AuthModule,
   ],
   controllers: [AccountController],

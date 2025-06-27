@@ -1,26 +1,19 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { AccountDetailModel } from '../models/account-detail.model';
-import { GenderType } from '../enums/gender.type';
+import { UserModel } from '../model/user.model';
+import { AccountModel } from 'src/account/models/account.model';
+import { AccountDetailModel } from '../../account-detail/models/account-detail.model';
+import { IsOptional } from 'class-validator';
 
-@Entity('account_detail')
-export class AccountDetailEntity {
-  @PrimaryGeneratedColumn({ type: 'bigint', name: 'id' })
+@Entity('user')
+export class UserEntity {
+  @PrimaryGeneratedColumn({ name: 'id' })
   id!: number;
 
   @Column({ name: 'account_id' })
   accountId!: number;
 
-  @Column({ name: 'name' })
-  name?: string;
-
-  @Column({ name: 'dob' })
-  dob?: Date;
-
-  @Column({ name: 'gender' })
-  gender?: GenderType;
-
-  @Column({ name: 'image_url' })
-  imageUrl?: string;
+  @Column({ name: 'cv_url', nullable: true })
+  cvUrl?: string;
 
   @Column({ name: 'created_at' })
   createdAt!: Date;
@@ -40,14 +33,11 @@ export class AccountDetailEntity {
   @Column({ name: 'deleted_by' })
   deletedBy!: number;
 
-  toModel(): AccountDetailModel {
-    return new AccountDetailModel(
+  toModel(): UserModel {
+    return new UserModel(
       this.id,
       this.accountId,
-      this.name,
-      this.dob,
-      this.gender,
-      this.imageUrl,
+      this.cvUrl,
       this.createdAt,
       this.createdBy,
       this.updatedAt,
