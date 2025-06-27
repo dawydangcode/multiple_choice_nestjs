@@ -13,6 +13,8 @@ import * as moment from 'moment';
 import { PayloadModel } from './model/payload.model';
 import { RoleService } from 'src/role/role.service';
 import { UserService } from 'src/account/modules/user/user.service';
+import { TokenModel } from './model/token.model';
+import { Session } from 'inspector/promises';
 @Injectable()
 export class AuthService {
   constructor(
@@ -29,7 +31,7 @@ export class AuthService {
     password: string,
     userAgent: string,
     ipAddress: string,
-  ): Promise<Partial<SessionModel>> {
+  ): Promise<TokenModel> {
     const account = await this.accountService.getAccountByUsername(username);
     const role = await this.roleService.getRole(account.roleId);
     const isMatch = await bcrypt.compare(password, account.password);
@@ -59,8 +61,8 @@ export class AuthService {
       accountId: account.id,
       accessToken: accessToken,
       refreshToken: refreshToken,
-      accessExpire: accessExpireDate,
-      refreshExpire: refreshExpireDate,
+      accessExpireDate: accessExpireDate,
+      refreshExpireDate: refreshExpireDate,
     };
   }
 
@@ -96,7 +98,7 @@ export class AuthService {
     return await this.accountService.getAccount(newAccount.id);
   }
 
-  async generateToken(payload: PayloadModel) {
+  async generateToken(payload: PayloadModel): Promise<TokenModel> {
     const plainPayload = payload.toString();
 
     const accessSecret = this.configService.get<string>(
@@ -128,12 +130,13 @@ export class AuthService {
       .add(ms(refreshExpire as StringValue), 'ms')
       .toDate();
 
-    return {
+    return new TokenModel(
+      payload.accountId,
       accessToken,
       refreshToken,
       accessExpireDate,
       refreshExpireDate,
-    };
+    );
   }
 
   // async signIn(username: string, password: string): Promise<SessionModel> {
