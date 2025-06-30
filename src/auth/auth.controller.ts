@@ -60,11 +60,21 @@ export class AuthController {
     return account;
   }
 
-  @Public()
-  @Post('request-reset-password')
-  async requestResetPassword(@Body() body: RequestOtpBodyDto) {
-    await this.authService.requestResetPasswordOtp(body.email);
-    return { message: 'OTP sent to your email' };
+  @Post('request-reset-password-authenticated')
+  async requestResetPasswordAuthenticated(@Req() req: RequestModel) {
+    const email = req.user.email;
+    await this.authService.requestResetPasswordOtp(email);
+    return true;
+  }
+
+  @Post('reset-password-authenticated')
+  async resetPasswordAuthenticated(
+    @Req() req: RequestModel,
+    @Body() body: ResetPasswordBodyDto,
+  ) {
+    const email = req.user.email;
+    await this.authService.resetPassword(email, body.otpCode, body.newPassword);
+    return true;
   }
 
   @Public()
@@ -75,6 +85,13 @@ export class AuthController {
       body.otpCode,
       body.newPassword,
     );
-    return { message: 'Password reset successfully' };
+    return true;
+  }
+
+  @Public()
+  @Post('request-reset-password')
+  async requestResetPassword(@Body() body: RequestOtpBodyDto) {
+    await this.authService.requestResetPasswordOtp(body.email);
+    return true;
   }
 }

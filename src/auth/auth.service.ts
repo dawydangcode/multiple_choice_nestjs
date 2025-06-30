@@ -16,9 +16,7 @@ import { SessionModel } from './modules/session/model/session.model';
 import * as moment from 'moment';
 import { PayloadModel } from './model/payload.model';
 import { RoleService } from 'src/role/role.service';
-import { UserService } from 'src/account/modules/user/user.service';
 import { TokenModel } from './model/token.model';
-import { Session } from 'inspector/promises';
 import { SALT_OR_ROUNDS } from './constants/auth.const';
 import { OtpEntity } from './entities/otp.entity';
 import { MoreThan, Not, Repository } from 'typeorm';
@@ -62,6 +60,7 @@ export class AuthService {
     const payload = new PayloadModel(
       account.id,
       session.id,
+      account.email,
       account.roleId,
       role.name,
     );
@@ -113,7 +112,7 @@ export class AuthService {
   }
 
   async generateToken(payload: PayloadModel): Promise<TokenModel> {
-    const plainPayload = payload.toString();
+    const plainPayload = { ...payload };
 
     const accessSecret = this.configService.get<string>(
       'auth.jwt.accessToken.secret',
