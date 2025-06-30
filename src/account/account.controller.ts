@@ -44,6 +44,7 @@ export class AccountController {
     return await this.accountService.createAccount(
       body.username,
       body.password,
+      body.email,
       body.roleId,
       undefined,
     );

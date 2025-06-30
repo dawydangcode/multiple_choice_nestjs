@@ -1,21 +1,15 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Param,
-  Post,
-  Put,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Body, Controller, Post, Put, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthSignInBodyDto, AuthSignUpBodyDto } from './dto/auth.dto';
+import {
+  AuthSignInBodyDto,
+  AuthSignUpBodyDto,
+  RequestOtpBodyDto,
+  ResetPasswordBodyDto,
+} from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleService } from 'src/role/role.service';
 import { Public } from 'src/middlewares/guards/jwt-auth.guard';
 import { RoleType } from 'src/role/enum/role.enum';
-import { PayloadModel } from './model/payload.model';
-import { session } from 'passport';
 import { RequestModel } from 'src/utils/models/request.model';
 import { SessionService } from './modules/session/session.service';
 import { UserService } from 'src/account/modules/user/user.service';
@@ -58,6 +52,7 @@ export class AuthController {
     const account = await this.authService.register(
       body.username,
       body.password,
+      body.email,
       role,
       undefined,
     );
@@ -65,11 +60,21 @@ export class AuthController {
     return account;
   }
 
-  @Put('change-password')
-  async changePassword() {}
+  @Public()
+  @Post('request-reset-password')
+  async requestResetPassword(@Body() body: RequestOtpBodyDto) {
+    await this.authService.requestResetPasswordOtp(body.email);
+    return { message: 'OTP sent to your email' };
+  }
 
-  @Put('auth/reset-password')
-  async resetPassword() {
-    return;
+  @Public()
+  @Post('reset-password')
+  async resetPassword(@Body() body: ResetPasswordBodyDto) {
+    await this.authService.resetPassword(
+      body.email,
+      body.otpCode,
+      body.newPassword,
+    );
+    return { message: 'Password reset successfully' };
   }
 }

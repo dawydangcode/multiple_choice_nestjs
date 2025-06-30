@@ -4,6 +4,7 @@ export class AccountModel {
   public readonly id: number;
   public readonly username: string;
   public readonly password: string;
+  public readonly email: string;
   public readonly roleId: number;
   public readonly created_at: Date | undefined;
   public readonly created_by: number | undefined;
@@ -16,6 +17,7 @@ export class AccountModel {
     id: number,
     username: string,
     password: string,
+    email: string,
     roleId: number,
     created_at: Date | undefined,
     created_by: number | undefined,
@@ -27,6 +29,7 @@ export class AccountModel {
     this.id = id;
     this.username = username;
     this.password = password;
+    this.email = email;
     this.roleId = roleId;
     this.created_at = created_at;
     this.created_by = created_by;

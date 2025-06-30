@@ -59,9 +59,17 @@ export class AccountService {
     return existingUsername;
   }
 
+  async checkExistEmail(email: string) {
+    const existingEmail = this.accountRepository.findOne({
+      where: { email: email, deletedAt: IsNull() },
+    });
+    return existingEmail;
+  }
+
   async createAccount(
     username: string,
     password: string,
+    email: string,
     roleId: number,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
@@ -72,12 +80,19 @@ export class AccountService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    const existingEmail = await this.checkExistEmail(email);
+    if (existingEmail) {
+      throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
+    }
+
     const hashedPassword = await bcrypt.hash(password, SALT_OR_ROUNDS);
     const defaultRole = await this.roleService.getRoleByName(RoleType.User);
 
     const entity = new AccountEntity();
     entity.username = username;
     entity.password = hashedPassword;
+    entity.email = email;
     entity.roleId = roleId ?? defaultRole.id;
     entity.createdAt = new Date();
     entity.createdBy = reqAccountId;

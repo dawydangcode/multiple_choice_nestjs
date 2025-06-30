@@ -19,6 +19,9 @@ export class AccountEntity {
   @Column('varchar', { name: 'password' })
   password!: string;
 
+  @Column({ name: 'email' })
+  email!: string;
+
   @Column('bigint', { name: 'role_id' })
   roleId!: number;
 
@@ -52,6 +55,7 @@ export class AccountEntity {
       this.id,
       this.username,
       this.password,
+      this.email,
       this.roleId,
       this.createdAt,
       this.createdBy,

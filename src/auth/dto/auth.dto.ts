@@ -1,6 +1,7 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsString } from 'class-validator';
+import { IsEmail, IsNumber, IsString } from 'class-validator';
+import { extend } from 'lodash';
 
 export class AuthDto {
   @ApiProperty()
@@ -10,6 +11,11 @@ export class AuthDto {
   @ApiProperty()
   @IsString()
   password!: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsEmail()
+  email!: string;
 
   @ApiProperty()
   @Type(() => Number)
@@ -41,11 +47,20 @@ export class AuthDto {
   @ApiProperty()
   @IsString()
   payload!: string;
+
+  @ApiProperty()
+  @IsString()
+  otpCode!: string;
+
+  @ApiProperty()
+  @IsString()
+  newPassword!: string;
 }
 
 export class AuthSignUpBodyDto extends PickType(AuthDto, [
   'username',
   'password',
+  'email',
 ]) {}
 
 export class AuthSignInBodyDto extends PickType(AuthDto, [
@@ -57,4 +72,12 @@ export class ValidateBodyDto extends PickType(AuthDto, [
   'accountId',
   'sessionId',
   'roleId',
+]) {}
+
+export class RequestOtpBodyDto extends PickType(AuthDto, ['email']) {}
+
+export class ResetPasswordBodyDto extends PickType(AuthDto, [
+  'email',
+  'otpCode',
+  'newPassword',
 ]) {}

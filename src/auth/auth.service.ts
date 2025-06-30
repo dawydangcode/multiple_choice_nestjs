@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AccountService } from 'src/account/account.service';
 import * as bcrypt from 'bcrypt';
@@ -15,6 +19,11 @@ import { RoleService } from 'src/role/role.service';
 import { UserService } from 'src/account/modules/user/user.service';
 import { TokenModel } from './model/token.model';
 import { Session } from 'inspector/promises';
+import { SALT_OR_ROUNDS } from './constants/auth.const';
+import { OtpEntity } from './entities/otp.entity';
+import { MoreThan, Not, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { MailerService } from '@nestjs-modules/mailer';
 @Injectable()
 export class AuthService {
   constructor(
@@ -22,6 +31,9 @@ export class AuthService {
     private readonly accountDetailService: AccountDetailService,
     private readonly roleService: RoleService,
     private readonly sessionService: SessionService,
+    @InjectRepository(OtpEntity)
+    private readonly otpRepository: Repository<OtpEntity>,
+    private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -74,6 +86,7 @@ export class AuthService {
   async register(
     username: string,
     password: string,
+    email: string,
     role: RoleModel,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
@@ -82,6 +95,7 @@ export class AuthService {
     const newAccount = await this.accountService.createAccount(
       username,
       password,
+      email,
       role.id,
       reqAccountId,
     );
@@ -139,116 +153,71 @@ export class AuthService {
     );
   }
 
-  // async signIn(username: string, password: string): Promise<SessionModel> {
-  //   const account = await this.accountService.getAccountByUsername(username);
-  //   const isMatch = await bcrypt.compare(password, account.password);
-  //   if (!isMatch) {
-  //     throw new UnauthorizedException('Invalid credentials');
-  //   }
+  async requestResetPasswordOtp(email: string): Promise<void> {
+    const account = await this.accountService.checkExistEmail(email);
+    if (!account) {
+      throw new UnauthorizedException('Email does not exist');
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = await bcrypt.hash(otp, SALT_OR_ROUNDS);
 
-  //   const payload = {
-  //     accountId: account.id,
-  //     roleId: account.roleId,
-  //     userAgent: '',
-  //     ipAddress: '',
-  //     isRevoke: false,
-  //   };
+    const expiresAt = new Date(Date.now() + ms('5m'));
 
-  //   const accessSecret = this.configService.get<string>(
-  //     'auth.jwt.accessToken.secret',
-  //   );
-  //   const accessExpire = this.configService.get<string>(
-  //     'auth.jwt.accessToken.signOptions.expiresIn',
-  //   );
-  //   const refreshSecret = this.configService.get<string>(
-  //     'auth.jwt.refreshToken.secret',
-  //   );
-  //   const refreshExpire = this.configService.get<string>(
-  //     'auth.jwt.refreshToken.signOptions.expiresIn',
-  //   ); //TO DO
+    const otpRecord = this.otpRepository.create({
+      accountId: account?.id,
+      email,
+      otpCode: hashedOtp,
+      createdAt: new Date(),
+      expiresAt,
+      isUse: false,
+    });
 
-  //   const accessToken = this.jwtService.sign(payload, {
-  //     secret: accessSecret,
-  //     expiresIn: accessExpire,
-  //   });
-  //   const refreshToken = this.jwtService.sign(payload, {
-  //     secret: refreshSecret,
-  //     expiresIn: refreshExpire,
-  //   });
+    await this.otpRepository.save(otpRecord);
 
-  //   return;
-  // }
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Password Reset OTP',
+      html: `Your OTP for password reset is <b>${otp}</b>. It expires in 5 minutes.`,
+    });
+  }
 
-  // async refreshAccessToken(refreshToken: string): Promise<TokenModel> {
-  //   const payload = this.jwtService.verify(refreshToken, {
-  //     secret: this.configService.get<string>('auth.refreshToken.secret'),
-  //   }) as {
-  //     accountId: number;
-  //     roleId: number;
-  //   };
+  async resetPassword(
+    email: string,
+    otp: string,
+    newPassword: string,
+  ): Promise<void> {
+    const otpRecord = await this.otpRepository.findOne({
+      where: {
+        email,
+        isUse: false,
+        expiresAt: MoreThan(new Date()),
+      },
+    });
 
-  //   const account = await this.accountService.getAccount(payload.accountId);
+    if (!otpRecord) {
+      throw new BadRequestException('Invalid or expired OTP');
+    }
 
-  //   const existingToken = await this.tokenService.getLatestTokenByAccountId(
-  //     account.id,
-  //     false,
-  //   );
-  //   if (existingToken.refreshToken !== refreshToken) {
-  //     throw new UnauthorizedException('Invalid refresh token');
-  //   }
+    const isValid = await bcrypt.compare(otp, otpRecord.otpCode);
+    if (!isValid) {
+      throw new BadRequestException('Invalid OTP');
+    }
 
-  //   const newAccessToken = this.jwtService.sign(
-  //     {
-  //       accountId: account.id,
-  //       roleId: account.roleId,
-  //     },
-  //     {
-  //       secret: this.configService.get<string>('auth.jwt.secret'),
-  //       expiresIn: this.configService.get<string>(
-  //         'auth.jwt.signOptions.expiresIn',
-  //       ),
-  //     },
-  //   );
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.accountService.updateAccount(
+      await this.accountService.getAccount(otpRecord.accountId),
+      undefined,
+      hashedPassword,
+      undefined,
+      undefined,
+    );
 
-  //   const newRefreshToken = this.jwtService.sign(
-  //     { accountId: account.id, roleId: account.roleId },
-  //     {
-  //       secret: this.configService.get<string>('auth.refreshToken.secret'),
-  //       expiresIn: this.configService.get<string>(
-  //         'auth.refreshToken.signOptions.expiresIn',
-  //       ),
-  //     },
-  //   );
+    otpRecord.isUse = true;
+    await this.otpRepository.save(otpRecord);
 
-  //   const expiresAt = add(
-  //     new Date(),
-  //     ExpireTimeUtil.parseExpireTimeForDateFns(
-  //       this.configService.get<string>('auth.jwt.signOptions.expiresIn') ??
-  //         throwError(),
-  //     ),
-  //   );
-
-  //   const refreshExpiresAt = add(
-  //     new Date(),
-  //     ExpireTimeUtil.parseExpireTimeForDateFns(
-  //       this.configService.get<string>(
-  //         'auth.refreshToken.signOptions.expiresIn',
-  //       ) ?? '7d',
-  //     ),
-  //   );
-
-  //   const updatedTokenEntity = await this.tokenService.updateToken(
-  //     existingToken.id,
-  //     account.id,
-  //     newAccessToken,
-  //     expiresAt,
-  //     refreshExpiresAt,
-  //     newRefreshToken,
-  //     existingToken.userAgent,
-  //     existingToken.ipAddress,
-  //     existingToken.sessionId,
-  //   );
-
-  //   return updatedTokenEntity.toModel();
-  // }
+    await this.otpRepository.delete({
+      email,
+      id: Not(otpRecord.id),
+    });
+  }
 }

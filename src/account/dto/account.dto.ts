@@ -5,7 +5,13 @@ import {
   PickType,
 } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNumber,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class AccountDto {
   @ApiProperty()
@@ -29,21 +35,22 @@ export class AccountDto {
   @Type(() => Number)
   @IsNumber()
   accountId!: number;
+
+  @ApiProperty()
+  @IsString()
+  @IsEmail()
+  email!: string;
 }
 
 export class CreateAccountBodyDto extends PickType(AccountDto, [
   'username',
   'password',
+  'email',
   'roleId',
 ]) {}
 
 export class UpdateAccountBodyDto extends PartialType(
   PickType(AccountDto, ['username', 'password']),
-) {}
-
-export class CreateAccountBodyTestDto extends IntersectionType(
-  PickType(AccountDto, ['username']),
-  PartialType(PickType(AccountDto, ['password'])),
 ) {}
 
 export class GetAccountParamsDto extends PickType(AccountDto, ['accountId']) {}
