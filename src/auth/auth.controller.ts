@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import {
   AuthSignInBodyDto,
   AuthSignUpBodyDto,
+  ChangePasswordBodyDto,
   RequestOtpBodyDto,
   ResetPasswordBodyDto,
 } from './dto/auth.dto';
@@ -92,6 +93,19 @@ export class AuthController {
   @Post('request-reset-password')
   async requestResetPassword(@Body() body: RequestOtpBodyDto) {
     await this.authService.requestResetPasswordOtp(body.email);
+    return true;
+  }
+
+  @Post('change-password')
+  async changePassword(
+    @Req() req: RequestModel,
+    @Body() body: ChangePasswordBodyDto,
+  ) {
+    await this.authService.changePassword(
+      req.user.accountId,
+      body.oldPassword,
+      body.newPassword,
+    );
     return true;
   }
 }

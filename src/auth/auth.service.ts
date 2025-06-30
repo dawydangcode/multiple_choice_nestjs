@@ -219,4 +219,26 @@ export class AuthService {
       id: Not(otpRecord.id),
     });
   }
+
+  async changePassword(
+    accountId: number,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const account = await this.accountService.getAccount(accountId);
+
+    const isMatch = await bcrypt.compare(oldPassword, account.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Old password is incorrect');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, SALT_OR_ROUNDS);
+    await this.accountService.updateAccount(
+      account,
+      undefined,
+      hashedNewPassword,
+      undefined,
+      accountId,
+    );
+  }
 }

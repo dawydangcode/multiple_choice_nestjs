@@ -56,6 +56,10 @@ export class AuthDto {
   @ApiProperty()
   @IsString()
   newPassword!: string;
+
+  @ApiProperty()
+  @IsString()
+  oldPassword!: string;
 }
 
 export class AuthSignUpBodyDto extends PickType(AuthDto, [
@@ -80,5 +84,10 @@ export class RequestOtpBodyDto extends PickType(AuthDto, ['email']) {}
 export class ResetPasswordBodyDto extends PickType(AuthDto, [
   'email',
   'otpCode',
+  'newPassword',
+]) {}
+
+export class ChangePasswordBodyDto extends PickType(AuthDto, [
+  'oldPassword',
   'newPassword',
 ]) {}
