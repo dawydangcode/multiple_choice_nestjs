@@ -168,8 +168,8 @@ export class AuthService {
 
     await this.mailerService.sendMail({
       to: email,
-      subject: 'Yêu Cầu Đặt Lại Mật Khẩu',
-      html: `Vui lòng nhấp vào liên kết sau để đặt lại mật khẩu: <a href="${resetUrl}">Đặt Lại Mật Khẩu</a>. Liên kết này sẽ hết hạn sau 15 phút.`,
+      subject: 'Reset Password Request',
+      html: `Please follow the link to reset your password: <a href="${resetUrl}">Reset Password</a>. This link will be expires after 15 minutes.`,
     });
   }
 

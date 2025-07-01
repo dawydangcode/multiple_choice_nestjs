@@ -60,6 +60,7 @@ export class AuthController {
     const user = await this.userService.createUser(account);
     return account;
   }
+  
   @Public()
   @Post('forgot-password')
   async forgotPassword(@Body() body: RequestOtpBodyDto): Promise<void> {
