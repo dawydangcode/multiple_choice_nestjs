@@ -1,3 +1,4 @@
 export class MailOptionsModel {
-  // to do
+  public readonly from: string;
+  
 }
