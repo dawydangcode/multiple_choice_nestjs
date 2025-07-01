@@ -31,7 +31,7 @@ import { OtpEntity } from './entities/otp.entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        return configService.get('auth.jwt.accessToken') as JwtModuleOptions;
+        return configService.get('auth.jwt') as JwtModuleOptions;
       },
     }),
     MailerModule.forRootAsync({
@@ -52,7 +52,7 @@ import { OtpEntity } from './entities/otp.entity';
         },
       }),
     }),
-    TypeOrmModule.forFeature([OtpEntity]),
+    // TypeOrmModule.forFeature([OtpEntity]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

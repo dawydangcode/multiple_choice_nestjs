@@ -60,40 +60,16 @@ export class AuthController {
     const user = await this.userService.createUser(account);
     return account;
   }
-
-  @Post('request-reset-password-authenticated')
-  async requestResetPasswordAuthenticated(@Req() req: RequestModel) {
-    const email = req.user.email;
-    await this.authService.requestResetPasswordOtp(email);
-    return true;
-  }
-
-  @Post('reset-password-authenticated')
-  async resetPasswordAuthenticated(
-    @Req() req: RequestModel,
-    @Body() body: ResetPasswordBodyDto,
-  ) {
-    const email = req.user.email;
-    await this.authService.resetPassword(email, body.otpCode, body.newPassword);
-    return true;
+  @Public()
+  @Post('forgot-password')
+  async forgotPassword(@Body() body: RequestOtpBodyDto): Promise<void> {
+    await this.authService.forgotPassword(body.email);
   }
 
   @Public()
   @Post('reset-password')
-  async resetPassword(@Body() body: ResetPasswordBodyDto) {
-    await this.authService.resetPassword(
-      body.email,
-      body.otpCode,
-      body.newPassword,
-    );
-    return true;
-  }
-
-  @Public()
-  @Post('request-reset-password')
-  async requestResetPassword(@Body() body: RequestOtpBodyDto) {
-    await this.authService.requestResetPasswordOtp(body.email);
-    return true;
+  async resetPassword(@Body() body: ResetPasswordBodyDto): Promise<void> {
+    await this.authService.resetPassword(body.token, body.newPassword);
   }
 
   @Post('change-password')
@@ -108,4 +84,53 @@ export class AuthController {
     );
     return true;
   }
+
+  // @Post('request-reset-password-authenticated')
+  // async requestResetPasswordAuthenticated(@Req() req: RequestModel) {
+  //   const email = req.user.email;
+  //   await this.authService.requestResetPasswordOtp(email);
+  //   return true;
+  // }
+
+  // @Post('reset-password-authenticated')
+  // async resetPasswordAuthenticated(
+  //   @Req() req: RequestModel,
+  //   @Body() body: ResetPasswordBodyDto,
+  // ) {
+  //   const email = req.user.email;
+  //   await this.authService.resetPassword(email, body.otpCode, body.newPassword);
+  //   return true;
+  // }
+
+  // @Post('change-password')
+  // async changePassword(
+  //   @Req() req: RequestModel,
+  //   @Body() body: ChangePasswordBodyDto,
+  // ) {
+  //   await this.authService.changePassword(
+  //     req.user.accountId,
+  //     body.oldPassword,
+  //     body.newPassword,
+  //   );
+  //   return true;
+  // }
+
+  // @Public()
+  // @Post('forgot-password')
+  // async forgotPassword(@Body() body: RequestOtpBodyDto): Promise<void> {
+  //   return this.authService.forgotPassword(body.email);
+  // }
+
+  // @Public()
+  // @Post('reset-password')
+  // async resetPassword(
+  //   @Req() req: RequestModel,
+  //   @Body() body: ResetPasswordBodyDto,
+  // ): Promise<void> {
+  //   return this.authService.resetPassword(
+  //     req.user.email,
+  //     body.otpCode,
+  //     body.newPassword,
+  //   );
+  // }
 }

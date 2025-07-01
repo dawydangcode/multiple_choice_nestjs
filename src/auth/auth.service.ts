@@ -29,8 +29,6 @@ export class AuthService {
     private readonly accountDetailService: AccountDetailService,
     private readonly roleService: RoleService,
     private readonly sessionService: SessionService,
-    @InjectRepository(OtpEntity)
-    private readonly otpRepository: Repository<OtpEntity>,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -152,72 +150,53 @@ export class AuthService {
     );
   }
 
-  async requestResetPasswordOtp(email: string): Promise<void> {
+  async requestResetPassword(email: string): Promise<void> {
     const account = await this.accountService.checkExistEmail(email);
     if (!account) {
-      throw new UnauthorizedException('Email does not exist');
+      throw new UnauthorizedException('Email không tồn tại');
     }
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const hashedOtp = await bcrypt.hash(otp, SALT_OR_ROUNDS);
 
-    const expiresAt = new Date(Date.now() + ms('5m'));
-
-    const otpRecord = this.otpRepository.create({
-      accountId: account?.id,
-      email,
-      otpCode: hashedOtp,
-      createdAt: new Date(),
-      expiresAt,
-      isUse: false,
+    const payload = { email, accountId: account.id };
+    const resetToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
+      expiresIn: this.configService.get<string>(
+        'auth.jwt.verifyToken.signOptions.expiresIn',
+      ),
     });
 
-    await this.otpRepository.save(otpRecord);
+    const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
 
     await this.mailerService.sendMail({
       to: email,
-      subject: 'Password Reset OTP',
-      html: `Your OTP for password reset is <b>${otp}</b>. It expires in 5 minutes.`,
+      subject: 'Yêu Cầu Đặt Lại Mật Khẩu',
+      html: `Vui lòng nhấp vào liên kết sau để đặt lại mật khẩu: <a href="${resetUrl}">Đặt Lại Mật Khẩu</a>. Liên kết này sẽ hết hạn sau 15 phút.`,
     });
   }
 
-  async resetPassword(
-    email: string,
-    otp: string,
-    newPassword: string,
-  ): Promise<void> {
-    const otpRecord = await this.otpRepository.findOne({
-      where: {
-        email,
-        isUse: false,
-        expiresAt: MoreThan(new Date()),
-      },
-    });
-
-    if (!otpRecord) {
-      throw new BadRequestException('Invalid or expired OTP');
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    let payload;
+    try {
+      payload = this.jwtService.verify(token, {
+        secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
+      });
+    } catch (error) {
+      throw new BadRequestException('Token invalid or expired');
     }
 
-    const isValid = await bcrypt.compare(otp, otpRecord.otpCode);
-    if (!isValid) {
-      throw new BadRequestException('Invalid OTP');
+    const account = await this.accountService.checkExistEmail(payload.email);
+    if (!account || account.id !== payload.accountId) {
+      throw new BadRequestException('Invalid token');
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_OR_ROUNDS);
+    const accountModel = await this.accountService.getAccount(account.id);
     await this.accountService.updateAccount(
-      await this.accountService.getAccount(otpRecord.accountId),
+      accountModel,
       undefined,
       hashedPassword,
       undefined,
       undefined,
     );
-
-    otpRecord.isUse = true;
-    await this.otpRepository.save(otpRecord);
-
-    await this.otpRepository.delete({
-      email,
-      id: Not(otpRecord.id),
-    });
   }
 
   async changePassword(
@@ -229,7 +208,7 @@ export class AuthService {
 
     const isMatch = await bcrypt.compare(oldPassword, account.password);
     if (!isMatch) {
-      throw new UnauthorizedException('Old password is incorrect');
+      throw new UnauthorizedException('Mật khẩu cũ không đúng');
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_OR_ROUNDS);
@@ -241,4 +220,126 @@ export class AuthService {
       accountId,
     );
   }
+
+  async forgotPassword(email: string): Promise<void> {
+    await this.requestResetPassword(email);
+  }
+
+  // async requestResetPasswordOtp(email: string): Promise<void> {
+  //   const account = await this.accountService.checkExistEmail(email);
+  //   if (!account) {
+  //     throw new UnauthorizedException('Email does not exist');
+  //   }
+  //   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  //   const hashedOtp = await bcrypt.hash(otp, SALT_OR_ROUNDS);
+
+  //   const expiresAt = new Date(Date.now() + ms('5m'));
+
+  //   const otpRecord = this.otpRepository.create({
+  //     accountId: account?.id,
+  //     email,
+  //     otpCode: hashedOtp,
+  //     createdAt: new Date(),
+  //     expiresAt,
+  //     isUse: false,
+  //   });
+
+  //   await this.otpRepository.save(otpRecord);
+
+  //   await this.mailerService.sendMail({
+  //     to: email,
+  //     subject: 'Password Reset OTP',
+  //     html: `Your OTP for password reset is <b>${otp}</b>. It expires in 5 minutes.`,
+  //   });
+  // }
+
+  // async resetPassword(
+  //   email: string,
+  //   otp: string,
+  //   newPassword: string,
+  // ): Promise<void> {
+  //   const otpRecord = await this.otpRepository.findOne({
+  //     where: {
+  //       email,
+  //       isUse: false,
+  //       expiresAt: MoreThan(new Date()),
+  //     },
+  //   });
+
+  //   if (!otpRecord) {
+  //     throw new BadRequestException('Invalid or expired OTP');
+  //   }
+
+  //   const isValid = await bcrypt.compare(otp, otpRecord.otpCode);
+  //   if (!isValid) {
+  //     throw new BadRequestException('Invalid OTP');
+  //   }
+
+  //   const hashedPassword = await bcrypt.hash(newPassword, 10);
+  //   await this.accountService.updateAccount(
+  //     await this.accountService.getAccount(otpRecord.accountId),
+  //     undefined,
+  //     hashedPassword,
+  //     undefined,
+  //     undefined,
+  //   );
+
+  //   otpRecord.isUse = true;
+  //   await this.otpRepository.save(otpRecord);
+
+  //   await this.otpRepository.delete({
+  //     email,
+  //     id: Not(otpRecord.id),
+  //   });
+  // }
+
+  // async changePassword(
+  //   accountId: number,
+  //   oldPassword: string,
+  //   newPassword: string,
+  // ): Promise<void> {
+  //   const account = await this.accountService.getAccount(accountId);
+
+  //   const isMatch = await bcrypt.compare(oldPassword, account.password);
+  //   if (!isMatch) {
+  //     throw new UnauthorizedException('Old password is incorrect');
+  //   }
+
+  //   const hashedNewPassword = await bcrypt.hash(newPassword, SALT_OR_ROUNDS);
+  //   await this.accountService.updateAccount(
+  //     account,
+  //     undefined,
+  //     hashedNewPassword,
+  //     undefined,
+  //     accountId,
+  //   );
+  // }
+
+  // async forgotPassword(email: string): Promise<void> {
+  //   const payload = { email };
+
+  //   const verifyToken = this.jwtService.sign(payload, {
+  //     secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
+  //   });
+  //   const verifyTokenExpire = this.configService.get<string>(
+  //     'auth.jwt.verifyToken.signOptions.expiresIn',
+  //   );
+  //   const verifyExpireDate = moment()
+  //     .add(ms(verifyTokenExpire as StringValue), 'ms')
+  //     .toDate();
+
+  //   const user = await this.accountService.checkExistEmail(email);
+  //   if (!user) {
+  //     throw new BadRequestException('Email does not exist');
+  //   }
+
+  //   const url = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${verifyToken}`;
+  //   const text = `Hi,\nTo reset your password, click here: ${url}`;
+
+  //   await this.mailerService.sendMail({
+  //     to: email,
+  //     subject: 'Reset password',
+  //     text,
+  //   });
+  // }
 }

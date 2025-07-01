@@ -60,6 +60,10 @@ export class AuthDto {
   @ApiProperty()
   @IsString()
   oldPassword!: string;
+
+  @ApiProperty()
+  @IsString()
+  token!: string;
 }
 
 export class AuthSignUpBodyDto extends PickType(AuthDto, [
@@ -81,13 +85,17 @@ export class ValidateBodyDto extends PickType(AuthDto, [
 
 export class RequestOtpBodyDto extends PickType(AuthDto, ['email']) {}
 
-export class ResetPasswordBodyDto extends PickType(AuthDto, [
-  'email',
-  'otpCode',
-  'newPassword',
-]) {}
+// export class ResetPasswordBodyDto extends PickType(AuthDto, [
+//   'otpCode',
+//   'newPassword',
+// ]) {}
 
 export class ChangePasswordBodyDto extends PickType(AuthDto, [
   'oldPassword',
+  'newPassword',
+]) {}
+
+export class ResetPasswordBodyDto extends PickType(AuthDto, [
+  'token',
   'newPassword',
 ]) {}
