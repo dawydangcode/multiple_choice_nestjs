@@ -83,7 +83,7 @@ export class ValidateBodyDto extends PickType(AuthDto, [
   'roleId',
 ]) {}
 
-export class RequestResetPassowrdBodyDto extends PickType(AuthDto, ['email']) {}
+export class RequestResetPasswordBodyDto extends PickType(AuthDto, ['email']) {}
 
 // export class ResetPasswordBodyDto extends PickType(AuthDto, [
 //   'otpCode',

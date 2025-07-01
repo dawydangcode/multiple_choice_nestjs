@@ -13,7 +13,7 @@ import { RolesGuard } from 'src/middlewares/guards/role.guard';
 import database from 'src/config/database';
 import app from 'src/config/app';
 import { UserModule } from 'src/account/modules/user/user.module';
-import { MailerModule } from '@nestjs-modules/mailer';
+import { MailerModule } from 'src/mailer/mailer.module';
 
 @Module({
   imports: [

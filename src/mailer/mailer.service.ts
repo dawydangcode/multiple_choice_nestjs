@@ -1,12 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-import { Transporter, SendMailOptions } from 'nodemailer';
+import { Transporter } from 'nodemailer';
 
 @Injectable()
 export class MailerService {
   private readonly nodemailerTransport: Transporter;
-  private readonly logger = new Logger(MailerService.name);
 
   constructor(private readonly configService: ConfigService) {
     this.nodemailerTransport = nodemailer.createTransport({
@@ -27,7 +26,7 @@ export class MailerService {
       to: to,
       subject: 'Password Reset Request',
       html: `<p>Click the link below to reset your password:</p>
-               <a href="${resetLink}">Reset Password</a>`,
+               <a href="${resetLink}">Reset Password</a>`, //Todo
     };
 
     await this.nodemailerTransport.sendMail(mailOptions);

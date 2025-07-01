@@ -4,9 +4,9 @@ import {
   AuthSignInBodyDto,
   AuthSignUpBodyDto,
   ChangePasswordBodyDto,
-  RequestResetPassowrdBodyDto,
+  RequestResetPasswordBodyDto,
   ResetPasswordBodyDto,
-} from './dto/auth.dto';
+} from './dtos/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleService } from 'src/role/role.service';
 import { Public } from 'src/middlewares/guards/jwt-auth.guard';
@@ -64,23 +64,17 @@ export class AuthController {
   }
 
   @Public()
-  @Post('forgot-password')
-  async forgotPassword(@Body() body: RequestResetPassowrdBodyDto) {
+  @Post('forgot-password/send-mail')
+  async forgotPassword(@Body() body: RequestResetPasswordBodyDto) {
     await this.authService.forgotPassword(body.email);
-    return {
-      message: 'Password reset request successful',
-      status: 'success',
-    };
+    return true;
   }
 
   @Public()
   @Post('reset-password')
   async resetPassword(@Body() body: ResetPasswordBodyDto) {
     await this.authService.resetPassword(body.token, body.newPassword);
-    return {
-      message: 'Password reset successfully',
-      status: 'success',
-    };
+    return true;
   }
 
   @Post('change-password')
@@ -88,7 +82,10 @@ export class AuthController {
     @Req() req: RequestModel,
     @Body() body: ChangePasswordBodyDto,
   ) {
-    const account = await this.accountService.getAccount(req.user.accountId);
+    const account = await this.accountService.getAccount(
+      req.user.accountId,
+      false,
+    );
     return await this.authService.changePassword(
       account,
       body.oldPassword,

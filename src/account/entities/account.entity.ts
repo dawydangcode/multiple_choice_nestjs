@@ -50,11 +50,11 @@ export class AccountEntity {
   @JoinColumn([{ name: 'role_id', referencedColumnName: 'id' }])
   role: RoleEntity | undefined;
 
-  toModel(): AccountModel {
+  toModel(isHiddenPassword: boolean): AccountModel {
     return new AccountModel(
       this.id,
       this.username,
-      this.password,
+      !isHiddenPassword ? this.password : undefined,
       this.email,
       this.roleId,
       this.createdAt,

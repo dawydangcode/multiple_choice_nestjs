@@ -14,14 +14,16 @@ import { SessionService } from './modules/session/session.service';
 import ms, { StringValue } from 'ms';
 import { SessionModel } from './modules/session/model/session.model';
 import * as moment from 'moment';
-import { PayloadModel } from './model/payload.model';
+import { PayloadModel } from './models/payload.model';
 import { RoleService } from 'src/role/role.service';
-import { TokenModel } from './model/token.model';
+import { TokenModel } from './models/token.model';
 import { SALT_OR_ROUNDS } from './constants/auth.const';
 import { MailerService } from 'src/mailer/mailer.service';
+import { throwError } from 'src/utils/function';
 
 @Injectable()
 export class AuthService {
+  // TO Do
   constructor(
     private readonly accountService: AccountService,
     private readonly accountDetailService: AccountDetailService,
@@ -38,9 +40,15 @@ export class AuthService {
     userAgent: string,
     ipAddress: string,
   ): Promise<TokenModel> {
-    const account = await this.accountService.getAccountByUsername(username);
+    const account = await this.accountService.getAccountByUsername(
+      username,
+      false,
+    );
     const role = await this.roleService.getRole(account.roleId);
-    const isMatch = await bcrypt.compare(password, account.password);
+    const isMatch = await bcrypt.compare(
+      password,
+      account.password ?? throwError('Not Found Password'),
+    );
 
     if (!isMatch) {
       throw new UnauthorizedException('Username or password is invalid');
@@ -61,16 +69,7 @@ export class AuthService {
       role.name,
     );
 
-    const { accessToken, refreshToken, accessExpireDate, refreshExpireDate } =
-      await this.generateToken(payload);
-
-    return {
-      accountId: account.id,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      accessExpireDate: accessExpireDate,
-      refreshExpireDate: refreshExpireDate,
-    };
+    return await this.generateToken(payload);
   }
 
   async logout(session: SessionModel, reqAccountId: number): Promise<boolean> {
@@ -104,7 +103,7 @@ export class AuthService {
       undefined,
     );
 
-    return await this.accountService.getAccount(newAccount.id);
+    return await this.accountService.getAccount(newAccount.id, true);
   }
 
   async generateToken(payload: PayloadModel): Promise<TokenModel> {
@@ -166,13 +165,17 @@ export class AuthService {
     await this.mailerService.sendPasswordResetMail(email, resetToken);
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<void> {
+  async resetPassword(token: string, newPassword: string): Promise<boolean> {
     const payload = this.jwtService.verify(token, {
       secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
     });
     const hashedPassword = await bcrypt.hash(newPassword, SALT_OR_ROUNDS);
 
-    const account = await this.accountService.getAccount(payload.accountId);
+    const account = await this.accountService.getAccount(
+      payload.accountId,
+      false,
+    );
+
     await this.accountService.updateAccount(
       account,
       undefined,
@@ -180,6 +183,8 @@ export class AuthService {
       undefined,
       undefined,
     );
+
+    return true;
   }
 
   async changePassword(
@@ -187,7 +192,10 @@ export class AuthService {
     oldPassword: string,
     newPassword: string,
   ): Promise<AccountModel> {
-    const isMatch = await bcrypt.compare(oldPassword, account.password);
+    const isMatch = await bcrypt.compare(
+      oldPassword,
+      account.password ?? throwError('Not Found Password'),
+    );
     if (!isMatch) {
       throw new UnauthorizedException('Mật khẩu cũ không đúng');
     }
@@ -201,7 +209,7 @@ export class AuthService {
       account.id,
     );
 
-    return this.accountService.getAccount(account.id);
+    return this.accountService.getAccount(account.id, true);
   }
 
   async forgotPassword(email: string): Promise<void> {

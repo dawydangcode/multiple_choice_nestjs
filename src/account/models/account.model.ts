@@ -3,7 +3,7 @@ import { RoleType } from 'src/role/enum/role.enum';
 export class AccountModel {
   public readonly id: number;
   public readonly username: string;
-  public readonly password: string;
+  public readonly password: string | undefined;
   public readonly email: string;
   public readonly roleId: number;
   public readonly created_at: Date | undefined;
@@ -16,7 +16,7 @@ export class AccountModel {
   constructor(
     id: number,
     username: string,
-    password: string,
+    password: string | undefined,
     email: string,
     roleId: number,
     created_at: Date | undefined,
