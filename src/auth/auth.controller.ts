@@ -14,12 +14,14 @@ import { RoleType } from 'src/role/enum/role.enum';
 import { RequestModel } from 'src/utils/models/request.model';
 import { SessionService } from './modules/session/session.service';
 import { UserService } from 'src/account/modules/user/user.service';
+import { AccountService } from 'src/account/account.service';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly accountService: AccountService,
     private readonly roleService: RoleService,
     private readonly sessionService: SessionService,
     private readonly userService: UserService,
@@ -60,17 +62,17 @@ export class AuthController {
     const user = await this.userService.createUser(account);
     return account;
   }
-  
+
   @Public()
   @Post('forgot-password')
-  async forgotPassword(@Body() body: RequestOtpBodyDto): Promise<void> {
-    await this.authService.forgotPassword(body.email);
+  async forgotPassword(@Body() body: RequestOtpBodyDto) {
+    return await this.authService.forgotPassword(body.email);
   }
 
   @Public()
   @Post('reset-password')
-  async resetPassword(@Body() body: ResetPasswordBodyDto): Promise<void> {
-    await this.authService.resetPassword(body.token, body.newPassword);
+  async resetPassword(@Body() body: ResetPasswordBodyDto) {
+    return await this.authService.resetPassword(body.token, body.newPassword);
   }
 
   @Post('change-password')
@@ -78,12 +80,12 @@ export class AuthController {
     @Req() req: RequestModel,
     @Body() body: ChangePasswordBodyDto,
   ) {
-    await this.authService.changePassword(
-      req.user.accountId,
+    const account = await this.accountService.getAccount(req.user.accountId);
+    return await this.authService.changePassword(
+      account,
       body.oldPassword,
       body.newPassword,
     );
-    return true;
   }
 
   // @Post('request-reset-password-authenticated')
