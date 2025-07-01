@@ -34,11 +34,9 @@ export class AccountService {
         deletedAt: IsNull(),
       },
     });
-
     if (!account) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
-
     return account.toModel();
   }
 

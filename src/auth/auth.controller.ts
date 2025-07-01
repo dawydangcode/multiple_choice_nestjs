@@ -4,7 +4,7 @@ import {
   AuthSignInBodyDto,
   AuthSignUpBodyDto,
   ChangePasswordBodyDto,
-  RequestOtpBodyDto,
+  RequestResetPassowrdBodyDto,
   ResetPasswordBodyDto,
 } from './dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -65,14 +65,22 @@ export class AuthController {
 
   @Public()
   @Post('forgot-password')
-  async forgotPassword(@Body() body: RequestOtpBodyDto) {
-    return await this.authService.forgotPassword(body.email);
+  async forgotPassword(@Body() body: RequestResetPassowrdBodyDto) {
+    await this.authService.forgotPassword(body.email);
+    return {
+      message: 'Password reset request successful',
+      status: 'success',
+    };
   }
 
   @Public()
   @Post('reset-password')
   async resetPassword(@Body() body: ResetPasswordBodyDto) {
-    return await this.authService.resetPassword(body.token, body.newPassword);
+    await this.authService.resetPassword(body.token, body.newPassword);
+    return {
+      message: 'Password reset successfully',
+      status: 'success',
+    };
   }
 
   @Post('change-password')

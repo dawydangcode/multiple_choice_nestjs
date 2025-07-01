@@ -18,12 +18,8 @@ import { PayloadModel } from './model/payload.model';
 import { RoleService } from 'src/role/role.service';
 import { TokenModel } from './model/token.model';
 import { SALT_OR_ROUNDS } from './constants/auth.const';
-import { OtpEntity } from './entities/otp.entity';
-import { MoreThan, Not, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { MailerService } from '@nestjs-modules/mailer';
-import { AuthResponseModel } from './model/auth-respone.model';
-import { AccountEntity } from 'src/account/entities/account.entity';
+import { MailerService } from 'src/mailer/mailer.service';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -152,13 +148,14 @@ export class AuthService {
     );
   }
 
-  async requestResetPassword(email: string): Promise<AuthResponseModel> {
+  async requestResetPassword(email: string): Promise<void> {
     const account = await this.accountService.checkExistEmail(email);
     if (!account) {
-      throw new UnauthorizedException('Email không tồn tại');
+      throw new UnauthorizedException('Email not exist');
     }
 
     const payload = { email, accountId: account.id };
+
     const resetToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
       expiresIn: this.configService.get<string>(
@@ -166,50 +163,22 @@ export class AuthService {
       ),
     });
 
-    const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
-
-    await this.mailerService.sendMail({
-      to: email,
-      subject: 'Yêu Cầu Đặt Lại Mật Khẩu',
-      html: `Vui lòng nhấp vào liên kết sau để đặt lại mật khẩu: <a href="${resetUrl}">Đặt Lại Mật Khẩu</a>. Liên kết này sẽ hết hạn sau 15 phút.`,
-    });
-
-    return new AuthResponseModel(
-      'Yêu cầu đặt lại mật khẩu thành công',
-      resetToken,
-      email,
-      account.id,
-    );
+    await this.mailerService.sendPasswordResetMail(email, resetToken);
   }
 
-  async resetPassword(
-    token: string,
-    newPassword: string,
-  ): Promise<AuthResponseModel> {
+  async resetPassword(token: string, newPassword: string): Promise<void> {
     const payload = this.jwtService.verify(token, {
       secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
     });
-
-    const account = await this.accountService.checkExistEmail(payload.email);
-    if (!account || account.id !== payload.accountId) {
-      throw new BadRequestException('Token không hợp lệ');
-    }
-
     const hashedPassword = await bcrypt.hash(newPassword, SALT_OR_ROUNDS);
-    const accountModel = await this.accountService.getAccount(account.id);
+
+    const account = await this.accountService.getAccount(payload.accountId);
     await this.accountService.updateAccount(
-      accountModel,
+      account,
       undefined,
       hashedPassword,
       undefined,
       undefined,
-    );
-
-    return new AuthResponseModel(
-      'Đặt lại mật khẩu thành công',
-      undefined,
-      account.email,
-      account.id,
     );
   }
 
@@ -218,8 +187,6 @@ export class AuthService {
     oldPassword: string,
     newPassword: string,
   ): Promise<AccountModel> {
-    await this.accountService.getAccount(account.id);
-
     const isMatch = await bcrypt.compare(oldPassword, account.password);
     if (!isMatch) {
       throw new UnauthorizedException('Mật khẩu cũ không đúng');
@@ -237,8 +204,8 @@ export class AuthService {
     return this.accountService.getAccount(account.id);
   }
 
-  async forgotPassword(email: string): Promise<AuthResponseModel> {
-    return await this.requestResetPassword(email);
+  async forgotPassword(email: string): Promise<void> {
+    await this.requestResetPassword(email);
   }
 
   // async requestResetPasswordOtp(email: string): Promise<void> {

@@ -11,10 +11,7 @@ import { SessionModule } from './modules/session/session.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserModule } from 'src/account/modules/user/user.module';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { config } from 'dotenv';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { OtpEntity } from './entities/otp.entity';
+import { MailerModule } from 'src/mailer/mailer.module';
 
 @Module({
   imports: [
@@ -23,6 +20,7 @@ import { OtpEntity } from './entities/otp.entity';
     forwardRef(() => RoleModule),
     forwardRef(() => SessionModule),
     forwardRef(() => UserModule),
+    forwardRef(() => MailerModule),
     PassportModule,
     ConfigModule.forRoot({
       load: [auth],
@@ -34,25 +32,6 @@ import { OtpEntity } from './entities/otp.entity';
         return configService.get('auth.jwt') as JwtModuleOptions;
       },
     }),
-    MailerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        transport: {
-          host: configService.get<string>('MAIL_HOST'),
-          port: Number(configService.get<string>('MAIL_PORT')),
-          secure: configService.get<string>('MAIL_SECURE') === 'true',
-          auth: {
-            user: configService.get<string>('MAIL_USER'),
-            pass: configService.get<string>('MAIL_PASS'),
-          },
-        },
-        defaults: {
-          from: `"${configService.get<string>('MAILER_DEFAULT_NAME')}" <${configService.get<string>('MAILER_DEFAULT_EMAIL')}>`,
-        },
-      }),
-    }),
-    // TypeOrmModule.forFeature([OtpEntity]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

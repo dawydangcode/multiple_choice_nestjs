@@ -1,4 +1,4 @@
-export class AuthResponseModel {
+export class ResetTokenModel {
   public readonly resetToken: string;
   public readonly message: string | undefined;
   public readonly email: string;

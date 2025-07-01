@@ -10,9 +10,9 @@ export class MailerService {
 
   constructor(private readonly configService: ConfigService) {
     this.nodemailerTransport = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: true,
+      host: this.configService.get<string>('MAIL_HOST'),
+      port: this.configService.get<string>('MAIL_PORT'),
+      secure: this.configService.get<string>('MAIL_SECURE'),
       auth: {
         user: this.configService.get<string>('EMAIL_USER'),
         pass: this.configService.get<string>('EMAIL_PASSWORD'),
@@ -20,8 +20,16 @@ export class MailerService {
     });
   }
 
-  sendMail(options: SendMailOptions) {
-    this.logger.log(`Email sent out to ${options.to}`);
-    return this.nodemailerTransport.sendMail(options);
+  async sendPasswordResetMail(to: string, token: string): Promise<void> {
+    const resetLink = `${this.configService.get<string>('EMAIL_RESET_PASSWORD_URL')}?token=${token}`;
+    const mailOptions = {
+      from: `${this.configService.get<string>('MAILER_DEFAULT_NAME')} <${this.configService.get<string>('MAILER_DEFAULT_EMAIL')}>`,
+      to: to,
+      subject: 'Password Reset Request',
+      html: `<p>Click the link below to reset your password:</p>
+               <a href="${resetLink}">Reset Password</a>`,
+    };
+
+    await this.nodemailerTransport.sendMail(mailOptions);
   }
 }
