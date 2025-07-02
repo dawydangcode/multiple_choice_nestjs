@@ -1,34 +1,38 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
+import { MailOptions } from 'nodemailer/lib/json-transport';
+import { MailOptionsModel } from './models/mail-options.model';
 
 @Injectable()
 export class MailerService {
-  private readonly nodemailerTransport: Transporter;
+  constructor(
+    @Inject('NODEMAILER_TRANSPORT')
+    private readonly nodemailerTransport: Transporter,
+    private readonly configService: ConfigService,
+  ) {}
 
-  constructor(private readonly configService: ConfigService) {
-    this.nodemailerTransport = nodemailer.createTransport({
-      host: this.configService.get<string>('MAIL_HOST'),
-      port: Number(this.configService.get<string>('MAIL_PORT')),
-      secure: this.configService.get<string>('MAIL_SECURE') === 'true',
-      auth: {
-        user: this.configService.get<string>('EMAIL_USER'),
-        pass: this.configService.get<string>('EMAIL_PASSWORD'),
-      },
-    });
-  }
-
-  async sendPasswordResetMail(to: string, token: string): Promise<void> {
+  async sendPasswordResetMail(
+    mailOptions: MailOptionsModel,
+    token: string,
+  ): Promise<void> {
     const resetLink = `${this.configService.get<string>('EMAIL_RESET_PASSWORD_URL')}?token=${token}`;
-    const mailOptions = {
+    const mailData = {
       from: `${this.configService.get<string>('MAILER_DEFAULT_NAME')} <${this.configService.get<string>('MAILER_DEFAULT_EMAIL')}>`,
-      to: to,
-      subject: 'Password Reset Request',
-      html: `<p>Click the link below to reset your password:</p>
-               <a href="${resetLink}">Reset Password</a>`, //Todo
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+      html: mailOptions.html, //To do
     };
 
-    await this.nodemailerTransport.sendMail(mailOptions);
+    await this.nodemailerTransport.sendMail(mailData);
+  }
+
+  async sendMail(options: any): Promise<void> {
+    const mailData = {
+      from: `${this.configService.get<string>('MAILER_DEFAULT_NAME')} <${this.configService.get<string>('MAILER_DEFAULT_EMAIL')}>`,
+      ...options,
+    };
+
+    await this.nodemailerTransport.sendMail(mailData);
   }
 }

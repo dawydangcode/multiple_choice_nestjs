@@ -6,12 +6,12 @@ export class AccountModel {
   public readonly password: string | undefined;
   public readonly email: string;
   public readonly roleId: number;
-  public readonly created_at: Date | undefined;
-  public readonly created_by: number | undefined;
-  public readonly updated_at: Date | undefined;
-  public readonly updated_by: number | undefined;
-  public readonly deleted_at: Date | undefined;
-  public readonly deleted_by: number | undefined;
+  public readonly createdAt: Date | undefined;
+  public readonly createdBy: number | undefined;
+  public readonly updatedAt: Date | undefined;
+  public readonly updatedBy: number | undefined;
+  public readonly deletedAt: Date | undefined;
+  public readonly deletedBy: number | undefined;
 
   constructor(
     id: number,
@@ -19,23 +19,23 @@ export class AccountModel {
     password: string | undefined,
     email: string,
     roleId: number,
-    created_at: Date | undefined,
-    created_by: number | undefined,
-    updated_at: Date | undefined,
-    updated_by: number | undefined,
-    deleted_at: Date | undefined,
-    deleted_by: number | undefined,
+    createdAt: Date | undefined,
+    createdBy: number | undefined,
+    updatedAt: Date | undefined,
+    updatedBy: number | undefined,
+    deletedAt: Date | undefined,
+    deletedBy: number | undefined,
   ) {
     this.id = id;
     this.username = username;
     this.password = password;
     this.email = email;
     this.roleId = roleId;
-    this.created_at = created_at;
-    this.created_by = created_by;
-    this.updated_at = updated_at;
-    this.updated_by = updated_by;
-    this.deleted_at = deleted_at;
-    this.deleted_by = deleted_by;
+    this.createdAt = createdAt;
+    this.createdBy = createdBy;
+    this.updatedAt = updatedAt;
+    this.updatedBy = updatedBy;
+    this.deletedAt = deletedAt;
+    this.deletedBy = deletedBy;
   }
 }

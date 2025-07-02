@@ -162,14 +162,19 @@ export class AuthService {
       ),
     });
 
-    await this.mailerService.sendPasswordResetMail(email, resetToken);
+    const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Yêu Cầu Đặt Lại Mật Khẩu',
+      html: `Vui lòng nhấp vào liên kết sau để đặt lại mật khẩu: <a href="${resetUrl}">Đặt Lại Mật Khẩu</a>. Liên kết này sẽ hết hạn sau 15 phút.`,
+    });
   }
 
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
     const payload = this.jwtService.verify(token, {
       secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
     });
-    const hashedPassword = await bcrypt.hash(newPassword, SALT_OR_ROUNDS);
 
     const account = await this.accountService.getAccount(
       payload.accountId,
@@ -179,7 +184,7 @@ export class AuthService {
     await this.accountService.updateAccount(
       account,
       undefined,
-      hashedPassword,
+      newPassword,
       undefined,
       undefined,
     );
@@ -200,11 +205,10 @@ export class AuthService {
       throw new UnauthorizedException('Mật khẩu cũ không đúng');
     }
 
-    const hashedNewPassword = await bcrypt.hash(newPassword, SALT_OR_ROUNDS);
     await this.accountService.updateAccount(
       account,
       undefined,
-      hashedNewPassword,
+      newPassword,
       undefined,
       account.id,
     );

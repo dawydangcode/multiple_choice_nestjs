@@ -1,12 +1,35 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MailerController } from './mailer.controller';
 import { MailerService } from './mailer.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
+import { Transporter } from 'nodemailer';
 
 @Module({
-  imports: [ConfigModule], //TO DO
+  imports: [
+    ConfigModule.forRoot({
+      load: [],
+    }),
+  ],
   controllers: [MailerController],
-  providers: [MailerService],
+  providers: [
+    MailerService,
+    {
+      provide: 'NODEMAILER_TRANSPORT',
+      useFactory: (configService: ConfigService): Transporter => {
+        return nodemailer.createTransport({
+          host: configService.get<string>('MAIL_HOST'),
+          port: Number(configService.get<string>('MAIL_PORT')),
+          secure: configService.get<string>('MAIL_SECURE') === 'true',
+          auth: {
+            user: configService.get<string>('EMAIL_USER'),
+            pass: configService.get<string>('EMAIL_PASSWORD'),
+          },
+        });
+      },
+      inject: [ConfigService],
+    },
+  ],
   exports: [MailerService],
 })
 export class MailerModule {}

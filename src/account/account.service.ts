@@ -120,6 +120,11 @@ export class AccountService {
     roleId: number | undefined,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
+    let hashedPassword = password;
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, SALT_OR_ROUNDS);
+    }
+
     await this.accountRepository.update(
       {
         id: account.id,
@@ -127,7 +132,7 @@ export class AccountService {
       },
       {
         username: username,
-        password: password,
+        password: hashedPassword,
         roleId: roleId,
         updatedAt: new Date(),
         updatedBy: reqAccountId,
