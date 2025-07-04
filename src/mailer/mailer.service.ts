@@ -1,12 +1,8 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Transporter } from 'nodemailer';
-import { MailOptionsModel } from './models/mail-options.model';
-import { Repository } from 'typeorm';
-import { EmailTemplateEntity } from './modules/template/entities/email-template.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Template } from 'handlebars';
 import { TemplateService } from './modules/template/template.service';
+import { MailOptionsModel } from './models/mail-options.model';
 
 @Injectable()
 export class MailerService {
@@ -17,35 +13,11 @@ export class MailerService {
     private readonly templateService: TemplateService,
   ) {}
 
-  async sendPasswordResetMail(
-    mailOptions: MailOptionsModel,
-    token: string,
-  ): Promise<void> {
-    const resetLink = `${this.configService.get<string>('EMAIL_RESET_PASSWORD_URL')}?token=${token}`;
-    const mailData = {
-      from: `${this.configService.get<string>('MAILER_DEFAULT_NAME')} <${this.configService.get<string>('MAILER_DEFAULT_EMAIL')}>`,
-      to: mailOptions.to,
-      subject: mailOptions.subject,
-      html: mailOptions.html,
-    };
-
-    await this.nodemailerTransport.sendMail(mailData);
-  }
-
-  async sendMail(options: any): Promise<void> {
-    const mailData = {
-      from: `${this.configService.get<string>('MAILER_DEFAULT_NAME')} <${this.configService.get<string>('MAILER_DEFAULT_EMAIL')}>`,
-      ...options,
-    };
-
-    await this.nodemailerTransport.sendMail(mailData);
-  }
-
   async sendMailWithTemplate(
     templateName: string,
     to: string,
     variables: Record<string, string>,
-  ): Promise<boolean> {
+  ): Promise<MailOptionsModel> {
     const template = await this.templateService.getTemplateByName(templateName);
 
     let htmlContent = template.html;
@@ -53,14 +25,25 @@ export class MailerService {
       htmlContent = htmlContent.replace(new RegExp(`{{${key}}}`, 'g'), value);
     }
 
+    const fromEmail = `${this.configService.get<string>('MAILER_DEFAULT_NAME')} <${this.configService.get<string>('MAILER_DEFAULT_EMAIL')}>`;
+
     const mailData = {
-      from: `${this.configService.get<string>('MAILER_DEFAULT_NAME')} <${this.configService.get<string>('MAILER_DEFAULT_EMAIL')}>`,
+      from: fromEmail,
       to,
       subject: template.subject,
       html: htmlContent,
     };
 
     await this.nodemailerTransport.sendMail(mailData);
-    return true;
+
+    const mailOptionsModel = new MailOptionsModel(
+      fromEmail,
+      to,
+      template.subject,
+      '',
+      htmlContent,
+    );
+
+    return mailOptionsModel;
   }
 }

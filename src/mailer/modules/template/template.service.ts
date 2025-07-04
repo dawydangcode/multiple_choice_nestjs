@@ -87,7 +87,17 @@ export class TemplateService {
     return await this.getTemplateById(templateId);
   }
 
-  async deleteTemplate(templateId: number): Promise<void> {
-    await this.emailTemplateRepository.softDelete(templateId);
+  async deleteTemplate(
+    templateId: number,
+    reqAccountId: number,
+  ): Promise<boolean> {
+    await this.emailTemplateRepository.update(
+      { id: templateId },
+      {
+        deletedAt: new Date(),
+        deletedBy: reqAccountId,
+      },
+    );
+    return true;
   }
 }

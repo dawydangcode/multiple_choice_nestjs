@@ -18,9 +18,9 @@ import {
 import { TemplateService } from './template.service';
 import { EmailTemplateModel } from './models/email-tempalte.model';
 import { ApiTags } from '@nestjs/swagger';
-import { RolesGuard } from 'src/middlewares/guards/role.guard';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
+import { RequestModel } from 'src/utils/models/request.model';
 
 @Roles(RoleType.Admin)
 @Controller('api/v1')
@@ -39,38 +39,40 @@ export class TemplateController {
   }
 
   @Post('template/create')
-  async create(@Req() req: any, @Body() body: CreateEmailTemplateDto) {
-    const reqAccountId = req.user.accountId || undefined;
-
+  async create(@Req() req: RequestModel, @Body() body: CreateEmailTemplateDto) {
     return await this.templateService.createTemplate(
       body.name,
       body.subject,
       body.description,
       body.html,
-      reqAccountId,
+      req.user.accountId,
     );
   }
 
   @Put('template/:templateId/update')
   async update(
-    @Req() req: any,
+    @Req() req: RequestModel,
     @Param() params: UpdateEmailTemplateParamsDto,
     @Body() body: UpdateEmailTemplateBodyDto,
   ) {
-    const reqAccountId = req.user.accountId || undefined;
-
     return await this.templateService.updateTemplate(
       params.templateId,
       body.name,
       body.subject,
       body.description,
       body.html,
-      reqAccountId,
+      req.user.accountId,
     );
   }
 
   @Delete('template/:templateId/delete')
-  async delete(@Param() params: DeleteEmailTemplateDto) {
-    await this.templateService.deleteTemplate(params.templateId);
+  async delete(
+    @Req() req: RequestModel,
+    @Param() params: DeleteEmailTemplateDto,
+  ) {
+    await this.templateService.deleteTemplate(
+      params.templateId,
+      req.user.accountId,
+    );
   }
 }
