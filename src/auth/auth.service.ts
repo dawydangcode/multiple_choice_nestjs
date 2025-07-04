@@ -17,7 +17,6 @@ import * as moment from 'moment';
 import { PayloadModel } from './models/payload.model';
 import { RoleService } from 'src/role/role.service';
 import { TokenModel } from './models/token.model';
-import { SALT_OR_ROUNDS } from './constants/auth.const';
 import { MailerService } from 'src/mailer/mailer.service';
 import { throwError } from 'src/utils/function';
 
@@ -164,10 +163,9 @@ export class AuthService {
 
     const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
 
-    await this.mailerService.sendMail({
-      to: email,
-      subject: 'Yêu Cầu Đặt Lại Mật Khẩu',
-      html: `Vui lòng nhấp vào liên kết sau để đặt lại mật khẩu: <a href="${resetUrl}">Đặt Lại Mật Khẩu</a>. Liên kết này sẽ hết hạn sau 15 phút.`,
+    await this.mailerService.sendMailWithTemplate('reset-password', email, {
+      resetUrl,
+      username: account.username || 'User',
     });
   }
 
