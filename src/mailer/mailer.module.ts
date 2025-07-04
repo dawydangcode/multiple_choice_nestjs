@@ -1,18 +1,17 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MailerController } from './mailer.controller';
 import { MailerService } from './mailer.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { EmailTemplateEntity } from './entities/email-template.entity';
+import { TemplateModule } from './modules/template/template.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       load: [],
     }),
-    TypeOrmModule.forFeature([EmailTemplateEntity]),
+    forwardRef(() => TemplateModule),
   ],
   controllers: [MailerController],
   providers: [
@@ -33,6 +32,6 @@ import { EmailTemplateEntity } from './entities/email-template.entity';
       inject: [ConfigService],
     },
   ],
-  exports: [MailerService, TypeOrmModule],
+  exports: [MailerService],
 })
 export class MailerModule {}

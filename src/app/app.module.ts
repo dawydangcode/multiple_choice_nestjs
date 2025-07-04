@@ -14,6 +14,7 @@ import database from 'src/config/database';
 import app from 'src/config/app';
 import { UserModule } from 'src/account/modules/user/user.module';
 import { MailerModule } from 'src/mailer/mailer.module';
+import { TemplateModule } from 'src/mailer/modules/template/template.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MailerModule } from 'src/mailer/mailer.module';
     SessionModule,
     UserModule,
     MailerModule,
+    TemplateModule,
   ],
 
   controllers: [AppController],

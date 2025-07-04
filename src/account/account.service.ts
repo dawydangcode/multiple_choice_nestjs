@@ -142,7 +142,6 @@ export class AccountService {
     return await this.getAccount(account.id, true);
   }
 
-  @Roles(RoleType.Admin)
   async deleteAccount(account: AccountModel): Promise<boolean> {
     await this.accountRepository.update(
       {

@@ -1,5 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
-
 export class EmailTemplateModel {
   public readonly templateId: number;
   public readonly name: string;
