@@ -38,7 +38,9 @@ export class UpdateEmailTemplateParamsDto extends PickType(EmailTemplateDto, [
   'templateId',
 ]) {}
 
-export class UpdateEmailTemplateBodyDto extends PartialType(EmailTemplateDto) {}
+export class UpdateEmailTemplateBodyDto extends PartialType(
+  PickType(EmailTemplateDto, ['name', 'subject', 'description', 'html']),
+) {}
 
 export class DeleteEmailTemplateDto extends PickType(EmailTemplateDto, [
   'templateId',

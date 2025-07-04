@@ -26,7 +26,7 @@ export class AccountController {
 
   @Roles(RoleType.Admin)
   @Get('account/list')
-  async getAllAccount(): Promise<AccountModel[]> {
+  async getAccounts(): Promise<AccountModel[]> {
     return await this.accountService.getAccounts();
   }
 

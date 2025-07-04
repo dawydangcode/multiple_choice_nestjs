@@ -2,13 +2,10 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Transporter } from 'nodemailer';
 import { MailOptionsModel } from './models/mail-options.model';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { EmailTemplateEntity } from './entities/email-template.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  CreateEmailTemplateDto,
-  UpdateEmailTemplateBodyDto,
-} from './dtos/email-template.dto';
+import { EmailTemplateModel } from './models/email-tempalte.model';
 
 @Injectable()
 export class MailerService {
@@ -75,43 +72,68 @@ export class MailerService {
     this.logger.log(`Email sent to ${to} using template ${templateName}`);
   }
 
-  async createTemplate(
-    body: CreateEmailTemplateDto,
-  ): Promise<EmailTemplateEntity> {
-    const template = this.emailTemplateRepository.create(body);
-    return await this.emailTemplateRepository.save(template);
+  async getTemplates(): Promise<EmailTemplateModel[]> {
+    const template = await this.emailTemplateRepository.find({
+      where: { deletedAt: IsNull() },
+    });
+
+    return template.map((entity) => entity.toModel());
   }
 
-  async findAllTemplates(): Promise<EmailTemplateEntity[]> {
-    return await this.emailTemplateRepository.find();
-  }
-
-  async getTemplateById(templateId: number): Promise<EmailTemplateEntity> {
+  async getTemplateById(templateId: number): Promise<EmailTemplateModel> {
     const template = await this.emailTemplateRepository.findOne({
-      where: { id: templateId },
+      where: { id: templateId, deletedAt: IsNull() },
     });
     if (!template) {
       throw new Error('EmailTemplateEntity not found');
     }
-    return template;
+    return template.toModel();
+  }
+
+  async createTemplate(
+    name: string,
+    subject: string,
+    description: string,
+    html: string,
+    reqAccountId: number | undefined,
+  ): Promise<EmailTemplateModel> {
+    const entity = this.emailTemplateRepository.create({
+      name: name,
+      subject: subject,
+      description: description,
+      html: html,
+      createdAt: new Date(),
+      createdBy: reqAccountId,
+    });
+    const template = await this.emailTemplateRepository.save(entity);
+    if (!reqAccountId) {
+      await this.emailTemplateRepository.update(template.id, {
+        createdBy: template.id,
+      });
+    }
+    return await this.getTemplateById(template.id);
   }
 
   async updateTemplate(
     templateId: number,
-    body: UpdateEmailTemplateBodyDto,
-  ): Promise<EmailTemplateEntity> {
+    name: string | undefined,
+    subject: string | undefined,
+    description: string | undefined,
+    html: string | undefined,
+    reqAccountId: number | undefined,
+  ): Promise<EmailTemplateModel> {
     await this.emailTemplateRepository.update(
       { id: templateId },
       {
-        name: body.name,
-        subject: body.subject,
-        description: body.description,
-        html: body.html,
+        name: name,
+        subject: subject,
+        description: description,
+        html: html,
+        updatedAt: new Date(),
+        updatedBy: reqAccountId,
       },
     );
-    return await this.emailTemplateRepository.findOneOrFail({
-      where: { id: templateId },
-    });
+    return await this.getTemplateById(templateId);
   }
 
   async deleteTemplate(templateId: number): Promise<void> {

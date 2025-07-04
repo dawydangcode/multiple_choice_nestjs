@@ -1,5 +1,6 @@
 import { cp } from 'fs';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { EmailTemplateModel } from '../models/email-tempalte.model';
 
 @Entity('email_template')
 export class EmailTemplateEntity {
@@ -35,4 +36,20 @@ export class EmailTemplateEntity {
 
   @Column({ name: 'deleted_by' })
   deletedBy!: number;
+
+  toModel(): EmailTemplateModel {
+    return new EmailTemplateModel(
+      this.id,
+      this.name,
+      this.subject,
+      this.description,
+      this.html,
+      this.createdAt,
+      this.createdBy,
+      this.updatedAt,
+      this.updatedBy,
+      this.deletedAt,
+      this.deletedBy,
+    );
+  }
 }
