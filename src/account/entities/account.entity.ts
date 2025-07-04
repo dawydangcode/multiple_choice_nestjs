@@ -19,6 +19,9 @@ export class AccountEntity {
   @Column('varchar', { name: 'password' })
   password!: string;
 
+  @Column({ name: 'email' })
+  email!: string;
+
   @Column('bigint', { name: 'role_id' })
   roleId!: number;
 
@@ -47,11 +50,12 @@ export class AccountEntity {
   @JoinColumn([{ name: 'role_id', referencedColumnName: 'id' }])
   role: RoleEntity | undefined;
 
-  toModel(): AccountModel {
+  toModel(isHiddenPassword: boolean): AccountModel {
     return new AccountModel(
       this.id,
       this.username,
-      this.password,
+      !isHiddenPassword ? this.password : undefined,
+      this.email,
       this.roleId,
       this.createdAt,
       this.createdBy,

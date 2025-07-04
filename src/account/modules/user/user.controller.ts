@@ -26,7 +26,10 @@ export class UserController {
 
   @Post('upload-cv')
   async uploadCV(@Req() req: any, @Body() body: UploadCVBodyDto) {
-    const account = await this.accountService.getAccount(req.user.accountId);
+    const account = await this.accountService.getAccount(
+      req.user.accountId,
+      true,
+    );
     const cvUrl = body.cvUrl;
     return await this.userService.uploadCV(account, cvUrl);
   }
@@ -37,7 +40,10 @@ export class UserController {
     @Body() body: any,
     @Param() params: UpdateProfileParamsDto,
   ) {
-    const account = await this.accountService.getAccount(req.user.accountId);
+    const account = await this.accountService.getAccount(
+      req.user.accountId,
+      true,
+    );
     return await this.userService.updateProfile(
       account,
       body.name,

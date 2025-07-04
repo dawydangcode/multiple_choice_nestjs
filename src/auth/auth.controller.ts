@@ -1,30 +1,27 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Param,
-  Post,
-  Put,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Body, Controller, Post, Put, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthSignInBodyDto, AuthSignUpBodyDto } from './dto/auth.dto';
+import {
+  AuthSignInBodyDto,
+  AuthSignUpBodyDto,
+  ChangePasswordBodyDto,
+  RequestResetPasswordBodyDto,
+  ResetPasswordBodyDto,
+} from './dtos/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleService } from 'src/role/role.service';
 import { Public } from 'src/middlewares/guards/jwt-auth.guard';
 import { RoleType } from 'src/role/enum/role.enum';
-import { PayloadModel } from './model/payload.model';
-import { session } from 'passport';
 import { RequestModel } from 'src/utils/models/request.model';
 import { SessionService } from './modules/session/session.service';
 import { UserService } from 'src/account/modules/user/user.service';
+import { AccountService } from 'src/account/account.service';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly accountService: AccountService,
     private readonly roleService: RoleService,
     private readonly sessionService: SessionService,
     private readonly userService: UserService,
@@ -58,6 +55,7 @@ export class AuthController {
     const account = await this.authService.register(
       body.username,
       body.password,
+      body.email,
       role,
       undefined,
     );
@@ -65,11 +63,82 @@ export class AuthController {
     return account;
   }
 
-  @Put('change-password')
-  async changePassword() {}
-
-  @Put('auth/reset-password')
-  async resetPassword() {
-    return;
+  @Public()
+  @Post('forgot-password/send-mail')
+  async forgotPassword(@Body() body: RequestResetPasswordBodyDto) {
+    await this.authService.forgotPassword(body.email);
+    return true;
   }
+
+  @Public()
+  @Post('reset-password')
+  async resetPassword(@Body() body: ResetPasswordBodyDto) {
+    await this.authService.resetPassword(body.token, body.newPassword);
+    return true;
+  }
+
+  @Post('change-password')
+  async changePassword(
+    @Req() req: RequestModel,
+    @Body() body: ChangePasswordBodyDto,
+  ) {
+    const account = await this.accountService.getAccount(
+      req.user.accountId,
+      false,
+    );
+    return await this.authService.changePassword(
+      account,
+      body.oldPassword,
+      body.newPassword,
+    );
+  }
+
+  // @Post('request-reset-password-authenticated')
+  // async requestResetPasswordAuthenticated(@Req() req: RequestModel) {
+  //   const email = req.user.email;
+  //   await this.authService.requestResetPasswordOtp(email);
+  //   return true;
+  // }
+
+  // @Post('reset-password-authenticated')
+  // async resetPasswordAuthenticated(
+  //   @Req() req: RequestModel,
+  //   @Body() body: ResetPasswordBodyDto,
+  // ) {
+  //   const email = req.user.email;
+  //   await this.authService.resetPassword(email, body.otpCode, body.newPassword);
+  //   return true;
+  // }
+
+  // @Post('change-password')
+  // async changePassword(
+  //   @Req() req: RequestModel,
+  //   @Body() body: ChangePasswordBodyDto,
+  // ) {
+  //   await this.authService.changePassword(
+  //     req.user.accountId,
+  //     body.oldPassword,
+  //     body.newPassword,
+  //   );
+  //   return true;
+  // }
+
+  // @Public()
+  // @Post('forgot-password')
+  // async forgotPassword(@Body() body: RequestOtpBodyDto): Promise<void> {
+  //   return this.authService.forgotPassword(body.email);
+  // }
+
+  // @Public()
+  // @Post('reset-password')
+  // async resetPassword(
+  //   @Req() req: RequestModel,
+  //   @Body() body: ResetPasswordBodyDto,
+  // ): Promise<void> {
+  //   return this.authService.resetPassword(
+  //     req.user.email,
+  //     body.otpCode,
+  //     body.newPassword,
+  //   );
+  // }
 }

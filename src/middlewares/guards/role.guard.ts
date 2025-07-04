@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PayloadModel } from 'src/auth/model/payload.model';
+import { PayloadModel } from 'src/auth/models/payload.model';
 import { ROLES_KEY } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
 
@@ -24,9 +24,11 @@ export class RolesGuard implements CanActivate {
     if (!user || !user.role) {
       return false;
     }
+    
     if (user.role === RoleType.Admin) {
-      return true;
+      return true; //To Do
     }
+
     return requiredRoles.includes(user.role as RoleType);
   }
 }

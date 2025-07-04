@@ -26,7 +26,7 @@ export class AccountController {
 
   @Roles(RoleType.Admin)
   @Get('account/list')
-  async getAllAccount(): Promise<AccountModel[]> {
+  async getAccounts(): Promise<AccountModel[]> {
     return await this.accountService.getAccounts();
   }
 
@@ -35,7 +35,7 @@ export class AccountController {
   async getAccountById(
     @Param() params: GetAccountParamsDto,
   ): Promise<AccountModel> {
-    return await this.accountService.getAccount(params.accountId);
+    return await this.accountService.getAccount(params.accountId, true);
   }
 
   @Roles(RoleType.Admin)
@@ -44,6 +44,7 @@ export class AccountController {
     return await this.accountService.createAccount(
       body.username,
       body.password,
+      body.email,
       body.roleId,
       undefined,
     );
@@ -54,7 +55,10 @@ export class AccountController {
     @Param() params: UpdateAccountParamsDto,
     @Body() body: any,
   ) {
-    const account = await this.accountService.getAccount(params.accountId);
+    const account = await this.accountService.getAccount(
+      params.accountId,
+      false,
+    );
     return await this.accountService.updateAccount(
       account,
       body.username,
@@ -66,7 +70,10 @@ export class AccountController {
 
   @Delete('account/:accountId/delete')
   async deleteAccount(@Param() params: any) {
-    const account = await this.accountService.getAccount(params.accountId);
+    const account = await this.accountService.getAccount(
+      params.accountId,
+      true,
+    );
     return await this.accountService.deleteAccount(account);
   }
 }

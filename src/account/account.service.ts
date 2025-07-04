@@ -24,10 +24,13 @@ export class AccountService {
         deletedAt: IsNull(),
       },
     });
-    return accounts.map((account: AccountEntity) => account.toModel());
+    return accounts.map((account: AccountEntity) => account.toModel(true));
   }
 
-  async getAccount(accountId: number): Promise<AccountModel> {
+  async getAccount(
+    accountId: number,
+    isHiddenPassword: boolean,
+  ): Promise<AccountModel> {
     const account = await this.accountRepository.findOne({
       where: {
         id: accountId,
@@ -39,17 +42,20 @@ export class AccountService {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
 
-    return account.toModel();
+    return account.toModel(isHiddenPassword);
   }
 
-  async getAccountByUsername(username: string): Promise<AccountModel> {
+  async getAccountByUsername(
+    username: string,
+    isHiddenPassword: boolean,
+  ): Promise<AccountModel> {
     const account = await this.checkExistUsername(username);
 
     if (!account) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND); //TO DO
     }
 
-    return account.toModel();
+    return account.toModel(isHiddenPassword);
   }
 
   async checkExistUsername(username: string) {
@@ -59,9 +65,17 @@ export class AccountService {
     return existingUsername;
   }
 
+  async checkExistEmail(email: string) {
+    const existingEmail = this.accountRepository.findOne({
+      where: { email: email, deletedAt: IsNull() },
+    });
+    return existingEmail;
+  }
+
   async createAccount(
     username: string,
     password: string,
+    email: string,
     roleId: number,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
@@ -72,12 +86,19 @@ export class AccountService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    const existingEmail = await this.checkExistEmail(email);
+    if (existingEmail) {
+      throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
+    }
+
     const hashedPassword = await bcrypt.hash(password, SALT_OR_ROUNDS);
     const defaultRole = await this.roleService.getRoleByName(RoleType.User);
 
     const entity = new AccountEntity();
     entity.username = username;
     entity.password = hashedPassword;
+    entity.email = email;
     entity.roleId = roleId ?? defaultRole.id;
     entity.createdAt = new Date();
     entity.createdBy = reqAccountId;
@@ -89,7 +110,7 @@ export class AccountService {
       });
     }
 
-    return await this.getAccountByUsername(newAccount.username);
+    return await this.getAccount(newAccount.id, true);
   }
 
   async updateAccount(
@@ -99,6 +120,11 @@ export class AccountService {
     roleId: number | undefined,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
+    let hashedPassword = password;
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, SALT_OR_ROUNDS);
+    }
+
     await this.accountRepository.update(
       {
         id: account.id,
@@ -106,17 +132,16 @@ export class AccountService {
       },
       {
         username: username,
-        password: password,
+        password: hashedPassword,
         roleId: roleId,
         updatedAt: new Date(),
         updatedBy: reqAccountId,
       },
     );
 
-    return await this.getAccount(account.id);
+    return await this.getAccount(account.id, true);
   }
 
-  @Roles(RoleType.Admin)
   async deleteAccount(account: AccountModel): Promise<boolean> {
     await this.accountRepository.update(
       {
@@ -132,7 +157,7 @@ export class AccountService {
   }
 
   async getAccountRole(accountId: number): Promise<AccountModel> {
-    const account = await this.getAccount(accountId);
+    const account = await this.getAccount(accountId, true);
     const role = await this.roleService.getRole(account.roleId);
     return {
       ...account,

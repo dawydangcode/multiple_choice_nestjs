@@ -1,11 +1,9 @@
-import { RoleType } from 'src/role/enum/role.enum';
-
-export class AccountModel {
-  public readonly id: number;
-  public readonly username: string;
-  public readonly password: string | undefined;
-  public readonly email: string;
-  public readonly roleId: number;
+export class EmailTemplateModel {
+  public readonly templateId: number;
+  public readonly name: string;
+  public readonly subject: string;
+  public readonly description: string;
+  public readonly html: string;
   public readonly createdAt: Date | undefined;
   public readonly createdBy: number | undefined;
   public readonly updatedAt: Date | undefined;
@@ -14,11 +12,11 @@ export class AccountModel {
   public readonly deletedBy: number | undefined;
 
   constructor(
-    id: number,
-    username: string,
-    password: string | undefined,
-    email: string,
-    roleId: number,
+    templateId: number,
+    name: string,
+    subject: string,
+    description: string,
+    html: string,
     createdAt: Date | undefined,
     createdBy: number | undefined,
     updatedAt: Date | undefined,
@@ -26,11 +24,11 @@ export class AccountModel {
     deletedAt: Date | undefined,
     deletedBy: number | undefined,
   ) {
-    this.id = id;
-    this.username = username;
-    this.password = password;
-    this.email = email;
-    this.roleId = roleId;
+    this.templateId = templateId;
+    this.name = name;
+    this.subject = subject;
+    this.description = description;
+    this.html = html;
     this.createdAt = createdAt;
     this.createdBy = createdBy;
     this.updatedAt = updatedAt;

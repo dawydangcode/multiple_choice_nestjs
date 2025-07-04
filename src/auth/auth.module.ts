@@ -11,6 +11,7 @@ import { SessionModule } from './modules/session/session.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserModule } from 'src/account/modules/user/user.module';
+import { MailerModule } from 'src/mailer/mailer.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserModule } from 'src/account/modules/user/user.module';
     forwardRef(() => RoleModule),
     forwardRef(() => SessionModule),
     forwardRef(() => UserModule),
+    forwardRef(() => MailerModule),
     PassportModule,
     ConfigModule.forRoot({
       load: [auth],
@@ -27,7 +29,7 @@ import { UserModule } from 'src/account/modules/user/user.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        return configService.get('auth.jwt.accessToken') as JwtModuleOptions;
+        return configService.get('auth.jwt') as JwtModuleOptions;
       },
     }),
   ],
