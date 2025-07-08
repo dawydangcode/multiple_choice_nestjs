@@ -177,7 +177,7 @@ export class AuthService {
     );
   }
 
-  async requestResetPassword(email: string): Promise<void> {
+  async requestResetPassword(email: string): Promise<boolean> {
     const account = await this.accountService.checkExistEmail(email);
     if (!account) {
       throw new UnauthorizedException('Email not exist');
@@ -195,6 +195,8 @@ export class AuthService {
         username: account.username || 'User',
       },
     );
+
+    return true;
   }
 
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
