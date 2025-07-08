@@ -65,8 +65,8 @@ export class AuthController {
 
   @Public()
   @Post('forgot-password/send-mail')
-  async forgotPassword(@Body() body: RequestResetPasswordBodyDto) {
-    await this.authService.forgotPassword(body.email);
+  async requestForgotPassword(@Body() body: RequestResetPasswordBodyDto) {
+    await this.authService.requestResetPassword(body.email);
     return true;
   }
 

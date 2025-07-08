@@ -22,7 +22,6 @@ import { throwError } from 'src/utils/function';
 
 @Injectable()
 export class AuthService {
-  // Token generation helpers
   private readonly accessTokenConfig = {
     secretKey: 'auth.jwt.accessToken.secret',
     expiresInKey: 'auth.jwt.accessToken.signOptions.expiresIn',
@@ -39,7 +38,7 @@ export class AuthService {
   };
 
   private generateTokenWithConfig(
-    payload: any,
+    payload: PayloadModel,
     config: { secretKey: string; expiresInKey: string },
   ): { token: string; expireDate: Date } {
     const secret = this.configService.get<string>(config.secretKey);
@@ -57,14 +56,14 @@ export class AuthService {
     return { token, expireDate };
   }
 
-  private generateAccessToken(payload: any): {
+  private generateAccessToken(payload: PayloadModel): {
     token: string;
     expireDate: Date;
   } {
     return this.generateTokenWithConfig(payload, this.accessTokenConfig);
   }
 
-  private generateRefreshToken(payload: any): {
+  private generateRefreshToken(payload: PayloadModel): {
     token: string;
     expireDate: Date;
   } {
@@ -183,16 +182,19 @@ export class AuthService {
     if (!account) {
       throw new UnauthorizedException('Email not exist');
     }
-
     const payload = { email, accountId: account.id };
     const { token: resetToken } = this.generateVerifyToken(payload);
 
     const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
 
-    await this.mailerService.sendMailWithTemplate('reset-password', email, {
-      resetUrl,
-      username: account.username || 'User',
-    });
+    await this.mailerService.sendMailWithTemplate(
+      'reset-password',
+      payload.email,
+      {
+        resetUrl,
+        username: account.username || 'User',
+      },
+    );
   }
 
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
@@ -238,10 +240,6 @@ export class AuthService {
     );
 
     return this.accountService.getAccount(account.id, true);
-  }
-
-  async forgotPassword(email: string): Promise<void> {
-    await this.requestResetPassword(email);
   }
 
   // async requestResetPasswordOtp(email: string): Promise<void> {
