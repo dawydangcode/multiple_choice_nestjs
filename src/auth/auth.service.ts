@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -19,20 +21,25 @@ import { RoleService } from 'src/role/role.service';
 import { TokenModel } from './models/token.model';
 import { MailerService } from 'src/mailer/mailer.service';
 import { throwError } from 'src/utils/function';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, MoreThan, LessThan, IsNull } from 'typeorm';
+import { VerificationTokenEntity } from './entities/veriftcation-token.entity';
+import { VerificationTokenModel } from './models/verify-token.model';
+import { TemplateType } from './enums/template-type.enum';
 
 @Injectable()
 export class AuthService {
-  private readonly accessTokenConfig = {
+  public readonly accessTokenConfig = {
     secretKey: 'auth.jwt.accessToken.secret',
     expiresInKey: 'auth.jwt.accessToken.signOptions.expiresIn',
   };
 
-  private readonly refreshTokenConfig = {
+  public readonly refreshTokenConfig = {
     secretKey: 'auth.jwt.refreshToken.secret',
     expiresInKey: 'auth.jwt.refreshToken.signOptions.expiresIn',
   };
 
-  private readonly verifyTokenConfig = {
+  public readonly verifyTokenConfig = {
     secretKey: 'auth.jwt.verifyToken.secret',
     expiresInKey: 'auth.jwt.verifyToken.signOptions.expiresIn',
   };
@@ -85,6 +92,8 @@ export class AuthService {
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @InjectRepository(VerificationTokenEntity)
+    private readonly verificationTokenRepository: Repository<VerificationTokenEntity>,
   ) {}
 
   async login(
@@ -177,33 +186,94 @@ export class AuthService {
     );
   }
 
-  async requestResetPassword(email: string): Promise<void> {
+  async requestResetPassword(
+    email: string,
+    ipAddress: string | undefined,
+    userAgent: string | undefined,
+  ): Promise<boolean> {
     const account = await this.accountService.checkExistEmail(email);
     if (!account) {
       throw new UnauthorizedException('Email not exist');
     }
-    const payload = { email, accountId: account.id };
-    const { token: resetToken } = this.generateVerifyToken(payload);
+    const recentTokens = await this.verificationTokenRepository.count({
+      where: {
+        email,
+        type: TemplateType.PASSWORD_RESET,
+        isUsed: false,
+        expiresAt: MoreThan(new Date()),
+        deletedAt: IsNull(),
+      },
+    });
+    if (recentTokens >= 3) {
+      throw new HttpException(
+        'TOO_MANY_REQUESTS',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    await this.verificationTokenRepository.update(
+      {
+        email,
+        isUsed: false,
+        expiresAt: MoreThan(new Date()),
+      },
+      {
+        isUsed: true,
+      },
+    );
+
+    const { token: resetToken, expireDate: expiresAt } =
+      this.generateVerifyToken({ email });
+
+    const verificationToken = this.verificationTokenRepository.create({
+      account_id: account.id,
+      email,
+      token: resetToken,
+      type: TemplateType.PASSWORD_RESET,
+      ipAddress,
+      userAgent,
+      isUsed: false,
+      createdAt: new Date(),
+      expiresAt,
+      deletedAt: undefined,
+    });
+
+    await this.verificationTokenRepository.save(verificationToken);
 
     const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
 
+    const expiresIn = moment
+      .duration(moment(expiresAt).diff(moment()))
+      .humanize();
+
     await this.mailerService.sendMailWithTemplate(
-      'reset-password',
-      payload.email,
+      TemplateType.PASSWORD_RESET,
+      email,
       {
         resetUrl,
-        username: account.username || 'User',
+        username: account.username,
+        expiresIn,
       },
     );
+
+    return true;
   }
 
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
-    const payload = this.jwtService.verify(token, {
-      secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
+    const verificationToken = await this.verificationTokenRepository.findOne({
+      where: {
+        token,
+        isUsed: false,
+        expiresAt: MoreThan(new Date()),
+      },
     });
 
+    if (!verificationToken) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
     const account = await this.accountService.getAccount(
-      payload.accountId,
+      verificationToken.account_id,
       false,
     );
 
@@ -213,6 +283,19 @@ export class AuthService {
       newPassword,
       undefined,
       undefined,
+    );
+
+    verificationToken.isUsed = true;
+    await this.verificationTokenRepository.save(verificationToken);
+
+    await this.verificationTokenRepository.update(
+      {
+        email: verificationToken.email,
+        isUsed: false,
+      },
+      {
+        isUsed: true,
+      },
     );
 
     return true;
@@ -240,6 +323,44 @@ export class AuthService {
     );
 
     return this.accountService.getAccount(account.id, true);
+  }
+
+  async cleanupExpiredVerificationTokens(): Promise<void> {
+    await this.verificationTokenRepository.update(
+      {
+        expiresAt: LessThan(new Date()),
+        isUsed: false,
+      },
+      {
+        isUsed: true,
+      },
+    );
+  }
+
+  async getVerificationToken(
+    token: string,
+  ): Promise<VerificationTokenModel | null> {
+    const verificationToken = await this.verificationTokenRepository.findOne({
+      where: {
+        token,
+        isUsed: false,
+        expiresAt: MoreThan(new Date()),
+      },
+    });
+
+    return verificationToken ? verificationToken.toModel() : null;
+  }
+
+  async invalidateVerificationTokensForEmail(email: string): Promise<void> {
+    await this.verificationTokenRepository.update(
+      {
+        email,
+        isUsed: false,
+      },
+      {
+        isUsed: true,
+      },
+    );
   }
 
   // async requestResetPasswordOtp(email: string): Promise<void> {

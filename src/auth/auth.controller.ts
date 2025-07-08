@@ -65,8 +65,18 @@ export class AuthController {
 
   @Public()
   @Post('forgot-password/send-mail')
-  async requestForgotPassword(@Body() body: RequestResetPasswordBodyDto) {
-    await this.authService.requestResetPassword(body.email);
+  async requestForgotPassword(
+    @Req() req: any,
+    @Body() body: RequestResetPasswordBodyDto,
+  ) {
+    const userAgent = req.get('User-Agent');
+    const ipAddress = req.ip || req.get('X-Forwarded-For');
+
+    await this.authService.requestResetPassword(
+      body.email,
+      ipAddress,
+      userAgent,
+    );
     return true;
   }
 
