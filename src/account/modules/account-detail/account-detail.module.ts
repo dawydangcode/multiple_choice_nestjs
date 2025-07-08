@@ -7,10 +7,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [
-    AuthModule,
-    TypeOrmModule.forFeature([AccountDetailEntity]),
-  ],
+  imports: [AuthModule, TypeOrmModule.forFeature([AccountDetailEntity])],
   controllers: [AccountDetailController],
   providers: [AccountDetailService],
   exports: [AccountDetailService],

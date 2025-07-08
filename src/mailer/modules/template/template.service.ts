@@ -13,7 +13,9 @@ export class TemplateService {
 
   async getTemplates(): Promise<EmailTemplateModel[]> {
     const template = await this.emailTemplateRepository.find({
-      where: { deletedAt: IsNull() },
+      where: {
+        deletedAt: IsNull(),
+      },
     });
 
     return template.map((entity) => entity.toModel());
@@ -21,23 +23,33 @@ export class TemplateService {
 
   async getTemplateById(templateId: number): Promise<EmailTemplateModel> {
     const template = await this.emailTemplateRepository.findOne({
-      where: { id: templateId, deletedAt: IsNull() },
+      where: {
+        id: templateId,
+        deletedAt: IsNull(),
+      },
     });
+
     if (!template) {
       throw new Error('EmailTemplateEntity not found');
     }
+
     return template.toModel();
   }
 
   async getTemplateByName(templateName: string): Promise<EmailTemplateModel> {
     const template = await this.emailTemplateRepository.findOne({
-      where: { name: templateName, deletedAt: IsNull() },
+      where: {
+        name: templateName,
+        deletedAt: IsNull(),
+      },
     });
+
     if (!template) {
       throw new Error(
         `EmailTemplateEntity with name '${templateName}' not found`,
       );
     }
+
     return template.toModel();
   }
 

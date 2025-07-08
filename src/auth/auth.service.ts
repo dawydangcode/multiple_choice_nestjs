@@ -25,7 +25,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan, LessThan, IsNull } from 'typeorm';
 import { VerificationTokenEntity } from './entities/veriftcation-token.entity';
 import { VerificationTokenModel } from './models/verify-token.model';
-import { TemplateType } from './enums/template-type.enum';
+import { EmailTemplateType } from './enums/email-template.type';
 import { TokenModel } from './models/token.model';
 import { JwtConfigModel } from './models/jwt-config.model';
 
@@ -179,7 +179,7 @@ export class AuthService {
     const recentTokens = await this.verificationTokenRepository.count({
       where: {
         email,
-        type: TemplateType.PASSWORD_RESET,
+        type: EmailTemplateType.PASSWORD_RESET,
         isUsed: false,
         expiresAt: MoreThan(new Date()),
         deletedAt: IsNull(),
@@ -212,7 +212,7 @@ export class AuthService {
       accountId: account.id,
       email,
       token: resetToken.token,
-      type: TemplateType.PASSWORD_RESET,
+      type: EmailTemplateType.PASSWORD_RESET,
       ipAddress,
       userAgent,
       isUsed: false,
@@ -230,12 +230,12 @@ export class AuthService {
       .humanize();
 
     await this.mailerService.sendMailWithTemplate(
-      TemplateType.PASSWORD_RESET,
       email,
+      EmailTemplateType.PASSWORD_RESET,
       {
-        resetUrl,
+        resetUrl: resetUrl,
         username: account.username,
-        expiresIn,
+        expiresIn: expiresIn,
       },
     );
 

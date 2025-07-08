@@ -1,11 +1,11 @@
-import { TemplateType } from '../enums/template-type.enum';
+import { EmailTemplateType } from '../enums/email-template.type';
 
 export class VerificationTokenModel {
   public readonly id: number;
   public readonly accountId: number;
   public readonly email: string;
   public readonly token: string;
-  public readonly type: TemplateType | undefined;
+  public readonly type: EmailTemplateType | undefined;
   public readonly ipAddress: string | undefined;
   public readonly userAgent: string | undefined;
   public readonly isUsed: boolean;
@@ -18,7 +18,7 @@ export class VerificationTokenModel {
     accountId: number,
     email: string,
     token: string,
-    type: TemplateType | undefined,
+    type: EmailTemplateType | undefined,
     ipAddress: string | undefined,
     userAgent: string | undefined,
     isUsed: boolean,

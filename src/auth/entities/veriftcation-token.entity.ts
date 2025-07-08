@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { VerificationTokenModel } from '../models/verify-token.model';
-import { TemplateType } from '../enums/template-type.enum';
+import { EmailTemplateType } from '../enums/email-template.type';
 
 @Entity('verification_token')
 export class VerificationTokenEntity {
@@ -17,7 +17,7 @@ export class VerificationTokenEntity {
   token!: string;
 
   @Column({ name: 'type' })
-  type!: TemplateType;
+  type!: EmailTemplateType;
 
   @Column({ name: 'ip_address' })
   ipAddress!: string;
