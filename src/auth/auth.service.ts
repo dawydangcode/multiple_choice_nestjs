@@ -19,6 +19,11 @@ import { RoleService } from 'src/role/role.service';
 import { TokenModel } from './models/token.model';
 import { MailerService } from 'src/mailer/mailer.service';
 import { throwError } from 'src/utils/function';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, MoreThan, LessThan } from 'typeorm';
+import { VerificationTokenEntity } from './entities/veriftcation-token.entity';
+import { VerificationTokenModel } from './models/verify-token.model';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -85,6 +90,8 @@ export class AuthService {
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @InjectRepository(VerificationTokenEntity)
+    private readonly verificationTokenRepository: Repository<VerificationTokenEntity>,
   ) {}
 
   async login(
@@ -177,35 +184,71 @@ export class AuthService {
     );
   }
 
-  async requestResetPassword(email: string): Promise<boolean> {
+  async requestResetPassword(
+    email: string,
+    ipAddress: string | undefined,
+    userAgent: string | undefined,
+  ): Promise<boolean> {
     const account = await this.accountService.checkExistEmail(email);
     if (!account) {
       throw new UnauthorizedException('Email not exist');
     }
-    const payload = { email, accountId: account.id };
-    const { token: resetToken } = this.generateVerifyToken(payload);
+
+    await this.verificationTokenRepository.update(
+      {
+        email,
+        isUsed: false,
+        expiresAt: MoreThan(new Date()),
+      },
+      {
+        isUsed: true,
+      },
+    );
+
+    const { token: resetToken } = this.generateVerifyToken({ email });
+
+    const expiresAt = moment().add(15, 'minutes').toDate();
+
+    const verificationToken = this.verificationTokenRepository.create({
+      account_id: account.id,
+      email,
+      token: resetToken,
+      ipAddress,
+      userAgent,
+      isUsed: false,
+      createdAt: new Date(),
+      expiresAt,
+      deletedAt: undefined,
+    });
+
+    await this.verificationTokenRepository.save(verificationToken);
 
     const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
 
-    await this.mailerService.sendMailWithTemplate(
-      'reset-password',
-      payload.email,
-      {
-        resetUrl,
-        username: account.username || 'User',
-      },
-    );
+    await this.mailerService.sendMailWithTemplate('reset-password', email, {
+      resetUrl,
+      username: account.username,
+      expiresIn: '15 minutes',
+    });
 
     return true;
   }
 
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
-    const payload = this.jwtService.verify(token, {
-      secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
+    const verificationToken = await this.verificationTokenRepository.findOne({
+      where: {
+        token,
+        isUsed: false,
+        expiresAt: MoreThan(new Date()),
+      },
     });
 
+    if (!verificationToken) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
     const account = await this.accountService.getAccount(
-      payload.accountId,
+      verificationToken.account_id,
       false,
     );
 
@@ -215,6 +258,19 @@ export class AuthService {
       newPassword,
       undefined,
       undefined,
+    );
+
+    verificationToken.isUsed = true;
+    await this.verificationTokenRepository.save(verificationToken);
+
+    await this.verificationTokenRepository.update(
+      {
+        email: verificationToken.email,
+        isUsed: false,
+      },
+      {
+        isUsed: true,
+      },
     );
 
     return true;
@@ -242,6 +298,44 @@ export class AuthService {
     );
 
     return this.accountService.getAccount(account.id, true);
+  }
+
+  async cleanupExpiredVerificationTokens(): Promise<void> {
+    await this.verificationTokenRepository.update(
+      {
+        expiresAt: LessThan(new Date()),
+        isUsed: false,
+      },
+      {
+        isUsed: true,
+      },
+    );
+  }
+
+  async getVerificationToken(
+    token: string,
+  ): Promise<VerificationTokenModel | null> {
+    const verificationToken = await this.verificationTokenRepository.findOne({
+      where: {
+        token,
+        isUsed: false,
+        expiresAt: MoreThan(new Date()),
+      },
+    });
+
+    return verificationToken ? verificationToken.toModel() : null;
+  }
+
+  async invalidateVerificationTokensForEmail(email: string): Promise<void> {
+    await this.verificationTokenRepository.update(
+      {
+        email,
+        isUsed: false,
+      },
+      {
+        isUsed: true,
+      },
+    );
   }
 
   // async requestResetPasswordOtp(email: string): Promise<void> {

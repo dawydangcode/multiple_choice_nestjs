@@ -3,8 +3,8 @@ export class VerificationTokenModel {
   public readonly accountId: number;
   public readonly email: string;
   public readonly token: string;
-  public readonly ipAddress: string;
-  public readonly userAgent: string;
+  public readonly ipAddress: string | undefined;
+  public readonly userAgent: string | undefined;
   public readonly isUsed: boolean;
   public readonly createdAt: Date | undefined;
   public readonly expiresAt: Date | undefined;
@@ -15,8 +15,8 @@ export class VerificationTokenModel {
     accountId: number,
     email: string,
     token: string,
-    ipAddress: string,
-    userAgent: string,
+    ipAddress: string | undefined,
+    userAgent: string | undefined,
     isUsed: boolean,
     createdAt: Date | undefined,
     expiresAt: Date | undefined,
