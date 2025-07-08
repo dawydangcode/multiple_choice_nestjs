@@ -1,12 +1,6 @@
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  ManyToOne,
-} from 'typeorm';
-import { AccountEntity } from 'src/account/entities/account.entity';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { VerificationTokenModel } from '../models/verify-token.model';
+import { TemplateType } from '../enums/template-type.enum';
 
 @Entity('verification_token')
 export class VerificationTokenEntity {
@@ -21,6 +15,9 @@ export class VerificationTokenEntity {
 
   @Column({ name: 'token' })
   token!: string;
+
+  @Column({ name: 'type' })
+  type!: TemplateType;
 
   @Column({ name: 'ip_address' })
   ipAddress!: string;
@@ -46,6 +43,7 @@ export class VerificationTokenEntity {
       this.account_id,
       this.email,
       this.token,
+      this.type,
       this.ipAddress,
       this.userAgent,
       this.isUsed,

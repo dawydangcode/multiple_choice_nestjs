@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -20,24 +22,24 @@ import { TokenModel } from './models/token.model';
 import { MailerService } from 'src/mailer/mailer.service';
 import { throwError } from 'src/utils/function';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan, LessThan } from 'typeorm';
+import { Repository, MoreThan, LessThan, IsNull } from 'typeorm';
 import { VerificationTokenEntity } from './entities/veriftcation-token.entity';
 import { VerificationTokenModel } from './models/verify-token.model';
-import * as crypto from 'crypto';
+import { TemplateType } from './enums/template-type.enum';
 
 @Injectable()
 export class AuthService {
-  private readonly accessTokenConfig = {
+  public readonly accessTokenConfig = {
     secretKey: 'auth.jwt.accessToken.secret',
     expiresInKey: 'auth.jwt.accessToken.signOptions.expiresIn',
   };
 
-  private readonly refreshTokenConfig = {
+  public readonly refreshTokenConfig = {
     secretKey: 'auth.jwt.refreshToken.secret',
     expiresInKey: 'auth.jwt.refreshToken.signOptions.expiresIn',
   };
 
-  private readonly verifyTokenConfig = {
+  public readonly verifyTokenConfig = {
     secretKey: 'auth.jwt.verifyToken.secret',
     expiresInKey: 'auth.jwt.verifyToken.signOptions.expiresIn',
   };
@@ -193,6 +195,21 @@ export class AuthService {
     if (!account) {
       throw new UnauthorizedException('Email not exist');
     }
+    const recentTokens = await this.verificationTokenRepository.count({
+      where: {
+        email,
+        type: TemplateType.PASSWORD_RESET,
+        isUsed: false,
+        expiresAt: MoreThan(new Date()),
+        deletedAt: IsNull(),
+      },
+    });
+    if (recentTokens >= 3) {
+      throw new HttpException(
+        'TOO_MANY_REQUESTS',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
 
     await this.verificationTokenRepository.update(
       {
@@ -205,14 +222,14 @@ export class AuthService {
       },
     );
 
-    const { token: resetToken } = this.generateVerifyToken({ email });
-
-    const expiresAt = moment().add(15, 'minutes').toDate();
+    const { token: resetToken, expireDate: expiresAt } =
+      this.generateVerifyToken({ email });
 
     const verificationToken = this.verificationTokenRepository.create({
       account_id: account.id,
       email,
       token: resetToken,
+      type: TemplateType.PASSWORD_RESET,
       ipAddress,
       userAgent,
       isUsed: false,
@@ -225,11 +242,19 @@ export class AuthService {
 
     const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
 
-    await this.mailerService.sendMailWithTemplate('reset-password', email, {
-      resetUrl,
-      username: account.username,
-      expiresIn: '15 minutes',
-    });
+    const expiresIn = moment
+      .duration(moment(expiresAt).diff(moment()))
+      .humanize();
+
+    await this.mailerService.sendMailWithTemplate(
+      TemplateType.PASSWORD_RESET,
+      email,
+      {
+        resetUrl,
+        username: account.username,
+        expiresIn,
+      },
+    );
 
     return true;
   }
