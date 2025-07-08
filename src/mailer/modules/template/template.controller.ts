@@ -16,15 +16,15 @@ import {
   UpdateEmailTemplateParamsDto,
 } from './dtos/email-template.dto';
 import { TemplateService } from './template.service';
-import { EmailTemplateModel } from './models/email-tempalte.model';
+import { EmailTemplateModel } from './models/email-template.model';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
 import { RequestModel } from 'src/utils/models/request.model';
 
-@Roles(RoleType.Admin)
 @Controller('api/v1')
-@ApiTags('Template')
+@ApiTags('Mail Template')
+@Roles(RoleType.Admin)
 export class TemplateController {
   constructor(private readonly templateService: TemplateService) {}
 

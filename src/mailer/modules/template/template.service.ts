@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EmailTemplateEntity } from './entities/email-template.entity';
 import { In, IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EmailTemplateModel } from './models/email-tempalte.model';
+import { EmailTemplateModel } from './models/email-template.model';
 
 @Injectable()
 export class TemplateService {

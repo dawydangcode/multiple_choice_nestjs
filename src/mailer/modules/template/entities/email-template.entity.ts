@@ -1,6 +1,6 @@
 import { cp } from 'fs';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { EmailTemplateModel } from '../models/email-tempalte.model';
+import { EmailTemplateModel } from '../models/email-template.model';
 
 @Entity('email_template')
 export class EmailTemplateEntity {
