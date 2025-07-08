@@ -22,7 +22,62 @@ import { throwError } from 'src/utils/function';
 
 @Injectable()
 export class AuthService {
-  // TO Do
+  // Token generation helpers
+  private readonly accessTokenConfig = {
+    secretKey: 'auth.jwt.accessToken.secret',
+    expiresInKey: 'auth.jwt.accessToken.signOptions.expiresIn',
+  };
+
+  private readonly refreshTokenConfig = {
+    secretKey: 'auth.jwt.refreshToken.secret',
+    expiresInKey: 'auth.jwt.refreshToken.signOptions.expiresIn',
+  };
+
+  private readonly verifyTokenConfig = {
+    secretKey: 'auth.jwt.verifyToken.secret',
+    expiresInKey: 'auth.jwt.verifyToken.signOptions.expiresIn',
+  };
+
+  private generateTokenWithConfig(
+    payload: any,
+    config: { secretKey: string; expiresInKey: string },
+  ): { token: string; expireDate: Date } {
+    const secret = this.configService.get<string>(config.secretKey);
+    const expiresIn = this.configService.get<string>(config.expiresInKey);
+
+    const token = this.jwtService.sign(payload, {
+      secret,
+      expiresIn,
+    });
+
+    const expireDate = moment()
+      .add(ms(expiresIn as StringValue), 'ms')
+      .toDate();
+
+    return { token, expireDate };
+  }
+
+  private generateAccessToken(payload: any): {
+    token: string;
+    expireDate: Date;
+  } {
+    return this.generateTokenWithConfig(payload, this.accessTokenConfig);
+  }
+
+  private generateRefreshToken(payload: any): {
+    token: string;
+    expireDate: Date;
+  } {
+    return this.generateTokenWithConfig(payload, this.refreshTokenConfig);
+  }
+
+  private generateVerifyToken(payload: any): {
+    token: string;
+    expireDate: Date;
+  } {
+    return this.generateTokenWithConfig(payload, this.verifyTokenConfig);
+  }
+
   constructor(
     private readonly accountService: AccountService,
     private readonly accountDetailService: AccountDetailService,
@@ -83,7 +138,7 @@ export class AuthService {
     role: RoleModel,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
-    await this.accountService.checkExistUsername(username);
+    await this.accountService.getAccountByUsername(username, true);
 
     const newAccount = await this.accountService.createAccount(
       username,
@@ -108,34 +163,11 @@ export class AuthService {
   async generateToken(payload: PayloadModel): Promise<TokenModel> {
     const plainPayload = { ...payload };
 
-    const accessSecret = this.configService.get<string>(
-      'auth.jwt.accessToken.secret',
-    );
-    const accessExpire = this.configService.get<string>(
-      'auth.jwt.accessToken.signOptions.expiresIn',
-    );
-    const accessToken = this.jwtService.sign(plainPayload, {
-      secret: accessSecret,
-      expiresIn: accessExpire,
-    });
-    const accessExpireDate = moment()
-      .add(ms(accessExpire as StringValue), 'ms')
-      .toDate();
+    const { token: accessToken, expireDate: accessExpireDate } =
+      this.generateAccessToken(plainPayload);
 
-    const refreshSecret = this.configService.get<string>(
-      'auth.jwt.refreshToken.secret',
-    );
-    const refreshExpire = this.configService.get<string>(
-      'auth.jwt.refreshToken.signOptions.expiresIn',
-    );
-    const refreshToken = this.jwtService.sign(plainPayload, {
-      secret: refreshSecret,
-      expiresIn: refreshExpire,
-    });
-
-    const refreshExpireDate = moment()
-      .add(ms(refreshExpire as StringValue), 'ms')
-      .toDate();
+    const { token: refreshToken, expireDate: refreshExpireDate } =
+      this.generateRefreshToken(plainPayload);
 
     return new TokenModel(
       payload.accountId,
@@ -153,13 +185,7 @@ export class AuthService {
     }
 
     const payload = { email, accountId: account.id };
-
-    const resetToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
-      expiresIn: this.configService.get<string>(
-        'auth.jwt.verifyToken.signOptions.expiresIn',
-      ),
-    });
+    const { token: resetToken } = this.generateVerifyToken(payload);
 
     const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
 

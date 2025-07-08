@@ -49,20 +49,18 @@ export class AccountService {
     username: string,
     isHiddenPassword: boolean,
   ): Promise<AccountModel> {
-    const account = await this.checkExistUsername(username);
+    const account = await this.accountRepository.findOne({
+      where: {
+        username: username,
+        deletedAt: IsNull(),
+      },
+    });
 
     if (!account) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND); //TO DO
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
     return account.toModel(isHiddenPassword);
-  }
-
-  async checkExistUsername(username: string) {
-    const existingUsername = this.accountRepository.findOne({
-      where: { username: username, deletedAt: IsNull() },
-    });
-    return existingUsername;
   }
 
   async checkExistEmail(email: string) {
@@ -79,7 +77,7 @@ export class AccountService {
     roleId: number,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
-    const existingAccount = await this.checkExistUsername(username);
+    const existingAccount = await this.getAccountByUsername(username, true);
     if (existingAccount) {
       throw new HttpException(
         'Username already exists',
