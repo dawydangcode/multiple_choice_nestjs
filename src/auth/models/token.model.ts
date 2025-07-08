@@ -1,9 +1,9 @@
 export class TokenModel {
-  accountId: number;
-  accessToken: string;
-  refreshToken: string;
-  accessExpireDate: Date;
-  refreshExpireDate: Date;
+  public readonly accountId: number;
+  public readonly accessToken: string;
+  public readonly refreshToken: string;
+  public readonly accessExpireDate: Date;
+  public readonly refreshExpireDate: Date;
 
   constructor(
     accountId: number,
