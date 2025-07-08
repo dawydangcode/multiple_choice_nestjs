@@ -65,7 +65,10 @@ export class AccountService {
 
   async checkExistEmail(email: string) {
     const existingEmail = this.accountRepository.findOne({
-      where: { email: email, deletedAt: IsNull() },
+      where: {
+        email: email,
+        deletedAt: IsNull(),
+      },
     });
     return existingEmail;
   }
