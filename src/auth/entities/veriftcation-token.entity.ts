@@ -8,7 +8,7 @@ export class VerificationTokenEntity {
   id!: number;
 
   @Column({ name: 'account_id' })
-  account_id!: number;
+  accountId!: number;
 
   @Column({ name: 'email' })
   email!: string;
@@ -40,7 +40,7 @@ export class VerificationTokenEntity {
   toModel(): VerificationTokenModel {
     return new VerificationTokenModel(
       this.id,
-      this.account_id,
+      this.accountId,
       this.email,
       this.token,
       this.type,
