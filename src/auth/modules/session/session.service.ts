@@ -4,6 +4,7 @@ import { SessionEntity } from './entity/session.entity';
 import { IsNull, Repository } from 'typeorm';
 import { SessionModel } from './model/session.model';
 import { AccountModel } from 'src/account/models/account.model';
+import { SessionType } from './enums/session.type';
 
 @Injectable()
 export class SessionService {
@@ -16,6 +17,7 @@ export class SessionService {
     account: AccountModel,
     userAgent: string,
     ipAddress: string,
+    type: SessionType | undefined,
     reqAccountId: number,
   ): Promise<SessionModel> {
     const entity = new SessionEntity();
@@ -23,6 +25,7 @@ export class SessionService {
     entity.accountId = account.id;
     entity.userAgent = userAgent;
     entity.ipAddress = ipAddress;
+    entity.type = type;
     entity.createdAt = new Date();
     entity.createdBy = reqAccountId;
     entity.isActive = true;
@@ -52,6 +55,7 @@ export class SessionService {
   async updateSession(
     session: SessionModel,
     isActive: boolean,
+    type: SessionType | undefined,
     reqAccountId: number,
   ): Promise<SessionModel> {
     await this.sessionRepository.update(
@@ -61,11 +65,31 @@ export class SessionService {
       },
       {
         isActive: isActive,
+        type: type,
         updatedAt: new Date(),
         updatedBy: reqAccountId,
       },
     );
 
     return await this.getSessionById(session.id, undefined);
+  }
+
+  /**
+   * Tìm và cập nhật tất cả sessions của một account thành inactive và đổi type thành RESET_PASSWORD
+   */
+  async invalidateAllSessionsForAccount(accountId: number): Promise<void> {
+    await this.sessionRepository.update(
+      {
+        accountId: accountId,
+        isActive: true,
+        deletedAt: IsNull(),
+      },
+      {
+        isActive: false,
+        type: SessionType.RESET_PASSWORD,
+        updatedAt: new Date(),
+        updatedBy: accountId,
+      },
+    );
   }
 }

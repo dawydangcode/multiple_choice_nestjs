@@ -21,13 +21,10 @@ import { RoleService } from 'src/role/role.service';
 import { LoginTokenModel } from './models/login-token.model';
 import { MailerService } from 'src/mailer/mailer.service';
 import { throwError } from 'src/utils/function';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan, LessThan, IsNull } from 'typeorm';
-import { VerificationTokenEntity } from './entities/veriftcation-token.entity';
-import { VerificationTokenModel } from './models/verify-token.model';
 import { EmailTemplateType } from './enums/email-template.type';
 import { TokenModel } from './models/token.model';
 import { JwtConfigModel } from './models/jwt-config.model';
+import { SessionType } from './modules/session/enums/session.type';
 
 @Injectable()
 export class AuthService {
@@ -43,8 +40,6 @@ export class AuthService {
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    @InjectRepository(VerificationTokenEntity)
-    private readonly verificationTokenRepository: Repository<VerificationTokenEntity>,
   ) {
     this.accessTokenConfig = new JwtConfigModel(
       configService.get<string>('auth.jwt.accessToken.secret') ?? throwError(),
@@ -99,11 +94,13 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Username or password is invalid');
     }
+    const type = SessionType.LOGIN;
 
     const session = await this.sessionService.createSession(
       account,
       userAgent,
       ipAddress,
+      type,
       account.id,
     );
 
@@ -119,7 +116,13 @@ export class AuthService {
   }
 
   async logout(session: SessionModel, reqAccountId: number): Promise<boolean> {
-    await this.sessionService.updateSession(session, false, reqAccountId);
+    const sessionType = SessionType.LOGOUT;
+    await this.sessionService.updateSession(
+      session,
+      false,
+      sessionType,
+      reqAccountId,
+    );
     return true;
   }
 
@@ -167,61 +170,31 @@ export class AuthService {
   }
 
   async requestResetPassword(
+    session: SessionModel,
+    account: AccountModel,
     email: string,
-    ipAddress: string | undefined,
-    userAgent: string | undefined,
   ): Promise<boolean> {
-    const account = await this.accountService.checkExistEmail(email);
+    await this.accountService.getAccountByEmail(account.email);
     if (!account) {
       throw new UnauthorizedException('Email not exist');
     }
-
-    const recentTokens = await this.verificationTokenRepository.count({
-      where: {
-        email,
-        type: EmailTemplateType.PASSWORD_RESET,
-        isUsed: false,
-        expiresAt: MoreThan(new Date()),
-        deletedAt: IsNull(),
-      },
-    });
-    if (recentTokens >= 3) {
-      throw new HttpException(
-        'TOO_MANY_REQUESTS',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-
-    await this.verificationTokenRepository.update(
-      {
-        email,
-        isUsed: false,
-        expiresAt: MoreThan(new Date()),
-      },
-      {
-        isUsed: true,
-      },
+    await this.sessionService.updateSession(
+      session,
+      false,
+      SessionType.RESET_PASSWORD,
+      account.id,
     );
 
     const resetToken = await this.generateTokenWithConfig(
-      { email, accountId: account.id } as PayloadModel, // To Do
+      new PayloadModel(
+        account.id,
+        session.id,
+        account.email,
+        account.roleId,
+        (await this.roleService.getRole(account.roleId)).name,
+      ),
       this.verifyTokenConfig,
     );
-
-    const verificationToken = this.verificationTokenRepository.create({
-      accountId: account.id,
-      email,
-      token: resetToken.token,
-      type: EmailTemplateType.PASSWORD_RESET,
-      ipAddress,
-      userAgent,
-      isUsed: false,
-      createdAt: new Date(),
-      expiresAt: resetToken.expireDate,
-      deletedAt: undefined,
-    });
-
-    await this.verificationTokenRepository.save(verificationToken);
 
     const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
 
@@ -243,10 +216,12 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
-    const verificationToken = await this.getVerificationToken(token);
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: this.verifyTokenConfig.secret,
+    });
 
     const account = await this.accountService.getAccount(
-      verificationToken.accountId,
+      payload.accountId,
       false,
     );
 
@@ -258,17 +233,7 @@ export class AuthService {
       undefined,
     );
 
-    await this.verificationTokenRepository.save(verificationToken);
-
-    await this.verificationTokenRepository.update(
-      {
-        email: verificationToken.email,
-        isUsed: false,
-      },
-      {
-        isUsed: true,
-      },
-    );
+    await this.sessionService.invalidateAllSessionsForAccount(account.id);
 
     return true;
   }
@@ -283,7 +248,7 @@ export class AuthService {
       account.password ?? throwError('Not Found Password'),
     );
     if (!isMatch) {
-      throw new UnauthorizedException('Mật khẩu cũ không đúng');
+      throw new UnauthorizedException('Old password is incorrect');
     }
 
     await this.accountService.updateAccount(
@@ -297,21 +262,7 @@ export class AuthService {
     return this.accountService.getAccount(account.id, true);
   }
 
-  async getVerificationToken(token: string): Promise<VerificationTokenModel> {
-    const verificationToken = await this.verificationTokenRepository.findOne({
-      where: {
-        token,
-        isUsed: false,
-        expiresAt: MoreThan(new Date()),
-      },
-    });
-
-    if (!verificationToken) {
-      throw new BadRequestException('Invalid or expired verification token');
-    }
-
-    return verificationToken.toModel();
-  }
+  // RESET PASSWORD OTP METHODS
 
   // async requestResetPasswordOtp(email: string): Promise<void> {
   //   const account = await this.accountService.checkExistEmail(email);

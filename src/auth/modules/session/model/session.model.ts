@@ -1,11 +1,10 @@
+import { SessionType } from '../enums/session.type';
+
 export class SessionModel {
   public readonly id: number;
   public readonly accountId: number;
   public readonly roleId: number;
-  public readonly accessToken: string;
-  public readonly refreshToken: string;
-  public readonly accessExpire: Date | undefined;
-  public readonly refreshExpire: Date | undefined;
+  public readonly type: SessionType | undefined;
   public readonly isActive: boolean;
   public readonly userAgent: string | undefined;
   public readonly ipAddress: string | undefined;
@@ -20,10 +19,7 @@ export class SessionModel {
     id: number,
     accountId: number,
     roleId: number,
-    accessToken: string,
-    refreshToken: string,
-    accessExpire: Date | undefined,
-    refreshExpire: Date | undefined,
+    type: SessionType | undefined,
     isActive: boolean,
     userAgent: string | undefined,
     ipAddress: string | undefined,
@@ -37,10 +33,7 @@ export class SessionModel {
     this.id = id;
     this.accountId = accountId;
     this.roleId = roleId;
-    this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
-    this.accessExpire = accessExpire;
-    this.refreshExpire = refreshExpire;
+    this.type = type;
     this.isActive = isActive;
     this.userAgent = userAgent;
     this.ipAddress = ipAddress;
