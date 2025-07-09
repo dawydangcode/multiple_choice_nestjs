@@ -196,7 +196,7 @@ export class AuthService {
       this.verifyTokenConfig,
     );
 
-    const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
+    const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken.token}`;
 
     const expiresIn = moment
       .duration(moment(resetToken.expireDate).diff(moment()))
@@ -204,7 +204,7 @@ export class AuthService {
 
     await this.mailerService.sendMailWithTemplate(
       email,
-      EmailTemplateType.PASSWORD_RESET,
+      EmailTemplateType.RESET_PASSWORD,
       {
         resetUrl: resetUrl,
         username: account.username,

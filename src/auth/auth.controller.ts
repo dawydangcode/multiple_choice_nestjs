@@ -64,45 +64,51 @@ export class AuthController {
     return account;
   }
 
-  // @Public()
-  // @Post('forgot-password/send-mail')
-  // async requestForgotPassword(
-  //   @Req() req: any,
-  //   @Body() body: RequestResetPasswordBodyDto,
-  // ) {
-  //   const userAgent = req.get('User-Agent');
-  //   const ipAddress = req.ip || req.get('X-Forwarded-For');
+  @Public()
+  @Post('forgot-password/send-mail')
+  async requestForgotPassword(
+    @Req() req: any,
+    @Body() body: RequestResetPasswordBodyDto,
+  ) {
+    const userAgent = req.get('User-Agent');
+    const ipAddress = req.ip || req.get('X-Forwarded-For');
+    const account = await this.accountService.getAccountByEmail(body.email);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+    const session = await this.sessionService.createSession(
+      account,
+      req.get('User-Agent'),
+      req.ip || req.get('X-Forwarded-For'),
+      SessionType.RESET_PASSWORD,
+      account.id,
+    );
+    await this.authService.requestResetPassword(session, account, body.email);
+    return true;
+  }
 
-  //   await this.authService.requestResetPassword(
-  //     body.email,
-  //     ipAddress,
-  //     userAgent,
-  //   );
-  //   return true;
-  // }
+  @Public()
+  @Post('reset-password')
+  async resetPassword(@Body() body: ResetPasswordBodyDto) {
+    await this.authService.resetPassword(body.token, body.newPassword);
+    return true;
+  }
 
-  // @Public()
-  // @Post('reset-password')
-  // async resetPassword(@Body() body: ResetPasswordBodyDto) {
-  //   await this.authService.resetPassword(body.token, body.newPassword);
-  //   return true;
-  // }
-
-  // @Post('change-password')
-  // async changePassword(
-  //   @Req() req: RequestModel,
-  //   @Body() body: ChangePasswordBodyDto,
-  // ) {
-  //   const account = await this.accountService.getAccount(
-  //     req.user.accountId,
-  //     false,
-  //   );
-  //   return await this.authService.changePassword(
-  //     account,
-  //     body.oldPassword,
-  //     body.newPassword,
-  //   );
-  // }
+  @Post('change-password')
+  async changePassword(
+    @Req() req: RequestModel,
+    @Body() body: ChangePasswordBodyDto,
+  ) {
+    const account = await this.accountService.getAccount(
+      req.user.accountId,
+      false,
+    );
+    return await this.authService.changePassword(
+      account,
+      body.oldPassword,
+      body.newPassword,
+    );
+  }
 
   // @Post('request-reset-password-authenticated')
   // async requestResetPasswordAuthenticated(@Req() req: RequestModel) {

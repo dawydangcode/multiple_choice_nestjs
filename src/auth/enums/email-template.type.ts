@@ -1,4 +1,4 @@
 export enum EmailTemplateType {
-  PASSWORD_RESET = 'password_reset',
+  RESET_PASSWORD = 'reset-password',
   EMAIL_VERIFICATION = 'email_verification',
 }

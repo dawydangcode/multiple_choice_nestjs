@@ -13,7 +13,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserModule } from 'src/account/modules/user/user.module';
 import { MailerModule } from 'src/mailer/mailer.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { VerificationTokenEntity } from './entities/veriftcation-token.entity';
 
 @Module({
   imports: [
@@ -23,7 +22,6 @@ import { VerificationTokenEntity } from './entities/veriftcation-token.entity';
     forwardRef(() => SessionModule),
     forwardRef(() => UserModule),
     forwardRef(() => MailerModule),
-    TypeOrmModule.forFeature([VerificationTokenEntity]),
     PassportModule,
     ConfigModule.forRoot({
       load: [auth],
