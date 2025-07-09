@@ -74,9 +74,6 @@ export class SessionService {
     return await this.getSessionById(session.id, undefined);
   }
 
-  /**
-   * Tìm và cập nhật tất cả sessions của một account thành inactive và đổi type thành RESET_PASSWORD
-   */
   async invalidateAllSessionsForAccount(accountId: number): Promise<void> {
     await this.sessionRepository.update(
       {
@@ -86,7 +83,7 @@ export class SessionService {
       },
       {
         isActive: false,
-        type: SessionType.RESET_PASSWORD,
+        type: undefined,
         updatedAt: new Date(),
         updatedBy: accountId,
       },
