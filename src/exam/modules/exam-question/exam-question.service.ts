@@ -24,7 +24,7 @@ export class ExamQuestionService {
       },
     });
 
-    // Lọc ra những câu hỏi chưa tồn tại
+    // Lọc ra những câu hỏi chưa tồn tại trong exam
     const existingQuestionIds = existingQuestions.map((eq) => eq.questionId);
     const newQuestionIds = questionIds.filter(
       (questionId) => !existingQuestionIds.includes(questionId),
