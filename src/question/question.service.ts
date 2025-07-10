@@ -86,4 +86,11 @@ export class QuestionService {
 
     return await this.getQuestionById(question.id);
   }
+
+  async getQuestionsByTopicId(topicId: number): Promise<QuestionModel[]> {
+    const questions = await this.questionRepository.find({
+      where: { topicId: topicId, deletedAt: IsNull() },
+    });
+    return questions.map((question: QuestionEntity) => question.toModel());
+  }
 }
