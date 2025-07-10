@@ -13,16 +13,26 @@ export class ExamQuestionService {
     private readonly examQuestionRepository: Repository<ExamQuestionEntity>,
   ) {}
 
-  async addQuestionsToExam(
+  private async getExistingExamQuestions(
     examId: number,
     questionIds: number[],
-  ): Promise<ExamQuestionModel[]> {
-    const existingQuestions = await this.examQuestionRepository.find({
+  ): Promise<ExamQuestionEntity[]> {
+    return this.examQuestionRepository.find({
       where: {
         examId: examId,
         questionId: In(questionIds),
       },
     });
+  }
+
+  async addQuestionsToExam(
+    exam: ExamModel,
+    questionIds: number[],
+  ): Promise<ExamQuestionModel[]> {
+    const existingQuestions = await this.getExistingExamQuestions(
+      exam.id,
+      questionIds,
+    );
 
     // Lọc ra những câu hỏi chưa tồn tại trong exam
     const existingQuestionIds = existingQuestions.map((eq) => eq.questionId);
@@ -37,12 +47,10 @@ export class ExamQuestionService {
     // Tạo array các ExamQuestionEntity
     const examQuestions = newQuestionIds.map((questionId) => {
       const examQuestion = new ExamQuestionEntity();
-      examQuestion.examId = examId;
+      examQuestion.examId = exam.id;
       examQuestion.questionId = questionId;
       return examQuestion;
     });
-
-    // Bulk insert để tối ưu performance
 
     return await this.examQuestionRepository.save(examQuestions);
   }

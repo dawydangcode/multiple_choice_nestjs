@@ -35,3 +35,7 @@ export class RemoveQuestionFromExamParamsDto extends PickType(ExamQuestionDto, [
   'questionId',
   'examId',
 ]) {}
+
+export class GetQuestionByExamParamsDto extends PickType(ExamQuestionDto, [
+  'examId',
+]) {}

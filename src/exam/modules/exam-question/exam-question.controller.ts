@@ -13,6 +13,7 @@ import { ExamService } from 'src/exam/exam.service';
 import { QuestionService } from 'src/question/question.service';
 import {
   AddQuestionsToExamBodyDto,
+  GetQuestionByExamParamsDto,
   RemoveQuestionFromExamParamsDto,
 } from './dtos/exam-question.dto';
 
@@ -30,8 +31,9 @@ export class ExamQuestionController {
     @Param('examId') examId: number,
     @Body() body: AddQuestionsToExamBodyDto,
   ) {
+    const exam = await this.examService.getExamById(examId);
     return await this.examQuestionService.addQuestionsToExam(
-      examId,
+      exam,
       body.questionIds,
     );
   }
@@ -50,24 +52,24 @@ export class ExamQuestionController {
     );
   }
 
-  //   @Get('exam/:examId/questions')
-  //   async getQuestionsByExam(@Param('examId') examId: number) {
-  //     return await this.examQuestionService.getQuestionsByExam(examId);
-  //   }
+  // @Get('exam/:examId/questions')
+  // async getQuestionsByExam(@Param() params: GetQuestionByExamParamsDto) {
+  //   return await this.examQuestionService.getQuestionsByExam(examId);
+  // }
 
-  //   @Put('exam/:examId/questions/order')
-  //   async updateQuestionsOrder(
-  //     @Param('examId') examId: number,
-  //     @Body() body: UpdateQuestionsOrderDto,
-  //   ) {
-  //     return await this.examQuestionService.updateQuestionsOrder(
-  //       examId,
-  //       body.orders,
-  //     );
-  //   }
+  // @Put('exam/:examId/questions/order')
+  // async updateQuestionsOrder(
+  //   @Param('examId') examId: number,
+  //   @Body() body: UpdateQuestionsOrderDto,
+  // ) {
+  //   return await this.examQuestionService.updateQuestionsOrder(
+  //     examId,
+  //     body.orders,
+  //   );
+  // }
 
-  //   @Get('question/:questionId/exams')
-  //   async getExamsByQuestion(@Param('questionId') questionId: number) {
-  //     return await this.examQuestionService.getExamsByQuestion(questionId);
-  //   }
+  // @Get('question/:questionId/exams')
+  // async getExamsByQuestion(@Param('questionId') questionId: number) {
+  //   return await this.examQuestionService.getExamsByQuestion(questionId);
+  // }
 }
