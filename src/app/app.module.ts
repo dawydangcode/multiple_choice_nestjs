@@ -15,11 +15,12 @@ import app from 'src/config/app';
 import { UserModule } from 'src/account/modules/user/user.module';
 import { MailerModule } from 'src/mailer/mailer.module';
 import { TemplateModule } from 'src/mailer/modules/template/template.module';
+import auth from 'src/config/auth';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [database, app],
+      load: [database, app, auth],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
