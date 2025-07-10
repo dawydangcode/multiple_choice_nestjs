@@ -6,11 +6,14 @@ export class QuestionEntity {
   @PrimaryGeneratedColumn({ name: 'id' })
   id!: number;
 
-  @Column({ name: 'exam_id' })
-  examId!: number;
+  @Column({ name: 'topic_id' })
+  topicId!: number;
 
-  @Column({ name: 'question_id' })
-  questionId!: number;
+  @Column({ name: 'content' })
+  content!: string;
+
+  @Column({ name: 'points' })
+  points!: number;
 
   @Column({ name: 'created_at' })
   createdAt!: Date;
@@ -33,8 +36,9 @@ export class QuestionEntity {
   toModel(): QuestionModel {
     return new QuestionModel(
       this.id,
-      this.examId,
-      this.questionId,
+      this.topicId,
+      this.content,
+      this.points,
       this.createdAt,
       this.createdBy,
       this.updatedAt,

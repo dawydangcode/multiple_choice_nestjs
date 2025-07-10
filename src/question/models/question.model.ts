@@ -1,7 +1,8 @@
 export class QuestionModel {
   public readonly id: number;
-  public readonly examId: number;
-  public readonly questionId: number;
+  public readonly topicId: number;
+  public readonly content: string;
+  public readonly points: number;
   public readonly createdAt: Date | undefined;
   public readonly createdBy: number | undefined;
   public readonly updatedAt: Date | undefined;
@@ -11,8 +12,9 @@ export class QuestionModel {
 
   constructor(
     id: number,
-    examId: number,
-    questionId: number,
+    topicId: number,
+    content: string,
+    points: number,
     createdAt: Date | undefined,
     createdBy: number | undefined,
     updatedAt: Date | undefined,
@@ -21,8 +23,9 @@ export class QuestionModel {
     deletedBy: number | undefined,
   ) {
     this.id = id;
-    this.examId = examId;
-    this.questionId = questionId;
+    this.topicId = topicId;
+    this.content = content;
+    this.points = points;
     this.createdAt = createdAt;
     this.createdBy = createdBy;
     this.updatedAt = updatedAt;

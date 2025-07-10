@@ -26,12 +26,12 @@ import { RoleType } from 'src/role/enum/role.enum';
 export class ExamController {
   constructor(private readonly examService: ExamService) {}
 
-  @Get('exams')
+  @Get('exam/list')
   async getExams(): Promise<ExamModel[]> {
     return this.examService.getExams();
   }
 
-  @Get('exam/:examId')
+  @Get('exam/:examId/detail')
   async getExam(@Param() params: GetExamDto) {
     return this.examService.getExamById(params.examId);
   }
