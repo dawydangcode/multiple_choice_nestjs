@@ -1,9 +1,7 @@
-export class ExamModel {
+export class ExamQuestionModel {
   public readonly id: number;
-  public readonly title: string | undefined;
-  public readonly minuteDuration: number | undefined;
-  public readonly isActive: boolean | undefined;
-  public readonly description: string | undefined;
+  public readonly examId: number;
+  public readonly questionId: number;
   public readonly createdAt: Date | undefined;
   public readonly createdBy: number | undefined;
   public readonly updatedAt: Date | undefined;
@@ -12,10 +10,8 @@ export class ExamModel {
 
   constructor(
     id: number,
-    title: string | undefined,
-    minuteDuration: number | undefined,
-    isActive: boolean | undefined,
-    description: string | undefined,
+    examId: number,
+    questionId: number,
     createdAt: Date | undefined,
     createdBy: number | undefined,
     updatedAt: Date | undefined,
@@ -24,10 +20,8 @@ export class ExamModel {
     deletedBy: number | undefined,
   ) {
     this.id = id;
-    this.title = title;
-    this.minuteDuration = minuteDuration;
-    this.isActive = isActive;
-    this.description = description;
+    this.examId = examId;
+    this.questionId = questionId;
     this.createdAt = createdAt;
     this.createdBy = createdBy;
     this.updatedAt = updatedAt;

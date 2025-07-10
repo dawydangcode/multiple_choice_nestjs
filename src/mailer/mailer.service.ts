@@ -28,23 +28,16 @@ export class MailerService {
 
     const fromEmail = `${this.configService.get<string>('MAILER_DEFAULT_NAME')} <${this.configService.get<string>('MAILER_DEFAULT_EMAIL')}>`;
 
-    const mailData = {
-      from: fromEmail,
-      to: email,
-      subject: template.subject,
-      html: htmlContent,
-    };
-
-    await this.nodemailerTransport.sendMail(mailData);
-
-    const mailOptionsModel = new MailOptionsModel(
+    const mailData = new MailOptionsModel(
       fromEmail,
       email,
       template.subject,
-      '',
+      template.html,
       htmlContent,
     );
 
-    return mailOptionsModel;
+    await this.nodemailerTransport.sendMail(mailData);
+
+    return mailData;
   }
 }
