@@ -13,7 +13,6 @@ import { ExamService } from 'src/exam/exam.service';
 import { QuestionService } from 'src/question/question.service';
 import {
   AddQuestionsToExamBodyDto,
-  AddQuestionToExamParamsDto,
   RemoveQuestionFromExamParamsDto,
 } from './dtos/exam-question.dto';
 
@@ -27,12 +26,14 @@ export class ExamQuestionController {
   ) {}
 
   @Post('exam/:examId/questions')
-  async addQuestionsToExam(@Param() params: AddQuestionToExamParamsDto) {
-    const exam = await this.examService.getExamById(params.examId);
-    const question = await this.questionService.getQuestionById(
-      params.questionId,
+  async addQuestionsToExam(
+    @Param('examId') examId: number,
+    @Body() body: AddQuestionsToExamBodyDto,
+  ) {
+    return await this.examQuestionService.addQuestionsToExam(
+      examId,
+      body.questionIds,
     );
-    return await this.examQuestionService.addQuestionsToExam(exam, question);
   }
 
   @Delete('exam/:examId/questions/:questionId')
@@ -49,24 +50,24 @@ export class ExamQuestionController {
     );
   }
 
-  @Get('exam/:examId/questions')
-  async getQuestionsByExam(@Param('examId') examId: number) {
-    return await this.examQuestionService.getQuestionsByExam(examId);
-  }
+  //   @Get('exam/:examId/questions')
+  //   async getQuestionsByExam(@Param('examId') examId: number) {
+  //     return await this.examQuestionService.getQuestionsByExam(examId);
+  //   }
 
-  @Put('exam/:examId/questions/order')
-  async updateQuestionsOrder(
-    @Param('examId') examId: number,
-    @Body() body: UpdateQuestionsOrderDto,
-  ) {
-    return await this.examQuestionService.updateQuestionsOrder(
-      examId,
-      body.orders,
-    );
-  }
+  //   @Put('exam/:examId/questions/order')
+  //   async updateQuestionsOrder(
+  //     @Param('examId') examId: number,
+  //     @Body() body: UpdateQuestionsOrderDto,
+  //   ) {
+  //     return await this.examQuestionService.updateQuestionsOrder(
+  //       examId,
+  //       body.orders,
+  //     );
+  //   }
 
-  @Get('question/:questionId/exams')
-  async getExamsByQuestion(@Param('questionId') questionId: number) {
-    return await this.examQuestionService.getExamsByQuestion(questionId);
-  }
+  //   @Get('question/:questionId/exams')
+  //   async getExamsByQuestion(@Param('questionId') questionId: number) {
+  //     return await this.examQuestionService.getExamsByQuestion(questionId);
+  //   }
 }
