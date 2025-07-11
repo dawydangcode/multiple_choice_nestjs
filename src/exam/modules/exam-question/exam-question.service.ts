@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { ExamQuestionEntity } from './entities/exam-question.entity';
 import { ExamModel } from 'src/exam/models/exam.model';
 import { QuestionModel } from 'src/question/models/question.model';
@@ -65,5 +65,31 @@ export class ExamQuestionService {
     });
 
     return true;
+  }
+
+  async getQuestionsByExam(exam: ExamModel): Promise<ExamQuestionModel[]> {
+    const examQuestions = await this.examQuestionRepository.find({
+      where: { examId: exam.id, deletedAt: IsNull() },
+    });
+
+    if (!examQuestions || examQuestions.length === 0) {
+      return [];
+    }
+
+    return examQuestions.map((eq) => eq.toModel());
+  }
+
+  async getExamsByQuestion(
+    question: QuestionModel,
+  ): Promise<ExamQuestionModel[]> {
+    const examQuestions = await this.examQuestionRepository.find({
+      where: { questionId: question.id, deletedAt: IsNull() },
+    });
+
+    if (!examQuestions || examQuestions.length === 0) {
+      return [];
+    }
+
+    return examQuestions.map((eq) => eq.toModel());
   }
 }

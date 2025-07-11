@@ -39,6 +39,7 @@ export class ExamController {
   @Post('exam/create')
   async createExam(@Req() req: RequestModel, @Body() body: CreateExamBodyDto) {
     const reqAccountId = req.user.accountId;
+
     return this.examService.createExam(
       body.title,
       body.minuteDuration,
@@ -56,6 +57,7 @@ export class ExamController {
   ) {
     const reqAccountId = req.user.accountId;
     const exam = await this.examService.getExamById(params.examId);
+
     return this.examService.updateExam(
       exam,
       body.title,
@@ -66,16 +68,27 @@ export class ExamController {
     );
   }
 
+  @Put('exam/:examId/deActive')
+  async deActiveExam(@Req() req: RequestModel, @Param() params: GetExamDto) {
+    const reqAccountId = req.user.accountId;
+    const exam = await this.examService.getExamById(params.examId);
+
+    return this.examService.deActiveExam(exam, reqAccountId);
+  }
+
+  @Put('exam/:examId/active')
+  async activeExam(@Req() req: RequestModel, @Param() params: GetExamDto) {
+    const reqAccountId = req.user.accountId;
+    const exam = await this.examService.getExamById(params.examId);
+
+    return this.examService.activeExam(exam, reqAccountId);
+  }
+
   @Delete('exam/:examId/delete')
   async deleteExam(@Req() req: RequestModel, @Param() params: GetExamDto) {
     const reqAccountId = req.user.accountId;
     const exam = await this.examService.getExamById(params.examId);
-    return this.examService.deleteExam(exam, reqAccountId);
-  }
 
-  @Put('exam/:examId/deActive')
-  async deActiveExam(@Param() params: GetExamDto) {
-    const exam = await this.examService.getExamById(params.examId);
-    return this.examService.deActiveExam(exam);
+    return this.examService.deleteExam(exam, reqAccountId);
   }
 }

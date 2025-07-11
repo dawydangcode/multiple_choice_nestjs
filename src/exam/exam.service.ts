@@ -81,12 +81,25 @@ export class ExamService {
     return true;
   }
 
-  async deActiveExam(exam: ExamModel): Promise<boolean> {
+  async deActiveExam(exam: ExamModel, reqAccountId: number): Promise<boolean> {
     await this.examRepository.update(
       { id: exam.id, deletedAt: IsNull() },
       {
         isActive: false,
         updatedAt: new Date(),
+        updatedBy: reqAccountId,
+      },
+    );
+    return true;
+  }
+
+  async activeExam(exam: ExamModel, reqAccountId: number): Promise<boolean> {
+    await this.examRepository.update(
+      { id: exam.id, deletedAt: IsNull() },
+      {
+        isActive: true,
+        updatedAt: new Date(),
+        updatedBy: reqAccountId,
       },
     );
     return true;
