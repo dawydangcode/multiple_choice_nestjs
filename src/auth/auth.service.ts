@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -16,66 +18,19 @@ import { SessionModel } from './modules/session/model/session.model';
 import * as moment from 'moment';
 import { PayloadModel } from './models/payload.model';
 import { RoleService } from 'src/role/role.service';
-import { TokenModel } from './models/token.model';
+import { LoginTokenModel } from './models/login-token.model';
 import { MailerService } from 'src/mailer/mailer.service';
 import { throwError } from 'src/utils/function';
+import { EmailTemplateType } from './enums/email-template.type';
+import { TokenModel } from './models/token.model';
+import { JwtConfigModel } from './models/jwt-config.model';
+import { SessionType } from './modules/session/enums/session.type';
 
 @Injectable()
 export class AuthService {
-  private readonly accessTokenConfig = {
-    secretKey: 'auth.jwt.accessToken.secret',
-    expiresInKey: 'auth.jwt.accessToken.signOptions.expiresIn',
-  };
-
-  private readonly refreshTokenConfig = {
-    secretKey: 'auth.jwt.refreshToken.secret',
-    expiresInKey: 'auth.jwt.refreshToken.signOptions.expiresIn',
-  };
-
-  private readonly verifyTokenConfig = {
-    secretKey: 'auth.jwt.verifyToken.secret',
-    expiresInKey: 'auth.jwt.verifyToken.signOptions.expiresIn',
-  };
-
-  private generateTokenWithConfig(
-    payload: PayloadModel,
-    config: { secretKey: string; expiresInKey: string },
-  ): { token: string; expireDate: Date } {
-    const secret = this.configService.get<string>(config.secretKey);
-    const expiresIn = this.configService.get<string>(config.expiresInKey);
-
-    const token = this.jwtService.sign(payload, {
-      secret,
-      expiresIn,
-    });
-
-    const expireDate = moment()
-      .add(ms(expiresIn as StringValue), 'ms')
-      .toDate();
-
-    return { token, expireDate };
-  }
-
-  private generateAccessToken(payload: PayloadModel): {
-    token: string;
-    expireDate: Date;
-  } {
-    return this.generateTokenWithConfig(payload, this.accessTokenConfig);
-  }
-
-  private generateRefreshToken(payload: PayloadModel): {
-    token: string;
-    expireDate: Date;
-  } {
-    return this.generateTokenWithConfig(payload, this.refreshTokenConfig);
-  }
-
-  private generateVerifyToken(payload: any): {
-    token: string;
-    expireDate: Date;
-  } {
-    return this.generateTokenWithConfig(payload, this.verifyTokenConfig);
-  }
+  public readonly accessTokenConfig: JwtConfigModel;
+  public readonly refreshTokenConfig: JwtConfigModel;
+  public readonly verifyTokenConfig: JwtConfigModel;
 
   constructor(
     private readonly accountService: AccountService,
@@ -85,14 +40,47 @@ export class AuthService {
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.accessTokenConfig = new JwtConfigModel(
+      configService.get<string>('auth.jwt.accessToken.secret') ?? throwError(),
+      configService.get<string>('auth.jwt.accessToken.signOptions.expiresIn') ??
+        throwError(),
+    );
+
+    this.refreshTokenConfig = new JwtConfigModel(
+      configService.get<string>('auth.jwt.refreshToken.secret') ?? throwError(),
+      configService.get<string>(
+        'auth.jwt.refreshToken.signOptions.expiresIn',
+      ) ?? throwError(),
+    );
+    this.verifyTokenConfig = new JwtConfigModel(
+      configService.get<string>('auth.jwt.verifyToken.secret') ?? throwError(),
+      configService.get<string>('auth.jwt.verifyToken.signOptions.expiresIn') ??
+        throwError(),
+    );
+  }
+
+  private async generateTokenWithConfig(
+    payload: PayloadModel,
+    config: JwtConfigModel,
+  ): Promise<TokenModel> {
+    const token = await this.jwtService.signAsync(
+      payload.toJson(),
+      config.toJson(),
+    );
+    const expireDate = moment()
+      .add(ms(config.expiresIn as StringValue), 'ms')
+      .toDate();
+
+    return new TokenModel(token, expireDate);
+  }
 
   async login(
     username: string,
     password: string,
     userAgent: string,
     ipAddress: string,
-  ): Promise<TokenModel> {
+  ): Promise<LoginTokenModel> {
     const account = await this.accountService.getAccountByUsername(
       username,
       false,
@@ -106,11 +94,13 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Username or password is invalid');
     }
+    const type = SessionType.LOGIN;
 
     const session = await this.sessionService.createSession(
       account,
       userAgent,
       ipAddress,
+      type,
       account.id,
     );
 
@@ -126,7 +116,13 @@ export class AuthService {
   }
 
   async logout(session: SessionModel, reqAccountId: number): Promise<boolean> {
-    await this.sessionService.updateSession(session, false, reqAccountId);
+    const sessionType = SessionType.LOGOUT;
+    await this.sessionService.updateSession(
+      session,
+      false,
+      sessionType,
+      reqAccountId,
+    );
     return true;
   }
 
@@ -159,47 +155,69 @@ export class AuthService {
     return await this.accountService.getAccount(newAccount.id, true);
   }
 
-  async generateToken(payload: PayloadModel): Promise<TokenModel> {
-    const plainPayload = { ...payload };
-
-    const { token: accessToken, expireDate: accessExpireDate } =
-      this.generateAccessToken(plainPayload);
-
-    const { token: refreshToken, expireDate: refreshExpireDate } =
-      this.generateRefreshToken(plainPayload);
-
-    return new TokenModel(
-      payload.accountId,
-      accessToken,
-      refreshToken,
-      accessExpireDate,
-      refreshExpireDate,
+  async generateToken(payload: PayloadModel): Promise<LoginTokenModel> {
+    const accessToken = await this.generateTokenWithConfig(
+      payload,
+      this.accessTokenConfig,
     );
+
+    const refreshToken = await this.generateTokenWithConfig(
+      payload,
+      this.refreshTokenConfig,
+    );
+
+    return new LoginTokenModel(payload.accountId, accessToken, refreshToken);
   }
 
-  async requestResetPassword(email: string): Promise<void> {
-    const account = await this.accountService.checkExistEmail(email);
+  async requestResetPassword(
+    session: SessionModel,
+    account: AccountModel,
+    email: string,
+  ): Promise<boolean> {
+    await this.accountService.getAccountByEmail(account.email);
     if (!account) {
       throw new UnauthorizedException('Email not exist');
     }
-    const payload = { email, accountId: account.id };
-    const { token: resetToken } = this.generateVerifyToken(payload);
+    await this.sessionService.updateSession(
+      session,
+      false,
+      SessionType.RESET_PASSWORD,
+      account.id,
+    );
 
-    const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken}`;
+    const resetToken = await this.generateTokenWithConfig(
+      new PayloadModel(
+        account.id,
+        session.id,
+        account.email,
+        account.roleId,
+        (await this.roleService.getRole(account.roleId)).name,
+      ),
+      this.verifyTokenConfig,
+    );
+
+    const resetUrl = `${this.configService.get('EMAIL_RESET_PASSWORD_URL')}?token=${resetToken.token}`;
+
+    const expiresIn = moment
+      .duration(moment(resetToken.expireDate).diff(moment()))
+      .humanize();
 
     await this.mailerService.sendMailWithTemplate(
-      'reset-password',
-      payload.email,
+      email,
+      EmailTemplateType.RESET_PASSWORD,
       {
-        resetUrl,
-        username: account.username || 'User',
+        resetUrl: resetUrl,
+        username: account.username,
+        expiresIn: expiresIn,
       },
     );
+
+    return true;
   }
 
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
-    const payload = this.jwtService.verify(token, {
-      secret: this.configService.get<string>('auth.jwt.verifyToken.secret'),
+    const payload = await this.jwtService.verifyAsync(token, {
+      secret: this.verifyTokenConfig.secret,
     });
 
     const account = await this.accountService.getAccount(
@@ -215,6 +233,8 @@ export class AuthService {
       undefined,
     );
 
+    await this.sessionService.invalidateAllSessionsForAccount(account.id);
+
     return true;
   }
 
@@ -228,7 +248,7 @@ export class AuthService {
       account.password ?? throwError('Not Found Password'),
     );
     if (!isMatch) {
-      throw new UnauthorizedException('Mật khẩu cũ không đúng');
+      throw new UnauthorizedException('Old password is incorrect');
     }
 
     await this.accountService.updateAccount(
@@ -241,6 +261,8 @@ export class AuthService {
 
     return this.accountService.getAccount(account.id, true);
   }
+
+  // RESET PASSWORD OTP METHODS
 
   // async requestResetPasswordOtp(email: string): Promise<void> {
   //   const account = await this.accountService.checkExistEmail(email);

@@ -15,11 +15,17 @@ import app from 'src/config/app';
 import { UserModule } from 'src/account/modules/user/user.module';
 import { MailerModule } from 'src/mailer/mailer.module';
 import { TemplateModule } from 'src/mailer/modules/template/template.module';
+import auth from 'src/config/auth';
+import { ExamModule } from 'src/exam/exam.module';
+import { QuestionModule } from 'src/question/question.module';
+import { PickExamModule } from 'src/exam/modules/pick-exam/pick-exam.module';
+import { PickExamDetailModule } from 'src/exam/modules/pick-exam-detail/pick-exam-detail.module';
+import { AnswerModule } from 'src/question/modules/answer/answer.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [database, app],
+      load: [database, app, auth],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -36,6 +42,11 @@ import { TemplateModule } from 'src/mailer/modules/template/template.module';
     UserModule,
     MailerModule,
     TemplateModule,
+    ExamModule,
+    QuestionModule,
+    PickExamModule,
+    PickExamDetailModule,
+    AnswerModule,
   ],
 
   controllers: [AppController],

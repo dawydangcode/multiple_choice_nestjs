@@ -18,4 +18,14 @@ export class PayloadModel {
     this.roleId = roleId;
     this.role = role;
   }
+
+  toJson() {
+    return {
+      accountId: this.accountId,
+      sessionId: this.sessionId,
+      email: this.email,
+      roleId: this.roleId,
+      role: this.role,
+    };
+  }
 }

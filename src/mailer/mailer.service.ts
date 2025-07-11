@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Transporter } from 'nodemailer';
 import { TemplateService } from './modules/template/template.service';
 import { MailOptionsModel } from './models/mail-options.model';
+import { EmailTemplateType } from 'src/auth/enums/email-template.type';
 
 @Injectable()
 export class MailerService {
@@ -14,8 +15,8 @@ export class MailerService {
   ) {}
 
   async sendMailWithTemplate(
-    templateName: string,
-    to: string,
+    email: string,
+    templateName: EmailTemplateType,
     variables: Record<string, string>,
   ): Promise<MailOptionsModel> {
     const template = await this.templateService.getTemplateByName(templateName);
@@ -27,23 +28,16 @@ export class MailerService {
 
     const fromEmail = `${this.configService.get<string>('MAILER_DEFAULT_NAME')} <${this.configService.get<string>('MAILER_DEFAULT_EMAIL')}>`;
 
-    const mailData = {
-      from: fromEmail,
-      to,
-      subject: template.subject,
-      html: htmlContent,
-    };
-
-    await this.nodemailerTransport.sendMail(mailData);
-
-    const mailOptionsModel = new MailOptionsModel(
+    const mailData = new MailOptionsModel(
       fromEmail,
-      to,
+      email,
       template.subject,
-      '',
+      template.html,
       htmlContent,
     );
 
-    return mailOptionsModel;
+    await this.nodemailerTransport.sendMail(mailData);
+
+    return mailData;
   }
 }

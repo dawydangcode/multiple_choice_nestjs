@@ -1,5 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { SessionModel } from '../model/session.model';
+import { SessionType } from '../enums/session.type';
 
 @Entity('session')
 export class SessionEntity {
@@ -12,17 +13,8 @@ export class SessionEntity {
   @Column({ name: 'role_id' })
   roleId!: number;
 
-  @Column({ name: 'access_token' })
-  accessToken!: string;
-
-  @Column({ name: 'refresh_token' })
-  refreshToken!: string;
-
-  @Column({ name: 'expires_at' })
-  accessExpire!: Date;
-
-  @Column({ name: 'refresh_expires_at' })
-  refreshExpire!: Date;
+  @Column({ name: 'type' })
+  type?: SessionType;
 
   @Column({ name: 'user_agent' })
   userAgent!: string;
@@ -56,10 +48,7 @@ export class SessionEntity {
       this.id,
       this.accountId,
       this.roleId,
-      this.accessToken,
-      this.refreshToken,
-      this.accessExpire,
-      this.refreshExpire,
+      this.type,
       this.isActive,
       this.userAgent,
       this.ipAddress,

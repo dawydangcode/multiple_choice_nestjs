@@ -15,6 +15,7 @@ import { RequestModel } from 'src/utils/models/request.model';
 import { SessionService } from './modules/session/session.service';
 import { UserService } from 'src/account/modules/user/user.service';
 import { AccountService } from 'src/account/account.service';
+import { SessionType } from './modules/session/enums/session.type';
 
 @ApiTags('Auth')
 @Controller('api/v1/auth')
@@ -65,8 +66,24 @@ export class AuthController {
 
   @Public()
   @Post('forgot-password/send-mail')
-  async requestForgotPassword(@Body() body: RequestResetPasswordBodyDto) {
-    await this.authService.requestResetPassword(body.email);
+  async requestForgotPassword(
+    @Req() req: any,
+    @Body() body: RequestResetPasswordBodyDto,
+  ) {
+    const userAgent = req.get('User-Agent');
+    const ipAddress = req.ip || req.get('X-Forwarded-For');
+    const account = await this.accountService.getAccountByEmail(body.email);
+    if (!account) {
+      throw new Error('Account not found');
+    }
+    const session = await this.sessionService.createSession(
+      account,
+      req.get('User-Agent'),
+      req.ip || req.get('X-Forwarded-For'),
+      SessionType.RESET_PASSWORD,
+      account.id,
+    );
+    await this.authService.requestResetPassword(session, account, body.email);
     return true;
   }
 

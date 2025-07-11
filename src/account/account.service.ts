@@ -63,9 +63,12 @@ export class AccountService {
     return account.toModel(isHiddenPassword);
   }
 
-  async checkExistEmail(email: string) {
+  async getAccountByEmail(email: string) {
     const existingEmail = this.accountRepository.findOne({
-      where: { email: email, deletedAt: IsNull() },
+      where: {
+        email: email,
+        deletedAt: IsNull(),
+      },
     });
     return existingEmail;
   }
@@ -85,7 +88,7 @@ export class AccountService {
       );
     }
 
-    const existingEmail = await this.checkExistEmail(email);
+    const existingEmail = await this.getAccountByEmail(email);
     if (existingEmail) {
       throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
     }
