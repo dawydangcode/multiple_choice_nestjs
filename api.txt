@@ -1,0 +1,70 @@
+api
+9. Bảng topic
+API liên quan:
+POST /api/topics: Tạo bản ghi trong topic.
+GET /api/topics: Liệt kê tất cả bản ghi trong topic.
+GET /api/topics/{id}: Truy vấn bản ghi cụ thể trong topic.
+PUT /api/topics/{id}: Cập nhật bản ghi trong topic.
+DELETE /api/topics/{id}: Xóa mềm bản ghi trong topic (cập nhật deleted_at, deleted_by).
+Ghi chú: Được tham chiếu bởi question qua topic_id.
+
+10. Bảng exam
+API liên quan:
+POST /api/exams: Tạo bản ghi trong exam.
+GET /api/exams: Liệt kê tất cả bản ghi trong exam.
+GET /api/exams/{id}: Truy vấn bản ghi cụ thể trong exam.
+PUT /api/exams/{id}: Cập nhật bản ghi trong exam.
+DELETE /api/exams/{id}: Xóa mềm bản ghi trong exam (cập nhật deleted_at, deleted_by).
+GET /api/users/{user_id}/pick-exams: Truy vấn exam để lấy thông tin bài thi (như title).
+Ghi chú: Lưu thông tin bài thi (tiêu đề, thời gian, trạng thái).
+
+11. Bảng question
+API liên quan:
+POST /api/questions: Tạo bản ghi trong question.
+GET /api/questions: Liệt kê tất cả bản ghi trong question.
+GET /api/questions/{id}: Truy vấn bản ghi cụ thể trong question.
+PUT /api/questions/{id}: Cập nhật bản ghi trong question.
+DELETE /api/questions/{id}: Xóa mềm bản ghi trong question (cập nhật deleted_at, deleted_by).
+
+GET /api/exams/{id}: Truy vấn question thông qua exam_question.
+GET /api/exam-questions/{exam_id}: Truy vấn question để lấy câu hỏi của bài thi.
+POST /api/pick-exams/{pick_exam_id}/submit: Truy vấn question để lấy points khi tính điểm.
+GET /api/pick-exams/{id}: Truy vấn question để lấy chi tiết câu hỏi trong lượt làm bài.
+Ghi chú: Lưu nội dung câu hỏi và điểm số, liên kết với topic.
+12. Bảng answer
+API liên quan:
+POST /api/questions: Tạo bản ghi trong answer (cùng với câu hỏi).
+GET /api/questions: Liệt kê answer cùng với question.
+GET /api/questions/{id}: Truy vấn answer cho câu hỏi cụ thể.
+PUT /api/questions/{id}: Cập nhật bản ghi trong answer.
+DELETE /api/questions/{id}: Xóa mềm bản ghi trong answer (cùng với câu hỏi).
+GET /api/exams/{id}: Truy vấn answer thông qua exam_question và question.
+GET /api/exam-questions/{exam_id}: Truy vấn answer để lấy câu trả lời của câu hỏi.
+POST /api/pick-exams/{pick_exam_id}/submit: Truy vấn answer để kiểm tra is_correct khi tính điểm.
+GET /api/pick-exams/{id}: Truy vấn answer để lấy chi tiết câu trả lời trong lượt làm bài.
+Ghi chú: Lưu câu trả lời và trạng thái đúng/sai, liên kết với question.
+13. Bảng exam_question
+API liên quan:
+POST /api/exam-questions: Tạo bản ghi trong exam_question.
+GET /api/exam-questions/{exam_id}: Liệt kê tất cả bản ghi trong exam_question cho bài thi.
+DELETE /api/exam-questions/{id}: Xóa mềm bản ghi trong exam_question (cập nhật deleted_at, deleted_by).
+GET /api/exams/{id}: Truy vấn exam_question để lấy danh sách câu hỏi của bài thi.
+Ghi chú: Liên kết giữa exam và question.
+14. Bảng pick_exam
+API liên quan:
+POST /api/pick-exams: Tạo bản ghi trong pick_exam (bắt đầu bài thi).
+GET /api/pick-exams/{id}: Truy vấn bản ghi cụ thể trong pick_exam.
+GET /api/users/{user_id}/pick-exams: Liệt kê tất cả bản ghi trong pick_exam cho người dùng.
+Ghi chú: Lưu thông tin lượt làm bài thi (người dùng, bài thi, thời gian).
+15. Bảng pick_exam_detail
+API liên quan:
+POST /api/pick-exams/{pick_exam_id}/submit: Tạo bản ghi trong pick_exam_detail (lưu câu trả lời của người dùng).
+GET /api/pick-exams/{id}: Truy vấn pick_exam_detail để lấy chi tiết câu trả lời.
+GET /api/users/{user_id}/pick-exams: Truy vấn pick_exam_detail để tính điểm tổng.
+Ghi chú: Lưu câu trả lời cụ thể của người dùng trong lượt làm bài.
+
+bài thi tự động kết thúc, người dự thi kết thúc bài thi 
+	+ nếu bài thi tự động kết thúc, lấy current time làm finishTime => tổng thời gian làm bài
+	+ nếu bài thi kết thúc bởi người dự thi: EXAM_DURATION - currenttime - startTime
+khi kết thúc bài thi sẽ gửi array question answer -> check câu trả lời của người user với array đáp án của đề thi
+=> total points
