@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+} from '@nestjs/common';
 import { AnswerService } from './answer.service';
 import {
   CreateAnswerBodyDto,
@@ -49,5 +58,23 @@ export class AnswerController {
     @Req() req: RequestModel,
     @Param() params: UpdateAnswerParamsDto,
     @Body() body: UpdateAnswerBodyDto,
-  ) {}
+  ) {
+    const answer = await this.answerService.getAnswerById(params.answerId);
+    return await this.answerService.updateAnswer(
+      answer,
+      body.questionId,
+      body.content,
+      body.isCorrect,
+      req.user.accountId,
+    );
+  }
+
+  @Delete('answer/delete')
+  async deleteAnswer(
+    @Req() req: RequestModel,
+    @Param() params: GetAnswerParamsDto,
+  ) {
+    const answer = await this.answerService.getAnswerById(params.answerId);
+    return this.answerService.deleteAnswer(answer, req.user.accountId);
+  }
 }
