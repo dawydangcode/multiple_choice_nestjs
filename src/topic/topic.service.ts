@@ -28,4 +28,51 @@ export class TopicService {
     }
     return topic.toModel();
   }
+
+  async createTopic(
+    name: string,
+    description: string,
+    reqAccountId: number,
+  ): Promise<TopicModel> {
+    const entity = new TopicEntity();
+    entity.name = name;
+    entity.description = description;
+    entity.createdAt = new Date();
+    entity.createdBy = reqAccountId;
+
+    const newTopic = await this.topicRepository.save(entity);
+
+    return newTopic.toModel();
+  }
+
+  async updateTopic(
+    topic: TopicModel,
+    name: string | undefined,
+    description: string | undefined,
+    reqAccountId: number | undefined,
+  ): Promise<TopicModel> {
+    await this.topicRepository.update(
+      { id: topic.id, deletedAt: IsNull() },
+      {
+        name: name,
+        description: description,
+        updatedAt: new Date(),
+        updatedBy: reqAccountId,
+      },
+    );
+
+    return await this.topicRepository.save(topic);
+  }
+
+  async deleteTopic(topic: TopicModel, reqAccountId: number): Promise<boolean> {
+    await this.topicRepository.update(
+      { id: topic.id, deletedAt: IsNull() },
+      {
+        deletedAt: new Date(),
+        deletedBy: reqAccountId,
+      },
+    );
+
+    return true;
+  }
 }
