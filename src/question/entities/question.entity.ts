@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { QuestionModel } from '../models/question.model';
 
-@Entity('exam_question')
+@Entity('question')
 export class QuestionEntity {
   @PrimaryGeneratedColumn({ name: 'id' })
   id!: number;

@@ -133,8 +133,6 @@ export class AuthService {
     role: RoleModel,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
-    await this.accountService.getAccountByUsername(username, true);
-
     const newAccount = await this.accountService.createAccount(
       username,
       password,

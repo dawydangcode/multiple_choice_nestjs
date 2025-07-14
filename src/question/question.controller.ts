@@ -40,7 +40,7 @@ export class QuestionController {
     );
   }
 
-  @Put('question/update/:questionId')
+  @Put('question/:questionId/update')
   async updateQuestion(
     @Req() req: RequestModel,
     @Param() params: UpdateQuestionParamsDto,

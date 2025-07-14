@@ -46,7 +46,6 @@ import { AnswerModule } from 'src/question/modules/answer/answer.module';
     QuestionModule,
     PickExamModule,
     PickExamDetailModule,
-    AnswerModule,
   ],
 
   controllers: [AppController],

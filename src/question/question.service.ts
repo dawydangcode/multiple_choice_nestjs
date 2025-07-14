@@ -2,17 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QuestionEntity } from './entities/question.entity';
 import { IsNull, Repository } from 'typeorm';
-import { AnswerService } from './modules/answer/answer.service';
 import { QuestionModel } from './models/question.model';
 import { TopicService } from 'src/topic/topic.service';
 import { StringToNumber } from 'lodash';
+import { AnswerService } from 'src/question/modules/answer/answer.service';
 
 @Injectable()
 export class QuestionService {
   constructor(
     @InjectRepository(QuestionEntity)
     private readonly questionRepository: Repository<QuestionEntity>,
-    private readonly answerService: AnswerService,
     private readonly topicService: TopicService,
   ) {}
 

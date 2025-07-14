@@ -10,9 +10,6 @@ export class SessionEntity {
   @Column({ name: 'account_id' })
   accountId!: number;
 
-  @Column({ name: 'role_id' })
-  roleId!: number;
-
   @Column({ name: 'type' })
   type?: SessionType;
 
@@ -47,7 +44,6 @@ export class SessionEntity {
     return new SessionModel(
       this.id,
       this.accountId,
-      this.roleId,
       this.type,
       this.isActive,
       this.userAgent,
