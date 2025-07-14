@@ -33,6 +33,18 @@ export class AnswerService {
     return answer.toModel();
   }
 
+  async getAnswersByQuestionId(questionId: number): Promise<AnswerModel[]> {
+    const answers = await this.answerRepository.find({
+      where: {
+        questionId: questionId,
+        deletedAt: IsNull(),
+      },
+      order: { createdAt: 'ASC' },
+    });
+
+    return answers.map((answer: AnswerEntity) => answer.toModel());
+  }
+
   async createAnswer(
     question: QuestionModel,
     content: string,
@@ -88,18 +100,6 @@ export class AnswerService {
     );
 
     return true;
-  }
-
-  async getAnswersByQuestionId(questionId: number): Promise<AnswerModel[]> {
-    const answers = await this.answerRepository.find({
-      where: {
-        questionId: questionId,
-        deletedAt: IsNull(),
-      },
-      order: { createdAt: 'ASC' },
-    });
-
-    return answers.map((answer: AnswerEntity) => answer.toModel());
   }
 
   async getCorrectAnswersByQuestionId(

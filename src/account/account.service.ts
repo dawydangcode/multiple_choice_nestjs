@@ -80,16 +80,28 @@ export class AccountService {
     roleId: number,
     reqAccountId: number | undefined,
   ): Promise<AccountModel> {
-    const existingAccount = await this.getAccountByUsername(username, true);
-    if (existingAccount) {
+    const existingUsernameAccount = await this.accountRepository.findOne({
+      where: {
+        username: username,
+        deletedAt: IsNull(),
+      },
+    });
+
+    if (existingUsernameAccount) {
       throw new HttpException(
         'Username already exists',
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    const existingEmail = await this.getAccountByEmail(email);
-    if (existingEmail) {
+    const existingEmailAccount = await this.accountRepository.findOne({
+      where: {
+        email: email,
+        deletedAt: IsNull(),
+      },
+    });
+
+    if (existingEmailAccount) {
       throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
     }
 

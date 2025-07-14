@@ -3,7 +3,6 @@ import { SessionType } from '../enums/session.type';
 export class SessionModel {
   public readonly id: number;
   public readonly accountId: number;
-  public readonly roleId: number;
   public readonly type: SessionType | undefined;
   public readonly isActive: boolean;
   public readonly userAgent: string | undefined;
@@ -18,7 +17,6 @@ export class SessionModel {
   constructor(
     id: number,
     accountId: number,
-    roleId: number,
     type: SessionType | undefined,
     isActive: boolean,
     userAgent: string | undefined,
@@ -32,7 +30,6 @@ export class SessionModel {
   ) {
     this.id = id;
     this.accountId = accountId;
-    this.roleId = roleId;
     this.type = type;
     this.isActive = isActive;
     this.userAgent = userAgent;
