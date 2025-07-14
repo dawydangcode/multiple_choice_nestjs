@@ -40,9 +40,8 @@ export class CreateQuestionBodyDto extends PickType(QuestionDto, [
   'topicId',
   'content',
   'points',
-  'reqAccountId',
 ]) {}
 
 export class UpdateQuestionBodyDto extends PartialType(
-  PickType(QuestionDto, ['topicId', 'content', 'points', 'reqAccountId']),
+  PickType(QuestionDto, ['topicId', 'content', 'points']),
 ) {}

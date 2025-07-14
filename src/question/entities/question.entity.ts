@@ -12,7 +12,12 @@ export class QuestionEntity {
   @Column({ name: 'content' })
   content!: string;
 
-  @Column({ name: 'points' })
+  @Column({
+    name: 'points',
+    type: 'float',
+    precision: 5,
+    scale: 2,
+  })
   points!: number;
 
   @Column({ name: 'created_at' })

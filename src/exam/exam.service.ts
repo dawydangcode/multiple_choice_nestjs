@@ -3,6 +3,7 @@ import { ExamEntity } from './entities/exam.entity';
 import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExamModel } from './models/exam.model';
+import ms from 'ms';
 
 @Injectable()
 export class ExamService {
@@ -37,6 +38,7 @@ export class ExamService {
     reqAccountId: number,
   ) {
     const entity = new ExamEntity();
+
     entity.title = title;
     entity.minuteDuration = minuteDuration;
     entity.description = description;

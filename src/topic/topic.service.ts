@@ -61,7 +61,7 @@ export class TopicService {
       },
     );
 
-    return await this.topicRepository.save(topic);
+    return await this.getTopicById(topic.id);
   }
 
   async deleteTopic(topic: TopicModel, reqAccountId: number): Promise<boolean> {
