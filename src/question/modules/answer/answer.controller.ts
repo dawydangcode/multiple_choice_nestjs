@@ -18,9 +18,12 @@ import {
 import { RequestModel } from 'src/utils/models/request.model';
 import { QuestionService } from 'src/question/question.service';
 import { ApiTags } from '@nestjs/swagger';
+import { Roles } from 'src/role/decorator/roles.decorator';
+import { RoleType } from 'src/role/enum/role.enum';
 
 @Controller('api/v1')
 @ApiTags('Question / Answer')
+@Roles(RoleType.Admin)
 export class AnswerController {
   constructor(
     private readonly answerService: AnswerService,
