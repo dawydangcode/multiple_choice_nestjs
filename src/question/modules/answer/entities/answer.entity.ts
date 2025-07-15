@@ -9,9 +9,6 @@ export class AnswerEntity {
   @Column({ name: 'question_id' })
   questionId!: number;
 
-  @Column({ name: 'topic_id' })
-  topicId!: number;
-
   @Column({ name: 'content' })
   content!: string;
 

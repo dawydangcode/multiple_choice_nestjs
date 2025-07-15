@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QuestionEntity } from './entities/question.entity';
-import { IsNull, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { QuestionModel } from './models/question.model';
 import { TopicService } from 'src/topic/topic.service';
 import { StringToNumber } from 'lodash';
@@ -90,6 +90,18 @@ export class QuestionService {
     const questions = await this.questionRepository.find({
       where: { topicId: topicId, deletedAt: IsNull() },
     });
+    return questions.map((question: QuestionEntity) => question.toModel());
+  }
+
+  async getQuestionsByIds(questionIds: number[]): Promise<QuestionModel[]> {
+    const questions = await this.questionRepository.find({
+      where: {
+        id: In(questionIds),
+        deletedAt: IsNull(),
+      },
+      select: ['id'],
+    });
+
     return questions.map((question: QuestionEntity) => question.toModel());
   }
 }

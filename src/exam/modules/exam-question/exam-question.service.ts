@@ -10,14 +10,14 @@ import { ExamModel } from 'src/exam/models/exam.model';
 import { QuestionModel } from 'src/question/models/question.model';
 import { ExamQuestionModel } from './models/exam-question.model';
 import { QuestionEntity } from 'src/question/entities/question.entity';
+import { QuestionService } from 'src/question/question.service';
 
 @Injectable()
 export class ExamQuestionService {
   constructor(
     @InjectRepository(ExamQuestionEntity)
     private readonly examQuestionRepository: Repository<ExamQuestionEntity>,
-    @InjectRepository(QuestionEntity)
-    private readonly questionRepository: Repository<QuestionEntity>,
+    private readonly questionService: QuestionService,
   ) {}
 
   private async getQuestionsAlreadyInExam(
@@ -34,13 +34,8 @@ export class ExamQuestionService {
   }
 
   private async validateQuestionsExist(questionIds: number[]): Promise<void> {
-    const existingQuestions = await this.questionRepository.find({
-      where: {
-        id: In(questionIds),
-        deletedAt: IsNull(),
-      },
-      select: ['id'],
-    });
+    const existingQuestions =
+      await this.questionService.getQuestionsByIds(questionIds);
 
     const existingQuestionIds = existingQuestions.map((q) => q.id);
     const notFoundQuestionIds = questionIds.filter(
