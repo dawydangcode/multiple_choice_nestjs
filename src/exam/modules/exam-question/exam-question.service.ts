@@ -28,13 +28,13 @@ export class ExamQuestionService {
   async addQuestionsToExam(
     exam: ExamModel,
     questionIds: number[],
+    reqAccountId: number,
   ): Promise<ExamQuestionModel[]> {
     const existingQuestions = await this.getExistingExamQuestions(
       exam.id,
       questionIds,
     );
 
-    // Lọc ra những câu hỏi chưa tồn tại trong exam
     const existingQuestionIds = existingQuestions.map((eq) => eq.questionId);
     const newQuestionIds = questionIds.filter(
       (questionId) => !existingQuestionIds.includes(questionId),
@@ -44,25 +44,33 @@ export class ExamQuestionService {
       return [];
     }
 
-    // Tạo array các ExamQuestionEntity
     const examQuestions = newQuestionIds.map((questionId) => {
-      const examQuestion = new ExamQuestionEntity();
-      examQuestion.examId = exam.id;
-      examQuestion.questionId = questionId;
-      return examQuestion;
+      const entity = new ExamQuestionEntity();
+      entity.examId = exam.id;
+      entity.questionId = questionId;
+      entity.createdAt = new Date();
+      entity.createdBy = reqAccountId;
+      return entity;
     });
 
     return await this.examQuestionRepository.save(examQuestions);
   }
 
-  async removeQuestionFromExam(
+  async deleteQuestionFromExam(
     examModel: ExamModel,
     questionModel: QuestionModel,
+    reqAccountId: number,
   ): Promise<boolean> {
-    await this.examQuestionRepository.delete({
-      examId: examModel.id,
-      questionId: questionModel.id,
-    });
+    await this.examQuestionRepository.update(
+      {
+        examId: examModel.id,
+        questionId: questionModel.id,
+      },
+      {
+        deletedAt: new Date(),
+        deletedBy: reqAccountId,
+      },
+    );
 
     return true;
   }

@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
 } from '@nestjs/common';
 import { ExamQuestionService } from './exam-question.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -13,10 +14,12 @@ import { ExamService } from 'src/exam/exam.service';
 import { QuestionService } from 'src/question/question.service';
 import {
   AddQuestionsToExamBodyDto,
+  AddQuestionToExamParamsDto,
   GetExamsByQuestionParamsDto,
   GetQuestionByExamParamsDto,
   RemoveQuestionFromExamParamsDto,
 } from './dtos/exam-question.dto';
+import { RequestModel } from 'src/utils/models/request.model';
 
 @Controller('api/v1/exam-questions')
 @ApiTags('Exam-Questions')
@@ -43,27 +46,31 @@ export class ExamQuestionController {
 
   @Post('exam/:examId/addQuestions')
   async addQuestionsToExam(
-    @Param('examId') examId: number,
+    @Req() req: RequestModel,
+    @Param() params: AddQuestionToExamParamsDto,
     @Body() body: AddQuestionsToExamBodyDto,
   ) {
-    const exam = await this.examService.getExamById(examId);
+    const exam = await this.examService.getExamById(params.examId);
     return await this.examQuestionService.addQuestionsToExam(
       exam,
       body.questionIds,
+      req.user.accountId,
     );
   }
 
   @Delete('exam/:examId/questions/:questionId')
-  async removeQuestionFromExam(
+  async deleteQuestionFromExam(
+    @Req() req: RequestModel,
     @Param() params: RemoveQuestionFromExamParamsDto,
   ) {
     const exam = await this.examService.getExamById(params.examId);
     const question = await this.questionService.getQuestionById(
       params.questionId,
     );
-    return await this.examQuestionService.removeQuestionFromExam(
+    return await this.examQuestionService.deleteQuestionFromExam(
       exam,
       question,
+      req.user.accountId,
     );
   }
 }
