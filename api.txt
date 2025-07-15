@@ -50,6 +50,7 @@ GET /api/exam-questions/{exam_id}: Liệt kê tất cả bản ghi trong exam_qu
 DELETE /api/exam-questions/{id}: Xóa mềm bản ghi trong exam_question (cập nhật deleted_at, deleted_by).
 GET /api/exams/{id}: Truy vấn exam_question để lấy danh sách câu hỏi của bài thi.
 Ghi chú: Liên kết giữa exam và question.
+
 14. Bảng pick_exam
 API liên quan:
 POST /api/pick-exams: Tạo bản ghi trong pick_exam (bắt đầu bài thi).

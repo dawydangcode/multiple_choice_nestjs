@@ -112,11 +112,7 @@ export class ExamQuestionService {
       },
     });
 
-    if (!examQuestions || examQuestions.length === 0) {
-      return [];
-    } // TO DO
-
-    return examQuestions.map((eq) => eq.toModel());
+    return examQuestions.map((examQuestion) => examQuestion.toModel());
   }
 
   async getExamsByQuestion(
@@ -129,10 +125,8 @@ export class ExamQuestionService {
       },
     });
 
-    if (!examQuestions || examQuestions.length === 0) {
-      return [];
-    }
-
-    return examQuestions.map((eq: ExamQuestionEntity) => eq.toModel());
+    return examQuestions.map((examQuestion: ExamQuestionEntity) =>
+      examQuestion.toModel(),
+    );
   }
 }
