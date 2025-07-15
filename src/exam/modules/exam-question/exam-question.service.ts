@@ -8,7 +8,7 @@ import { In, IsNull, Repository } from 'typeorm';
 import { ExamQuestionEntity } from './entities/exam-question.entity';
 import { ExamModel } from 'src/exam/models/exam.model';
 import { QuestionModel } from 'src/question/models/question.model';
-import { ExamQuestionModel } from './models/exam-question.module';
+import { ExamQuestionModel } from './models/exam-question.model';
 import { QuestionEntity } from 'src/question/entities/question.entity';
 
 @Injectable()
@@ -129,6 +129,6 @@ export class ExamQuestionService {
       return [];
     }
 
-    return examQuestions.map((eq) => eq.toModel());
+    return examQuestions.map((eq: ExamQuestionEntity) => eq.toModel());
   }
 }

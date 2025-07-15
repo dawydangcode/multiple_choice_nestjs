@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { ExamQuestionModel } from '../models/exam-question.module';
+import { ExamQuestionModel } from '../models/exam-question.model';
 
 @Entity('exam_question')
 export class ExamQuestionEntity {
