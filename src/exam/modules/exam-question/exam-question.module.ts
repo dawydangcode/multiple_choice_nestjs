@@ -5,10 +5,11 @@ import { ExamQuestionController } from './exam-question.controller';
 import { ExamQuestionService } from './exam-question.service';
 import { ExamModule } from 'src/exam/exam.module';
 import { QuestionModule } from 'src/question/question.module';
+import { QuestionEntity } from 'src/question/entities/question.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ExamQuestionEntity]),
+    TypeOrmModule.forFeature([ExamQuestionEntity, QuestionEntity]),
     forwardRef(() => ExamModule),
     forwardRef(() => QuestionModule),
   ],

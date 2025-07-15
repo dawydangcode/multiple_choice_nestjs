@@ -1,19 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Repository } from 'typeorm';
 import { ExamQuestionEntity } from './entities/exam-question.entity';
 import { ExamModel } from 'src/exam/models/exam.model';
 import { QuestionModel } from 'src/question/models/question.model';
 import { ExamQuestionModel } from './models/exam-question.module';
+import { QuestionEntity } from 'src/question/entities/question.entity';
 
 @Injectable()
 export class ExamQuestionService {
   constructor(
     @InjectRepository(ExamQuestionEntity)
     private readonly examQuestionRepository: Repository<ExamQuestionEntity>,
+    @InjectRepository(QuestionEntity)
+    private readonly questionRepository: Repository<QuestionEntity>,
   ) {}
 
-  private async getExistingExamQuestions(
+  private async getQuestionsAlreadyInExam(
     examId: number,
     questionIds: number[],
   ): Promise<ExamQuestionEntity[]> {
@@ -21,8 +28,30 @@ export class ExamQuestionService {
       where: {
         examId: examId,
         questionId: In(questionIds),
+        deletedAt: IsNull(),
       },
     });
+  }
+
+  private async validateQuestionsExist(questionIds: number[]): Promise<void> {
+    const existingQuestions = await this.questionRepository.find({
+      where: {
+        id: In(questionIds),
+        deletedAt: IsNull(),
+      },
+      select: ['id'],
+    });
+
+    const existingQuestionIds = existingQuestions.map((q) => q.id);
+    const notFoundQuestionIds = questionIds.filter(
+      (id) => !existingQuestionIds.includes(id),
+    );
+
+    if (notFoundQuestionIds.length > 0) {
+      throw new NotFoundException(
+        `NOT FOUND QUESTION ID: ${notFoundQuestionIds.join(', ')}`,
+      );
+    }
   }
 
   async addQuestionsToExam(
@@ -30,21 +59,21 @@ export class ExamQuestionService {
     questionIds: number[],
     reqAccountId: number,
   ): Promise<ExamQuestionModel[]> {
-    const existingQuestions = await this.getExistingExamQuestions(
+    await this.validateQuestionsExist(questionIds);
+
+    const existingQuestions = await this.getQuestionsAlreadyInExam(
       exam.id,
       questionIds,
     );
 
-    const existingQuestionIds = existingQuestions.map((eq) => eq.questionId);
-    const newQuestionIds = questionIds.filter(
-      (questionId) => !existingQuestionIds.includes(questionId),
-    );
-
-    if (newQuestionIds.length === 0) {
-      return [];
+    if (existingQuestions.length > 0) {
+      const existingQuestionIds = existingQuestions.map((eq) => eq.questionId);
+      throw new ConflictException(
+        `CONFLICT: ${existingQuestionIds.join(', ')}`,
+      );
     }
 
-    const examQuestions = newQuestionIds.map((questionId) => {
+    const examQuestions = questionIds.map((questionId) => {
       const entity = new ExamQuestionEntity();
       entity.examId = exam.id;
       entity.questionId = questionId;
@@ -53,7 +82,9 @@ export class ExamQuestionService {
       return entity;
     });
 
-    return await this.examQuestionRepository.save(examQuestions);
+    const savedExamQuestions =
+      await this.examQuestionRepository.save(examQuestions);
+    return savedExamQuestions.map((eq) => eq.toModel());
   }
 
   async deleteQuestionFromExam(

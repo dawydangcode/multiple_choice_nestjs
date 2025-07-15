@@ -9,7 +9,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { ExamQuestionService } from './exam-question.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ExamService } from 'src/exam/exam.service';
 import { QuestionService } from 'src/question/question.service';
 import {
