@@ -66,7 +66,10 @@ export class TopicService {
 
   async deleteTopic(topic: TopicModel, reqAccountId: number): Promise<boolean> {
     await this.topicRepository.update(
-      { id: topic.id, deletedAt: IsNull() },
+      {
+        id: topic.id,
+        deletedAt: IsNull(),
+      },
       {
         deletedAt: new Date(),
         deletedBy: reqAccountId,

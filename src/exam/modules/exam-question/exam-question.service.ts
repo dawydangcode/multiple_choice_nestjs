@@ -54,15 +54,17 @@ export class ExamQuestionService {
     questionIds: number[],
     reqAccountId: number,
   ): Promise<ExamQuestionModel[]> {
-    await this.validateQuestionsExist(questionIds);
+    await this.validateQuestionsExist(questionIds); //TO DO
 
     const existingQuestions = await this.getQuestionsAlreadyInExam(
       exam.id,
       questionIds,
-    );
+    ); //TO DO
 
     if (existingQuestions.length > 0) {
-      const existingQuestionIds = existingQuestions.map((eq) => eq.questionId);
+      const existingQuestionIds = existingQuestions.map(
+        (existingQuestion) => existingQuestion.questionId,
+      );
       throw new ConflictException(
         `CONFLICT: ${existingQuestionIds.join(', ')}`,
       );
@@ -91,6 +93,7 @@ export class ExamQuestionService {
       {
         examId: examModel.id,
         questionId: questionModel.id,
+        deletedAt: IsNull(),
       },
       {
         deletedAt: new Date(),
@@ -103,12 +106,15 @@ export class ExamQuestionService {
 
   async getQuestionsByExam(exam: ExamModel): Promise<ExamQuestionModel[]> {
     const examQuestions = await this.examQuestionRepository.find({
-      where: { examId: exam.id, deletedAt: IsNull() },
+      where: {
+        examId: exam.id,
+        deletedAt: IsNull(),
+      },
     });
 
     if (!examQuestions || examQuestions.length === 0) {
       return [];
-    }
+    } // TO DO
 
     return examQuestions.map((eq) => eq.toModel());
   }
@@ -117,7 +123,10 @@ export class ExamQuestionService {
     question: QuestionModel,
   ): Promise<ExamQuestionModel[]> {
     const examQuestions = await this.examQuestionRepository.find({
-      where: { questionId: question.id, deletedAt: IsNull() },
+      where: {
+        questionId: question.id,
+        deletedAt: IsNull(),
+      },
     });
 
     if (!examQuestions || examQuestions.length === 0) {

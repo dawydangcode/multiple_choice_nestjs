@@ -13,8 +13,11 @@ export class ExamService {
   ) {}
 
   async getExams(): Promise<ExamModel[]> {
+    //pagination
     const exams = await this.examRepository.find({
-      where: { deletedAt: IsNull() },
+      where: {
+        deletedAt: IsNull(),
+      },
     });
 
     return exams.map((exam: ExamEntity) => exam.toModel());
@@ -22,11 +25,16 @@ export class ExamService {
 
   async getExamById(examId: number): Promise<ExamModel> {
     const exam = await this.examRepository.findOne({
-      where: { id: examId, deletedAt: IsNull() },
+      where: {
+        id: examId,
+        deletedAt: IsNull(),
+      },
     });
+
     if (!exam) {
       throw new Error('Exam not found');
     }
+
     return exam.toModel();
   }
 
@@ -59,7 +67,10 @@ export class ExamService {
     reqAccountId: number | undefined,
   ): Promise<ExamModel> {
     await this.examRepository.update(
-      { id: exam.id, deletedAt: IsNull() },
+      {
+        id: exam.id,
+        deletedAt: IsNull(),
+      },
       {
         title: title,
         minuteDuration: minuteDuration,
@@ -74,12 +85,16 @@ export class ExamService {
 
   async deleteExam(exam: ExamModel, reqAccountId: number): Promise<boolean> {
     await this.examRepository.update(
-      { id: exam.id, deletedAt: IsNull() },
+      {
+        id: exam.id,
+        deletedAt: IsNull(),
+      },
       {
         deletedAt: new Date(),
         deletedBy: reqAccountId,
       },
     );
+
     return true;
   }
 

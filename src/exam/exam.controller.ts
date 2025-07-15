@@ -68,12 +68,12 @@ export class ExamController {
     );
   }
 
-  @Put('exam/:examId/deActive')
+  @Put('exam/:examId/deactivate')
   async deActiveExam(@Req() req: RequestModel, @Param() params: GetExamDto) {
     const reqAccountId = req.user.accountId;
     const exam = await this.examService.getExamById(params.examId);
 
-    return this.examService.deActiveExam(exam, reqAccountId);
+    return this.examService.deActiveExam(exam, reqAccountId); //update
   }
 
   @Put('exam/:examId/active')
@@ -81,7 +81,7 @@ export class ExamController {
     const reqAccountId = req.user.accountId;
     const exam = await this.examService.getExamById(params.examId);
 
-    return this.examService.activeExam(exam, reqAccountId);
+    return this.examService.activeExam(exam, reqAccountId); //update
   }
 
   @Delete('exam/:examId/delete')

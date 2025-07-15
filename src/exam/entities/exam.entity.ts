@@ -36,6 +36,8 @@ export class ExamEntity {
   @Column({ name: 'deleted_by' })
   deletedBy!: number;
 
+  questions?: any[];
+
   toModel(): ExamModel {
     return new ExamModel(
       this.id,

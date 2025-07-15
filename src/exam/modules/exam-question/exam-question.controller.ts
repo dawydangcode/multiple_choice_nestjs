@@ -21,8 +21,8 @@ import {
 } from './dtos/exam-question.dto';
 import { RequestModel } from 'src/utils/models/request.model';
 
-@Controller('api/v1/exam-questions')
-@ApiTags('Exam-Questions')
+@Controller('api/v1')
+@ApiTags('Exam / Exam Questions')
 export class ExamQuestionController {
   constructor(
     private readonly examQuestionService: ExamQuestionService,
@@ -44,7 +44,7 @@ export class ExamQuestionController {
     return await this.examQuestionService.getExamsByQuestion(question);
   }
 
-  @Post('exam/:examId/addQuestions')
+  @Post('exam/:examId/questions/add')
   async addQuestionsToExam(
     @Req() req: RequestModel,
     @Param() params: AddQuestionToExamParamsDto,
@@ -58,7 +58,7 @@ export class ExamQuestionController {
     );
   }
 
-  @Delete('exam/:examId/questions/:questionId')
+  @Delete('exam/:examId/question/:questionId/remove')
   async deleteQuestionFromExam(
     @Req() req: RequestModel,
     @Param() params: RemoveQuestionFromExamParamsDto,
@@ -67,6 +67,7 @@ export class ExamQuestionController {
     const question = await this.questionService.getQuestionById(
       params.questionId,
     );
+
     return await this.examQuestionService.deleteQuestionFromExam(
       exam,
       question,

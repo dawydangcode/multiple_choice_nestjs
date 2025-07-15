@@ -30,6 +30,8 @@ export class ExamQuestionEntity {
   @Column({ name: 'deleted_by' })
   deletedBy!: number;
 
+  exams?: any;
+  questions?: any[]; // TO DO
   toModel(): ExamQuestionModel {
     return new ExamQuestionModel(
       this.id,

@@ -16,8 +16,11 @@ export class QuestionService {
   ) {}
 
   async getQuestions(): Promise<QuestionModel[]> {
+    //pagination
     const questions = await this.questionRepository.find({
-      where: { deletedAt: IsNull() },
+      where: {
+        deletedAt: IsNull(),
+      },
     });
     return questions.map((question: QuestionEntity) => question.toModel());
   }
@@ -78,8 +81,8 @@ export class QuestionService {
     await this.questionRepository.update(
       { id: question.id, deletedAt: IsNull() },
       {
-        deletedBy: reqAccountId,
         deletedAt: new Date(),
+        deletedBy: reqAccountId,
       },
     );
 
@@ -88,8 +91,12 @@ export class QuestionService {
 
   async getQuestionsByTopicId(topicId: number): Promise<QuestionModel[]> {
     const questions = await this.questionRepository.find({
-      where: { topicId: topicId, deletedAt: IsNull() },
+      where: {
+        topicId: topicId,
+        deletedAt: IsNull(),
+      },
     });
+
     return questions.map((question: QuestionEntity) => question.toModel());
   }
 
@@ -99,7 +106,6 @@ export class QuestionService {
         id: In(questionIds),
         deletedAt: IsNull(),
       },
-      select: ['id'],
     });
 
     return questions.map((question: QuestionEntity) => question.toModel());
