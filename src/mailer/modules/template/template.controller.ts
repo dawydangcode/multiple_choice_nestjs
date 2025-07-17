@@ -19,7 +19,7 @@ import { TemplateService } from './template.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
-import { RequestModel } from 'src/utils/models/request.model';
+import { RequestModel } from 'src/common/models/request.model';
 import { EmailTemplateModel } from './models/email-template.model';
 
 @Controller('api/v1')

@@ -14,7 +14,7 @@ import {
   GetTopicParamsDto,
   UpdateTopicBodyDto,
 } from './dtos/topic.dto';
-import { RequestModel } from 'src/utils/models/request.model';
+import { RequestModel } from 'src/common/models/request.model';
 
 @Controller('api/v1/')
 export class TopicController {

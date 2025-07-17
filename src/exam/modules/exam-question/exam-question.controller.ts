@@ -19,7 +19,7 @@ import {
   GetQuestionByExamParamsDto,
   RemoveQuestionFromExamParamsDto,
 } from './dtos/exam-question.dto';
-import { RequestModel } from 'src/utils/models/request.model';
+import { RequestModel } from 'src/common/models/request.model';
 
 @Controller('api/v1')
 @ApiTags('Exam / Exam Questions')

@@ -18,7 +18,7 @@ import {
   UpdateAccountDetailParamsDto,
 } from './dtos/account-detail.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
+import { ADMIN_ACCOUNT_ID } from 'src/common/utils/constant';
 
 @ApiTags('Account / Account Detail')
 @Controller('/api/v1/')

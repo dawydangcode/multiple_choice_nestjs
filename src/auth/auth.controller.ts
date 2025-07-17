@@ -11,7 +11,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { RoleService } from 'src/role/role.service';
 import { Public } from 'src/middlewares/guards/jwt-auth.guard';
 import { RoleType } from 'src/role/enum/role.enum';
-import { RequestModel } from 'src/utils/models/request.model';
+import { RequestModel } from 'src/common/models/request.model';
 import { SessionService } from './modules/session/session.service';
 import { UserService } from 'src/account/modules/user/user.service';
 import { AccountService } from 'src/account/account.service';

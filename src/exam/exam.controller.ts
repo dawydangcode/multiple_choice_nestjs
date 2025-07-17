@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ExamService } from './exam.service';
 import { ApiTags } from '@nestjs/swagger';
-import { RequestModel } from 'src/utils/models/request.model';
+import { RequestModel } from 'src/common/models/request.model';
 import { ExamModel } from './models/exam.model';
 import {
   CreateExamBodyDto,

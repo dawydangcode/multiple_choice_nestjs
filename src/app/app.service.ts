@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { throwError } from 'src/utils/function';
+import { throwError } from 'src/common/utils/function';
 
 @Injectable()
 export class AppService {

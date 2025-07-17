@@ -5,7 +5,7 @@ import { AppModule } from './app/app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { throwError } from './utils/function';
+import { throwError } from './common/utils/function';
 import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {

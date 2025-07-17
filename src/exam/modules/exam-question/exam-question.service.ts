@@ -64,7 +64,7 @@ export class ExamQuestionService {
     const { existingInExam } = await this.validateAndCheckExistingQuestions(
       exam.id,
       questionIds,
-    ); // TO DO
+    );
 
     if (existingInExam.length > 0) {
       const existingQuestionIds = existingInExam.map(

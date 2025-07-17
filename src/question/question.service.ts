@@ -6,6 +6,9 @@ import { QuestionModel } from './models/question.model';
 import { TopicService } from 'src/topic/topic.service';
 import { StringToNumber } from 'lodash';
 import { AnswerService } from 'src/question/modules/answer/answer.service';
+import { PaginationUtil } from 'src/common/utils/pagination.util';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginationResponse } from 'src/common/models/pagination-response.model';
 
 @Injectable()
 export class QuestionService {
@@ -15,14 +18,34 @@ export class QuestionService {
     private readonly topicService: TopicService,
   ) {}
 
-  async getQuestions(): Promise<QuestionModel[]> {
-    //pagination
-    const questions = await this.questionRepository.find({
-      where: {
-        deletedAt: IsNull(),
-      },
-    });
-    return questions.map((question: QuestionEntity) => question.toModel());
+  async getQuestions(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<QuestionModel>> {
+    const { search, sortBy = 'createdAt', sortOrder = 'DESC' } = paginationDto;
+
+    const queryBuilder = this.questionRepository
+      .createQueryBuilder('question')
+      .where('question.deletedAt IS NULL');
+
+    // Apply search
+    if (search) {
+      queryBuilder.andWhere('question.content LIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    // Apply sorting
+    queryBuilder.orderBy(`question.${sortBy}`, sortOrder);
+
+    // Apply pagination
+    const result = await PaginationUtil.paginate(queryBuilder, paginationDto);
+
+    // Convert entities to models
+    const questions = result.data.map((question: QuestionEntity) =>
+      question.toModel(),
+    );
+
+    return new PaginationResponse(questions, result.meta);
   }
 
   async getQuestionById(questionId: number): Promise<QuestionModel> {

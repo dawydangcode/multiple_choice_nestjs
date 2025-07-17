@@ -20,7 +20,7 @@ import { PayloadModel } from './models/payload.model';
 import { RoleService } from 'src/role/role.service';
 import { LoginTokenModel } from './models/login-token.model';
 import { MailerService } from 'src/mailer/mailer.service';
-import { throwError } from 'src/utils/function';
+import { throwError } from 'src/common/utils/function';
 import { EmailTemplateType } from './enums/email-template.type';
 import { TokenModel } from './models/token.model';
 import { JwtConfigModel } from './models/jwt-config.model';

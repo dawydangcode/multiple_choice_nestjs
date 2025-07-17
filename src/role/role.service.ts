@@ -3,7 +3,7 @@ import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleModel } from './models/role.model';
 import { RoleEntity } from './entities/role.entity';
-import { ADMIN_ACCOUNT_ID } from 'src/utils/constant';
+import { ADMIN_ACCOUNT_ID } from 'src/common/utils/constant';
 import { RoleType } from './enum/role.enum';
 
 @Injectable()

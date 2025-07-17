@@ -15,7 +15,7 @@ import {
   UpdateAnswerBodyDto,
   UpdateAnswerParamsDto,
 } from './dtos/answer.dto';
-import { RequestModel } from 'src/utils/models/request.model';
+import { RequestModel } from 'src/common/models/request.model';
 import { QuestionService } from 'src/question/question.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/role/decorator/roles.decorator';

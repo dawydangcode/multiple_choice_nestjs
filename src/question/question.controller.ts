@@ -7,9 +7,10 @@ import {
   UpdateQuestionBodyDto,
   UpdateQuestionParamsDto,
 } from './dtos/question.dto';
-import { RequestModel } from 'src/utils/models/request.model';
+import { RequestModel } from 'src/common/models/request.model';
 import { RoleType } from 'src/role/enum/role.enum';
 import { Roles } from 'src/role/decorator/roles.decorator';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('api/v1')
 @Roles(RoleType.Admin)
@@ -17,8 +18,8 @@ export class QuestionController {
   constructor(private readonly questionService: QuestionService) {}
 
   @Get('question/list')
-  async getQuestions() {
-    return await this.questionService.getQuestions();
+  async getQuestions(@Body() paginationDto: PaginationDto) {
+    return await this.questionService.getQuestions(paginationDto);
   }
 
   @Get('question/:questionId/detail')
