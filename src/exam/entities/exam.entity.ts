@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { ExamModel } from '../models/exam.model';
+import { ExamQuestionEntity } from '../modules/exam-question/entities/exam-question.entity';
 
 @Entity('exam')
 export class ExamEntity {
@@ -36,6 +37,10 @@ export class ExamEntity {
   @Column({ name: 'deleted_by' })
   deletedBy!: number;
 
+  @OneToMany(() => ExamQuestionEntity, (examQuestion) => examQuestion.exam)
+  examQuestions?: ExamQuestionEntity[];
+
+  
   questions?: any[];
 
   toModel(): ExamModel {

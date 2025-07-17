@@ -20,23 +20,16 @@ export class ExamQuestionService {
     private readonly questionService: QuestionService,
   ) {}
 
-  private async getQuestionsAlreadyInExam(
+  private async validateAndCheckExistingQuestions(
     examId: number,
     questionIds: number[],
-  ): Promise<ExamQuestionEntity[]> {
-    return this.examQuestionRepository.find({
-      where: {
-        examId: examId,
-        questionId: In(questionIds),
-        deletedAt: IsNull(),
-      },
-    });
-  }
-
-  private async validateQuestionsExist(questionIds: number[]): Promise<void> {
+  ): Promise<{
+    existingInExam: ExamQuestionEntity[];
+    notFoundQuestions: number[];
+  }> {
+    // 1. Validate questions exist in database
     const existingQuestions =
       await this.questionService.getQuestionsByIds(questionIds);
-
     const existingQuestionIds = existingQuestions.map((q) => q.id);
     const notFoundQuestionIds = questionIds.filter(
       (id) => !existingQuestionIds.includes(id),
@@ -47,6 +40,20 @@ export class ExamQuestionService {
         `NOT FOUND QUESTION ID: ${notFoundQuestionIds.join(', ')}`,
       );
     }
+
+    // 2. Check questions already in exam
+    const existingInExam = await this.examQuestionRepository.find({
+      where: {
+        examId: examId,
+        questionId: In(questionIds),
+        deletedAt: IsNull(),
+      },
+    });
+
+    return {
+      existingInExam,
+      notFoundQuestions: notFoundQuestionIds,
+    };
   }
 
   async addQuestionsToExam(
@@ -54,15 +61,13 @@ export class ExamQuestionService {
     questionIds: number[],
     reqAccountId: number,
   ): Promise<ExamQuestionModel[]> {
-    await this.validateQuestionsExist(questionIds); //TO DO
-
-    const existingQuestions = await this.getQuestionsAlreadyInExam(
+    const { existingInExam } = await this.validateAndCheckExistingQuestions(
       exam.id,
       questionIds,
-    ); //TO DO
+    ); // TO DO
 
-    if (existingQuestions.length > 0) {
-      const existingQuestionIds = existingQuestions.map(
+    if (existingInExam.length > 0) {
+      const existingQuestionIds = existingInExam.map(
         (existingQuestion) => existingQuestion.questionId,
       );
       throw new ConflictException(

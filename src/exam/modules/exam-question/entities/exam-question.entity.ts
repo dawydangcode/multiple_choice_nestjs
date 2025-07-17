@@ -1,5 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { ExamQuestionModel } from '../models/exam-question.model';
+import { ExamEntity } from '../../../entities/exam.entity';
+import { QuestionEntity } from '../../../../question/entities/question.entity';
 
 @Entity('exam_question')
 export class ExamQuestionEntity {
@@ -30,8 +38,14 @@ export class ExamQuestionEntity {
   @Column({ name: 'deleted_by' })
   deletedBy!: number;
 
-  exams?: any;
-  questions?: any[]; // TO DO
+  @ManyToOne(() => ExamEntity, (exam) => exam.examQuestions)
+  @JoinColumn({ name: 'exam_id' })
+  exam?: ExamEntity;
+
+  @ManyToOne(() => QuestionEntity, (question) => question.examQuestions)
+  @JoinColumn({ name: 'question_id' })
+  question?: QuestionEntity;
+
   toModel(): ExamQuestionModel {
     return new ExamQuestionModel(
       this.id,
