@@ -1,5 +1,15 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { PickExamModel } from '../models/pick-exam.model';
+import { PickExamType } from '../enum/pick-exam.type';
+import { ExamEntity } from 'src/exam/entities/exam.entity';
+import { UserEntity } from 'src/account/modules/user/entity/user.entity';
 
 @Entity('pick_exam')
 export class PickExamEntity {
@@ -11,6 +21,9 @@ export class PickExamEntity {
 
   @Column({ name: 'user_id' })
   userId!: number;
+
+  @Column({ name: 'status' })
+  status!: PickExamType;
 
   @Column({ name: 'start_time' })
   startTime!: Date;
@@ -36,14 +49,20 @@ export class PickExamEntity {
   @Column({ name: 'deleted_by' })
   deletedBy!: number;
 
-  @OneToOne(() => PickExamModel, (pickExam) => pickExam.id)
-  pickExamModel!: PickExamModel;
+  @ManyToOne(() => ExamEntity, (exam) => exam.pickExams)
+  @JoinColumn({ name: 'exam_id' })
+  exam?: ExamEntity;
+
+  @ManyToOne(() => UserEntity, (user) => user.id)
+  @JoinColumn({ name: 'user_id' })
+  user?: UserEntity;
 
   toModel(): PickExamModel {
     return new PickExamModel(
       this.id,
       this.userId,
       this.examId,
+      this.status,
       this.startTime,
       this.finishTime,
       this.createdAt,

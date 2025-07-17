@@ -1,7 +1,10 @@
+import { PickExamType } from '../enum/pick-exam.type';
+
 export class PickExamModel {
   public readonly id: number;
   public readonly userId: number;
   public readonly examId: number;
+  public readonly status: PickExamType;
   public readonly startTime: Date | undefined;
   public readonly finishTime: Date | undefined;
   public readonly createdAt: Date | undefined;
@@ -14,6 +17,7 @@ export class PickExamModel {
     id: number,
     userId: number,
     examId: number,
+    status: PickExamType,
     startTime: Date | undefined,
     finishTime: Date | undefined,
     createdAt: Date | undefined,
@@ -26,6 +30,7 @@ export class PickExamModel {
     this.id = id;
     this.userId = userId;
     this.examId = examId;
+    this.status = status;
     this.startTime = startTime;
     this.finishTime = finishTime;
     this.createdAt = createdAt;
