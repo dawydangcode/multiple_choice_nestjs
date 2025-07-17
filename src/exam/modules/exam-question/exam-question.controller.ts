@@ -30,20 +30,6 @@ export class ExamQuestionController {
     private readonly questionService: QuestionService,
   ) {}
 
-  @Get('exam/:examId/questions')
-  async getQuestionsByExam(@Param() params: GetQuestionByExamParamsDto) {
-    const exam = await this.examService.getExamById(params.examId);
-    return await this.examQuestionService.getQuestionsByExam(exam);
-  }
-
-  @Get('question/:questionId/exams')
-  async getExamsByQuestion(@Param() params: GetExamsByQuestionParamsDto) {
-    const question = await this.questionService.getQuestionById(
-      params.questionId,
-    );
-    return await this.examQuestionService.getExamsByQuestion(question);
-  }
-
   @Post('exam/:examId/questions/add')
   async addQuestionsToExam(
     @Req() req: RequestModel,

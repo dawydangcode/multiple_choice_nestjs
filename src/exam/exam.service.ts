@@ -134,12 +134,10 @@ export class ExamService {
             examQuestion.deletedAt === null && examQuestion.questionId !== null,
         )
         .map(async (examQuestion) => {
-          // Fetch question details using questionId
           const question = await this.questionService.getQuestionById(
             examQuestion.questionId,
           );
 
-          // Fetch answers for this question
           const answers = await this.answerService.getAnswersByQuestionId(
             examQuestion.questionId,
           );
@@ -155,12 +153,12 @@ export class ExamService {
               isCorrect: answer.isCorrect,
             })),
           };
-        }) || [],
+        }),
     );
 
     const totalQuestions = questions.length;
 
-    const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
+    const totalPoints = questions.reduce((sum, question) => sum + question.points, 0);
 
     const averagePoints =
       totalQuestions > 0
@@ -172,7 +170,7 @@ export class ExamService {
       questions,
       totalQuestions,
       totalPoints,
-      averagePoints
+      averagePoints,
     );
   }
 }

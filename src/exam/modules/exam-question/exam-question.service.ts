@@ -106,32 +106,6 @@ export class ExamQuestionService {
     return true;
   }
 
-  async getQuestionsByExam(exam: ExamModel): Promise<ExamQuestionModel[]> {
-    const examQuestions = await this.examQuestionRepository.find({
-      where: {
-        examId: exam.id,
-        deletedAt: IsNull(),
-      },
-    });
-
-    return examQuestions.map((examQuestion) => examQuestion.toModel());
-  }
-
-  async getExamsByQuestion(
-    question: QuestionModel,
-  ): Promise<ExamQuestionModel[]> {
-    const examQuestions = await this.examQuestionRepository.find({
-      where: {
-        questionId: question.id,
-        deletedAt: IsNull(),
-      },
-    });
-
-    return examQuestions.map((examQuestion: ExamQuestionEntity) =>
-      examQuestion.toModel(),
-    );
-  }
-
   async getExamQuestionsByExamId(examId: number): Promise<ExamQuestionModel[]> {
     const examQuestions = await this.examQuestionRepository.find({
       where: {
