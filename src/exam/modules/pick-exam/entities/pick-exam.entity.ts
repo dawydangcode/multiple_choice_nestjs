@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { PickExamModel } from '../models/pick-exam.model';
 
 @Entity('pick_exam')
@@ -35,6 +35,9 @@ export class PickExamEntity {
 
   @Column({ name: 'deleted_by' })
   deletedBy!: number;
+
+  @OneToOne(() => PickExamModel, (pickExam) => pickExam.id)
+  pickExamModel!: PickExamModel;
 
   toModel(): PickExamModel {
     return new PickExamModel(
