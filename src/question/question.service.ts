@@ -27,20 +27,16 @@ export class QuestionService {
       .createQueryBuilder('question')
       .where('question.deletedAt IS NULL');
 
-    // Apply search
     if (search) {
       queryBuilder.andWhere('question.content LIKE :search', {
         search: `%${search}%`,
       });
     }
 
-    // Apply sorting
     queryBuilder.orderBy(`question.${sortBy}`, sortOrder);
 
-    // Apply pagination
     const result = await PaginationUtil.paginate(queryBuilder, paginationDto);
 
-    // Convert entities to models
     const questions = result.data.map((question: QuestionEntity) =>
       question.toModel(),
     );

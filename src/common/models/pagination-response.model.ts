@@ -19,10 +19,10 @@ export class PaginationMeta {
 }
 
 export class PaginationResponse<T> {
-  @ApiProperty({ description: 'Danh sách data' })
+  @ApiProperty()
   data: T[];
 
-  @ApiProperty({ description: 'Thông tin pagination', type: PaginationMeta })
+  @ApiProperty({ type: PaginationMeta })
   meta: PaginationMeta;
 
   constructor(data: T[], meta: PaginationMeta) {

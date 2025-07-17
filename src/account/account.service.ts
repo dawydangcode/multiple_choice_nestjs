@@ -6,9 +6,10 @@ import { AccountModel } from './models/account.model';
 import * as bcrypt from 'bcrypt';
 import { SALT_OR_ROUNDS } from 'src/auth/constants/auth.const';
 import { RoleService } from 'src/role/role.service';
-import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
-import { UserService } from './modules/user/user.service';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginationResponse } from 'src/common/models/pagination-response.model';
+import { PaginationUtil } from 'src/common/utils/pagination.util';
 
 @Injectable()
 export class AccountService {
@@ -18,13 +19,29 @@ export class AccountService {
     private readonly roleService: RoleService,
   ) {}
 
-  async getAccounts(): Promise<AccountModel[]> {
-    const accounts = await this.accountRepository.find({
-      where: {
-        deletedAt: IsNull(),
-      },
-    });
-    return accounts.map((account: AccountEntity) => account.toModel(true));
+  async getAccounts(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<AccountModel>> {
+    const { search, sortBy = 'createdAt', sortOrder = 'DESC' } = paginationDto;
+
+    const queryBuilder = this.accountRepository
+      .createQueryBuilder('account')
+      .where('account.deletedAt IS NULL');
+    if (search) {
+      queryBuilder.andWhere('account.username LIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    queryBuilder.orderBy(`account.${sortBy}`, sortOrder);
+
+    const result = await PaginationUtil.paginate(queryBuilder, paginationDto);
+
+    const accounts = result.data.map((account: AccountEntity) =>
+      account.toModel(true),
+    );
+
+    return new PaginationResponse(accounts, result.meta);
   }
 
   async getAccount(
