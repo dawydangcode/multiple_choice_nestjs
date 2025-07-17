@@ -1,16 +1,15 @@
-import { ExamQuestionModel } from './exam-question.model';
 import { ExamModel } from './exam.model';
 
 export class ExamQuestionAnswerModel {
   public readonly exam: ExamModel;
-  public readonly questions: ExamQuestionModel[];
+  public readonly questions: ExamQuestionResponse[];
   public readonly totalQuestions: number;
   public readonly totalPoints: number;
   public readonly averagePoints: number;
 
   constructor(
     exam: ExamModel,
-    questions: ExamQuestionModel[],
+    questions: ExamQuestionResponse[],
     totalQuestions: number,
     totalPoints: number,
     averagePoints: number,
@@ -21,4 +20,18 @@ export class ExamQuestionAnswerModel {
     this.totalPoints = totalPoints;
     this.averagePoints = averagePoints;
   }
+}
+
+export class ExamAnswerResponse {
+  public readonly id!: number;
+  public readonly content!: string;
+  isCorrect!: boolean;
+}
+
+export class ExamQuestionResponse {
+  public readonly id!: number;
+  public readonly content!: string;
+  public readonly points!: number;
+  public readonly topicId!: number;
+  public readonly answers!: ExamAnswerResponse[];
 }

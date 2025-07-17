@@ -158,7 +158,10 @@ export class ExamService {
 
     const totalQuestions = questions.length;
 
-    const totalPoints = questions.reduce((sum, question) => sum + question.points, 0);
+    const totalPoints = questions.reduce(
+      (sum, question) => sum + question.points,
+      0,
+    );
 
     const averagePoints =
       totalQuestions > 0
