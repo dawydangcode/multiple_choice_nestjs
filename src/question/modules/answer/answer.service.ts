@@ -5,6 +5,9 @@ import { IsNull, Repository } from 'typeorm';
 import { AnswerModel } from './models/answer.model';
 import { QuestionModel } from 'src/question/models/question.model';
 import { QuestionService } from 'src/question/question.service';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginationUtil } from 'src/common/utils/pagination.util';
+import { PaginationResponse } from 'src/common/models/pagination-response.model';
 
 @Injectable()
 export class AnswerService {
@@ -14,12 +17,28 @@ export class AnswerService {
     private readonly questionService: QuestionService,
   ) {}
 
-  async getAnswers(): Promise<AnswerModel[]> {
-    const answers = await this.answerRepository.find({
-      where: { deletedAt: IsNull() },
-    });
+  async getAnswers(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<AnswerModel>> {
+    const { search, sortBy = 'createAt', sortOrder = 'DESC' } = paginationDto;
 
-    return answers.map((answers: AnswerEntity) => answers.toModel());
+    const queryBuilder = this.answerRepository
+      .createQueryBuilder('answer')
+      .where('answer.deletedAt IS NULL');
+
+    if (search) {
+      queryBuilder.andWhere('answer.content LIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    queryBuilder.orderBy(`answer.${sortBy}`, sortOrder);
+
+    const result = await PaginationUtil.paginate(queryBuilder, paginationDto);
+
+    const answers = result.data.map((answer: AnswerEntity) => answer.toModel());
+
+    return new PaginationResponse(answers, result.meta);
   }
 
   async getAnswerById(answerId: number): Promise<AnswerModel> {

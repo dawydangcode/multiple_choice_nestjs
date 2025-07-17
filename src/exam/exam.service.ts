@@ -4,6 +4,9 @@ import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExamModel } from './models/exam.model';
 import ms from 'ms';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginationResponse } from 'src/common/models/pagination-response.model';
+import { PaginationUtil } from 'src/common/utils/pagination.util';
 
 @Injectable()
 export class ExamService {
@@ -12,15 +15,28 @@ export class ExamService {
     private readonly examRepository: Repository<ExamEntity>,
   ) {}
 
-  async getExams(): Promise<ExamModel[]> {
-    //pagination
-    const exams = await this.examRepository.find({
-      where: {
-        deletedAt: IsNull(),
-      },
-    });
+  async getExams(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<ExamModel>> {
+    const { search, sortBy = 'createdAt', sortOrder = 'DESC' } = paginationDto;
 
-    return exams.map((exam: ExamEntity) => exam.toModel());
+    const queryBuilder = this.examRepository
+      .createQueryBuilder('exam')
+      .where('exam.deletedAt IS NULL');
+
+    if (search) {
+      queryBuilder.andWhere('exam.title LIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    queryBuilder.orderBy(`exam.${sortBy}`, sortOrder);
+
+    const result = await PaginationUtil.paginate(queryBuilder, paginationDto);
+
+    const exams = result.data.map((exam: ExamEntity) => exam.toModel());
+
+    return new PaginationResponse(exams, result.meta);
   }
 
   async getExamById(examId: number): Promise<ExamModel> {
