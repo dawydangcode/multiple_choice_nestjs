@@ -9,7 +9,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { ExamService } from './exam.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RequestModel } from 'src/common/models/request.model';
 import { ExamModel } from './models/exam.model';
 import {
@@ -19,6 +19,7 @@ import {
 } from './dtos/exam.dto';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('api/v1')
 @ApiTags('Exam')
@@ -27,8 +28,8 @@ export class ExamController {
   constructor(private readonly examService: ExamService) {}
 
   @Get('exam/list')
-  async getExams(): Promise<ExamModel[]> {
-    return this.examService.getExams();
+  async getExams(@Body() paginationDto: PaginationDto) {
+    return this.examService.getExams(paginationDto);
   }
 
   @Get('exam/:examId/detail')
@@ -68,27 +69,17 @@ export class ExamController {
     );
   }
 
-  @Put('exam/:examId/deactivate')
-  async deActiveExam(@Req() req: RequestModel, @Param() params: GetExamDto) {
-    const reqAccountId = req.user.accountId;
-    const exam = await this.examService.getExamById(params.examId);
-
-    return this.examService.deActiveExam(exam, reqAccountId); //update
-  }
-
-  @Put('exam/:examId/active')
-  async activeExam(@Req() req: RequestModel, @Param() params: GetExamDto) {
-    const reqAccountId = req.user.accountId;
-    const exam = await this.examService.getExamById(params.examId);
-
-    return this.examService.activeExam(exam, reqAccountId); //update
-  }
-
   @Delete('exam/:examId/delete')
   async deleteExam(@Req() req: RequestModel, @Param() params: GetExamDto) {
     const reqAccountId = req.user.accountId;
     const exam = await this.examService.getExamById(params.examId);
 
     return this.examService.deleteExam(exam, reqAccountId);
+  }
+
+  @Get('exam/:examId/questions-with-answers')
+  async getExamWithQuestionsAndAnswers(@Param() params: GetExamDto) {
+    const exam = await this.examService.getExamById(params.examId);
+    return this.examService.getExamWithQuestionsAndAnswersById(exam);
   }
 }

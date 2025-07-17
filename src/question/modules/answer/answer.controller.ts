@@ -20,6 +20,7 @@ import { QuestionService } from 'src/question/question.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('api/v1')
 @ApiTags('Question / Answer')
@@ -31,8 +32,8 @@ export class AnswerController {
   ) {}
 
   @Get('answer/list')
-  async getAnswers() {
-    return await this.answerService.getAnswers();
+  async getAnswers(@Body() paginationDto: PaginationDto) {
+    return await this.answerService.getAnswers(paginationDto);
   }
 
   @Get('answer/:answerId/detail')

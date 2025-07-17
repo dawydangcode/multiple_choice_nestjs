@@ -40,7 +40,6 @@ export class ExamEntity {
   @OneToMany(() => ExamQuestionEntity, (examQuestion) => examQuestion.exam)
   examQuestions?: ExamQuestionEntity[];
 
-  
   questions?: any[];
 
   toModel(): ExamModel {

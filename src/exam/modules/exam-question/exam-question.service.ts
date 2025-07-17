@@ -9,7 +9,6 @@ import { ExamQuestionEntity } from './entities/exam-question.entity';
 import { ExamModel } from 'src/exam/models/exam.model';
 import { QuestionModel } from 'src/question/models/question.model';
 import { ExamQuestionModel } from './models/exam-question.model';
-import { QuestionEntity } from 'src/question/entities/question.entity';
 import { QuestionService } from 'src/question/question.service';
 
 @Injectable()
@@ -27,7 +26,6 @@ export class ExamQuestionService {
     existingInExam: ExamQuestionEntity[];
     notFoundQuestions: number[];
   }> {
-    // 1. Validate questions exist in database
     const existingQuestions =
       await this.questionService.getQuestionsByIds(questionIds);
     const existingQuestionIds = existingQuestions.map((q) => q.id);
@@ -41,7 +39,6 @@ export class ExamQuestionService {
       );
     }
 
-    // 2. Check questions already in exam
     const existingInExam = await this.examQuestionRepository.find({
       where: {
         examId: examId,
@@ -133,5 +130,16 @@ export class ExamQuestionService {
     return examQuestions.map((examQuestion: ExamQuestionEntity) =>
       examQuestion.toModel(),
     );
+  }
+
+  async getExamQuestionsByExamId(examId: number): Promise<ExamQuestionModel[]> {
+    const examQuestions = await this.examQuestionRepository.find({
+      where: {
+        examId: examId,
+        deletedAt: IsNull(),
+      },
+    });
+
+    return examQuestions.map((examQuestion) => examQuestion.toModel());
   }
 }

@@ -7,12 +7,19 @@ import ms from 'ms';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginationResponse } from 'src/common/models/pagination-response.model';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
+import { ExamQuestionService } from './modules/exam-question/exam-question.service';
+import { QuestionService } from 'src/question/question.service';
+import { AnswerService } from 'src/question/modules/answer/answer.service';
+import { ExamQuestionAnswerModel } from './models/exam-question-answer.model';
 
 @Injectable()
 export class ExamService {
   constructor(
     @InjectRepository(ExamEntity)
     private readonly examRepository: Repository<ExamEntity>,
+    private readonly examQuestionService: ExamQuestionService,
+    private readonly questionService: QuestionService,
+    private readonly answerService: AnswerService,
   ) {}
 
   async getExams(
@@ -114,27 +121,58 @@ export class ExamService {
     return true;
   }
 
-  async deActiveExam(exam: ExamModel, reqAccountId: number): Promise<boolean> {
-    await this.examRepository.update(
-      { id: exam.id, deletedAt: IsNull() },
-      {
-        isActive: false,
-        updatedAt: new Date(),
-        updatedBy: reqAccountId,
-      },
-    );
-    return true;
-  }
+  async getExamWithQuestionsAndAnswersById(
+    exam: ExamModel,
+  ): Promise<ExamQuestionAnswerModel> {
+    const examQuestions =
+      await this.examQuestionService.getExamQuestionsByExamId(exam.id);
 
-  async activeExam(exam: ExamModel, reqAccountId: number): Promise<boolean> {
-    await this.examRepository.update(
-      { id: exam.id, deletedAt: IsNull() },
-      {
-        isActive: true,
-        updatedAt: new Date(),
-        updatedBy: reqAccountId,
-      },
+    const questions = await Promise.all(
+      examQuestions
+        ?.filter(
+          (examQuestion) =>
+            examQuestion.deletedAt === null && examQuestion.questionId !== null,
+        )
+        .map(async (examQuestion) => {
+          // Fetch question details using questionId
+          const question = await this.questionService.getQuestionById(
+            examQuestion.questionId,
+          );
+
+          // Fetch answers for this question
+          const answers = await this.answerService.getAnswersByQuestionId(
+            examQuestion.questionId,
+          );
+
+          return {
+            id: question.id,
+            content: question.content,
+            points: question.points,
+            topicId: question.topicId,
+            answers: answers.map((answer) => ({
+              id: answer.id,
+              content: answer.content,
+              isCorrect: answer.isCorrect,
+            })),
+          };
+        }) || [],
     );
-    return true;
+
+    const totalQuestions = questions.length;
+
+    const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
+
+    const averagePoints =
+      totalQuestions > 0
+        ? Math.round((totalPoints / totalQuestions) * 100) / 100
+        : 0;
+
+    return new ExamQuestionAnswerModel(
+      exam,
+      questions,
+      totalQuestions,
+      totalPoints,
+      averagePoints
+    );
   }
 }

@@ -18,6 +18,7 @@ import { AccountModel } from './models/account.model';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @ApiTags('Account')
 @Controller('api/v1')
@@ -26,8 +27,8 @@ export class AccountController {
 
   @Roles(RoleType.Admin)
   @Get('account/list')
-  async getAccounts(): Promise<AccountModel[]> {
-    return await this.accountService.getAccounts();
+  async getAccounts(@Body() paginationDto: PaginationDto) {
+    return await this.accountService.getAccounts(paginationDto);
   }
 
   @Roles(RoleType.Admin)
