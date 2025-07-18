@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { AnswerModel } from '../models/answer.model';
 import { QuestionEntity } from 'src/question/entities/question.entity';
-import { PickExamDetailEntity } from 'src/exam/modules/pick-exam-detail/entities/pick-exam-deltail.entity';
+import { PickExamDetailEntity } from 'src/exam/modules/pick-exam-detail/entities/pick-exam-detail.entity';
 
 @Entity('answer')
 export class AnswerEntity {

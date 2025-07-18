@@ -10,7 +10,7 @@ import { QuestionModel } from '../models/question.model';
 import { ExamQuestionEntity } from '../../exam/modules/exam-question/entities/exam-question.entity';
 import { ExamEntity } from 'src/exam/entities/exam.entity';
 import { AnswerEntity } from '../modules/answer/entities/answer.entity';
-import { PickExamDetailEntity } from 'src/exam/modules/pick-exam-detail/entities/pick-exam-deltail.entity';
+import { PickExamDetailEntity } from 'src/exam/modules/pick-exam-detail/entities/pick-exam-detail.entity';
 
 @Entity('question')
 export class QuestionEntity {

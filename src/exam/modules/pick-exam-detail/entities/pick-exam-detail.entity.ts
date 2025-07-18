@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { PickExamDetailModel } from '../models/pick-exam-deltail.model';
+import { PickExamDetailModel } from '../models/pick-exam-detail.model';
 import { PickExamEntity } from '../../pick-exam/entities/pick-exam.entity';
 import { QuestionEntity } from 'src/question/entities/question.entity';
 import { AnswerEntity } from 'src/question/modules/answer/entities/answer.entity';

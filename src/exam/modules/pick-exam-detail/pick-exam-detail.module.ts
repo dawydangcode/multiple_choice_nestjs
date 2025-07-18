@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PickExamDetailEntity } from './entities/pick-exam-deltail.entity';
+import { PickExamDetailEntity } from './entities/pick-exam-detail.entity';
 import { PickExamDetailController } from './pick-exam-detail.controller';
 import { PickExamDetailService } from './pick-exam-detail.service';
 
