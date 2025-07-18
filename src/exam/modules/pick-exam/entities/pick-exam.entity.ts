@@ -3,6 +3,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -10,6 +11,7 @@ import { PickExamModel } from '../models/pick-exam.model';
 import { PickExamType } from '../enum/pick-exam.type';
 import { ExamEntity } from 'src/exam/entities/exam.entity';
 import { UserEntity } from 'src/account/modules/user/entity/user.entity';
+import { PickExamDetailEntity } from '../../pick-exam-detail/entities/pick-exam-deltail.entity';
 
 @Entity('pick_exam')
 export class PickExamEntity {
@@ -27,6 +29,9 @@ export class PickExamEntity {
 
   @Column({ name: 'start_time' })
   startTime!: Date;
+
+  @Column({ name: 'end_time' })
+  endTime!: Date;
 
   @Column({ name: 'finish_time' })
   finishTime!: Date;
@@ -57,6 +62,12 @@ export class PickExamEntity {
   @JoinColumn({ name: 'user_id' })
   user?: UserEntity;
 
+  @OneToMany(
+    () => PickExamDetailEntity,
+    (pickExamDetail) => pickExamDetail.pickExam,
+  )
+  pickExamDetails?: PickExamDetailEntity[];
+  
   toModel(): PickExamModel {
     return new PickExamModel(
       this.id,
@@ -64,6 +75,7 @@ export class PickExamEntity {
       this.examId,
       this.status,
       this.startTime,
+      this.endTime,
       this.finishTime,
       this.createdAt,
       this.createdBy,

@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { AnswerModel } from '../models/answer.model';
 import { QuestionEntity } from 'src/question/entities/question.entity';
+import { PickExamDetailEntity } from 'src/exam/modules/pick-exam-detail/entities/pick-exam-deltail.entity';
 
 @Entity('answer')
 export class AnswerEntity {
@@ -44,6 +45,12 @@ export class AnswerEntity {
   @ManyToOne(() => QuestionEntity, (question) => question.answers)
   @JoinColumn({ name: 'question_id' })
   question?: QuestionEntity;
+
+  @OneToMany(
+    () => PickExamDetailEntity,
+    (pickExamDetail) => pickExamDetail.answer,
+  )
+  pickExamDetails?: PickExamDetailEntity[];
 
   toModel(): AnswerModel {
     return new AnswerModel(

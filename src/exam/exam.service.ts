@@ -7,19 +7,15 @@ import ms from 'ms';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginationResponse } from 'src/common/models/pagination-response.model';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
-import { ExamQuestionService } from './modules/exam-question/exam-question.service';
-import { QuestionService } from 'src/question/question.service';
-import { AnswerService } from 'src/question/modules/answer/answer.service';
 import { ExamQuestionAnswerModel } from './models/exam-question-answer.model';
+import { EXAM_QUESTION_LIMIT } from 'src/common/utils/constant';
+import { ISO_8601 } from 'moment';
 
 @Injectable()
 export class ExamService {
   constructor(
     @InjectRepository(ExamEntity)
     private readonly examRepository: Repository<ExamEntity>,
-    private readonly examQuestionService: ExamQuestionService,
-    private readonly questionService: QuestionService,
-    private readonly answerService: AnswerService,
   ) {}
 
   async getExams(
@@ -179,7 +175,7 @@ export class ExamService {
                 })) || [],
           };
         })
-        .filter((q) => q !== null) || [];
+        .filter((question) => question !== null) || [];
 
     const totalQuestions = questions.length;
     const totalPoints = questions.reduce(
@@ -198,5 +194,16 @@ export class ExamService {
       totalPoints,
       averagePoints,
     );
+  }
+
+  async checkExamQuestionsIsMoreThanLimit(exam: ExamModel): Promise<boolean> {
+    const examEntity = await this.getExamEntityById(exam.id);
+    const questionCount = examEntity.examQuestions?.length || 0;
+
+    if (questionCount > EXAM_QUESTION_LIMIT) {
+      throw new Error('Exam cannot have more than 20 questions');
+    }
+
+    return questionCount > 0;
   }
 }

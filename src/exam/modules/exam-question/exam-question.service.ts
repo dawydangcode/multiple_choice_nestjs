@@ -10,6 +10,7 @@ import { ExamModel } from 'src/exam/models/exam.model';
 import { QuestionModel } from 'src/question/models/question.model';
 import { ExamQuestionModel } from './models/exam-question.model';
 import { QuestionService } from 'src/question/question.service';
+import { ExamService } from 'src/exam/exam.service';
 
 @Injectable()
 export class ExamQuestionService {
@@ -17,6 +18,7 @@ export class ExamQuestionService {
     @InjectRepository(ExamQuestionEntity)
     private readonly examQuestionRepository: Repository<ExamQuestionEntity>,
     private readonly questionService: QuestionService,
+    private readonly examService: ExamService,
   ) {}
 
   private async validateAndCheckExistingQuestions(
@@ -58,6 +60,8 @@ export class ExamQuestionService {
     questionIds: number[],
     reqAccountId: number,
   ): Promise<ExamQuestionModel[]> {
+    await this.examService.checkExamQuestionsIsMoreThanLimit(exam);
+
     const { existingInExam } = await this.validateAndCheckExistingQuestions(
       exam.id,
       questionIds,

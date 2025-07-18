@@ -6,6 +6,7 @@ export class PickExamModel {
   public readonly examId: number;
   public readonly status: PickExamType;
   public readonly startTime: Date | undefined;
+  public readonly endTime: Date | undefined;
   public readonly finishTime: Date | undefined;
   public readonly createdAt: Date | undefined;
   public readonly createdBy: number | undefined;
@@ -19,6 +20,7 @@ export class PickExamModel {
     examId: number,
     status: PickExamType,
     startTime: Date | undefined,
+    endTime: Date | undefined,
     finishTime: Date | undefined,
     createdAt: Date | undefined,
     createdBy: number | undefined,
@@ -32,6 +34,7 @@ export class PickExamModel {
     this.examId = examId;
     this.status = status;
     this.startTime = startTime;
+    this.endTime = endTime;
     this.finishTime = finishTime;
     this.createdAt = createdAt;
     this.createdBy = createdBy;

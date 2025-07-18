@@ -21,7 +21,6 @@ import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginationResponse } from 'src/common/models/pagination-response.model';
-import { ExamListResponse } from './responses/exam-list.response';
 
 @Controller('api/v1')
 @ApiTags('Exam')

@@ -10,6 +10,8 @@ import { ExamModel } from 'src/exam/models/exam.model';
 import { UserModel } from 'src/account/modules/user/model/user.model';
 import { get } from 'lodash';
 import { PickExamModel } from './models/pick-exam.model';
+import e from 'express';
+import { PickExamType } from './enum/pick-exam.type';
 
 @Injectable()
 export class PickExamService {
@@ -48,6 +50,7 @@ export class PickExamService {
   async startPickExam(
     exam: ExamModel,
     user: UserModel,
+    status: PickExamType,
     reqAccountId: number,
   ): Promise<PickExamModel> {
     if (!exam.isActive) {
@@ -62,14 +65,61 @@ export class PickExamService {
 
     const startTime = new Date();
 
+    const minuteDuration = exam.minuteDuration ?? 0;
+    const endTime = new Date(startTime.getTime() + minuteDuration * 60 * 1000);
+
     const entity = new PickExamEntity();
     entity.examId = exam.id;
     entity.userId = user.id;
     entity.startTime = startTime;
+    entity.endTime = endTime;
+    entity.status = PickExamType.IN_PROGRESS;
     entity.createdAt = startTime;
     entity.createdBy = reqAccountId;
 
     const savedEntity = await this.pickExamRepository.save(entity);
     return savedEntity.toModel();
+  }
+
+  async submitPickExam(
+    pickExam: PickExamModel,
+    reqAccountId: number,
+  ): Promise<PickExamModel> {
+    await this.getPickExamById(pickExam.id);
+
+    await this.pickExamRepository.update(
+      {
+        id: pickExam.id,
+        deletedAt: IsNull(),
+      },
+      {
+        finishTime: new Date(),
+        status: PickExamType.COMPLETED,
+        updatedAt: new Date(),
+        updatedBy: reqAccountId,
+      },
+    );
+
+    return this.getPickExamById(pickExam.id);
+  }
+
+  async autoSubmitExpiredExams(): Promise<void> {
+    const now = new Date();
+
+    const expiredExams = await this.pickExamRepository.find({
+      where: {
+        status: PickExamType.IN_PROGRESS,
+        deletedAt: IsNull(),
+      },
+    });
+
+    const toUpdate = expiredExams.filter((exam) => now > exam.endTime);
+
+    for (const exam of toUpdate) {
+      exam.finishTime = exam.endTime;
+      exam.status = PickExamType.COMPLETED;
+      exam.updatedAt = now;
+      await this.pickExamRepository.save(exam);
+    }
   }
 }

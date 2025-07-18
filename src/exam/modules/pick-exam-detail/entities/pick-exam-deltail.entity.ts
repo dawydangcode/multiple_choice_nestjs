@@ -1,5 +1,14 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { PickExamDetailModel } from '../models/pick-exam-deltail.model';
+import { PickExamEntity } from '../../pick-exam/entities/pick-exam.entity';
+import { QuestionEntity } from 'src/question/entities/question.entity';
+import { AnswerEntity } from 'src/question/modules/answer/entities/answer.entity';
 
 @Entity('pick_exam_detail')
 export class PickExamDetailEntity {
@@ -32,6 +41,18 @@ export class PickExamDetailEntity {
 
   @Column({ name: 'deleted_by' })
   deletedBy!: number;
+
+  @ManyToOne(() => PickExamEntity, (pickExam) => pickExam.pickExamDetails)
+  @JoinColumn({ name: 'pick_exam_id' })
+  pickExam?: PickExamEntity;
+
+  @ManyToOne(() => QuestionEntity, (question) => question.pickExamDetails)
+  @JoinColumn({ name: 'question_id' })
+  question?: QuestionEntity;
+
+  @ManyToOne(() => AnswerEntity, (answer) => answer.pickExamDetails)
+  @JoinColumn({ name: 'answer_id' })
+  answer?: AnswerEntity;
 
   toModel(): PickExamDetailModel {
     return new PickExamDetailModel(
