@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ExamEntity } from './entities/exam.entity';
 import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -52,13 +52,38 @@ export class ExamService {
         id: examId,
         deletedAt: IsNull(),
       },
+      relations: [
+        'examQuestions',
+        'examQuestions.question',
+        'examQuestions.question.answers',
+      ],
     });
 
     if (!exam) {
-      throw new Error('Exam not found');
+      throw new NotFoundException('Exam not found');
     }
 
     return exam.toModel();
+  }
+
+  async getExamEntityById(examId: number): Promise<ExamEntity> {
+    const exam = await this.examRepository.findOne({
+      where: {
+        id: examId,
+        deletedAt: IsNull(),
+      },
+      relations: [
+        'examQuestions',
+        'examQuestions.question',
+        'examQuestions.question.answers',
+      ],
+    });
+
+    if (!exam) {
+      throw new NotFoundException('Exam not found');
+    }
+
+    return exam;
   }
 
   async createExam(
@@ -103,7 +128,8 @@ export class ExamService {
         updatedAt: new Date(),
       },
     );
-    return this.getExamById(exam.id);
+
+    return await this.getExamById(exam.id);
   }
 
   async deleteExam(exam: ExamModel, reqAccountId: number): Promise<boolean> {
@@ -124,45 +150,42 @@ export class ExamService {
   async getExamWithQuestionsAndAnswersById(
     exam: ExamModel,
   ): Promise<ExamQuestionAnswerModel> {
-    const examQuestions =
-      await this.examQuestionService.getExamQuestionsByExamId(exam.id);
+    const examEntity = await this.getExamEntityById(exam.id);
 
-    const questions = await Promise.all(
-      examQuestions
+    const questions =
+      examEntity.examQuestions
         ?.filter(
           (examQuestion) =>
-            examQuestion.deletedAt === null && examQuestion.questionId !== null,
+            examQuestion.deletedAt === null &&
+            examQuestion.question?.deletedAt === null,
         )
-        .map(async (examQuestion) => {
-          const question = await this.questionService.getQuestionById(
-            examQuestion.questionId,
-          );
-
-          const answers = await this.answerService.getAnswersByQuestionId(
-            examQuestion.questionId,
-          );
-
+        .map((examQuestion) => {
+          const question = examQuestion.question;
+          if (!question) {
+            return null;
+          }
           return {
             id: question.id,
             content: question.content,
             points: question.points,
             topicId: question.topicId,
-            answers: answers.map((answer) => ({
-              id: answer.id,
-              content: answer.content,
-              isCorrect: answer.isCorrect,
-            })),
+            answers:
+              question.answers
+                ?.filter((answer) => answer.deletedAt === null)
+                .map((answer) => ({
+                  id: answer.id,
+                  content: answer.content,
+                  isCorrect: answer.isCorrect,
+                })) || [],
           };
-        }),
-    );
+        })
+        .filter((q) => q !== null) || [];
 
     const totalQuestions = questions.length;
-
     const totalPoints = questions.reduce(
       (sum, question) => sum + question.points,
       0,
     );
-
     const averagePoints =
       totalQuestions > 0
         ? Math.round((totalPoints / totalQuestions) * 100) / 100

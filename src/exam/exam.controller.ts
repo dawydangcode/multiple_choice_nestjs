@@ -20,6 +20,8 @@ import {
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginationResponse } from 'src/common/models/pagination-response.model';
+import { ExamListResponse } from './responses/exam-list.response';
 
 @Controller('api/v1')
 @ApiTags('Exam')
@@ -28,17 +30,25 @@ export class ExamController {
   constructor(private readonly examService: ExamService) {}
 
   @Get('exam/list')
-  async getExams(@Body() paginationDto: PaginationDto) {
+  @ApiResponse({
+    type: ExamModel,
+  })
+  async getExams(
+    @Body() paginationDto: PaginationDto,
+  ): Promise<PaginationResponse<ExamModel>> {
     return this.examService.getExams(paginationDto);
   }
 
   @Get('exam/:examId/detail')
-  async getExam(@Param() params: GetExamDto) {
+  async getExam(@Param() params: GetExamDto): Promise<ExamModel> {
     return this.examService.getExamById(params.examId);
   }
 
   @Post('exam/create')
-  async createExam(@Req() req: RequestModel, @Body() body: CreateExamBodyDto) {
+  async createExam(
+    @Req() req: RequestModel,
+    @Body() body: CreateExamBodyDto,
+  ): Promise<ExamModel> {
     const reqAccountId = req.user.accountId;
 
     return this.examService.createExam(
@@ -55,7 +65,7 @@ export class ExamController {
     @Req() req: RequestModel,
     @Param() params: GetExamDto,
     @Body() body: UpdateExamBodyDto,
-  ) {
+  ): Promise<ExamModel> {
     const reqAccountId = req.user.accountId;
     const exam = await this.examService.getExamById(params.examId);
 
@@ -70,7 +80,10 @@ export class ExamController {
   }
 
   @Delete('exam/:examId/delete')
-  async deleteExam(@Req() req: RequestModel, @Param() params: GetExamDto) {
+  async deleteExam(
+    @Req() req: RequestModel,
+    @Param() params: GetExamDto,
+  ): Promise<boolean> {
     const reqAccountId = req.user.accountId;
     const exam = await this.examService.getExamById(params.examId);
 

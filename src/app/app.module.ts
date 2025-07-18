@@ -20,7 +20,6 @@ import { ExamModule } from 'src/exam/exam.module';
 import { QuestionModule } from 'src/question/question.module';
 import { PickExamModule } from 'src/exam/modules/pick-exam/pick-exam.module';
 import { PickExamDetailModule } from 'src/exam/modules/pick-exam-detail/pick-exam-detail.module';
-import { AnswerModule } from 'src/question/modules/answer/answer.module';
 
 @Module({
   imports: [

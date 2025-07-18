@@ -1,6 +1,14 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToMany,
+} from 'typeorm';
 import { ExamModel } from '../models/exam.model';
 import { ExamQuestionEntity } from '../modules/exam-question/entities/exam-question.entity';
+import { PickExamEntity } from '../modules/pick-exam/entities/pick-exam.entity';
+import { QuestionEntity } from 'src/question/entities/question.entity';
 
 @Entity('exam')
 export class ExamEntity {
@@ -40,7 +48,11 @@ export class ExamEntity {
   @OneToMany(() => ExamQuestionEntity, (examQuestion) => examQuestion.exam)
   examQuestions?: ExamQuestionEntity[];
 
-  questions?: any[];
+  @OneToMany(() => PickExamEntity, (pickExam) => pickExam.exam)
+  pickExams?: PickExamEntity[];
+
+  @ManyToMany(() => QuestionEntity, (question) => question.exams)
+  questions?: QuestionEntity[];
 
   toModel(): ExamModel {
     return new ExamModel(
