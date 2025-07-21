@@ -11,8 +11,8 @@ import { UserModel } from 'src/account/modules/user/model/user.model';
 import { PickExamModel } from './models/pick-exam.model';
 import { PickExamType } from './enum/pick-exam.type';
 import { PickExamDetailService } from '../pick-exam-detail/pick-exam-detail.service';
-import { SubmitAnswersDto } from './dtos/submit-answers.dto';
 import { PickExamDetailDto } from '../pick-exam-detail/dtos/pick-exam-detail.dto';
+import { SubmitAnswersBodyDto } from './dtos/submit-answers.dto';
 
 @Injectable()
 export class PickExamService {
@@ -111,7 +111,7 @@ export class PickExamService {
 
   async submitPickExamWithAnswers(
     pickExam: PickExamModel,
-    submitAnswer: SubmitAnswersDto,
+    submitAnswer: SubmitAnswersBodyDto,
     reqAccountId: number,
   ): Promise<PickExamModel> {
     await this.getPickExamById(pickExam.id);

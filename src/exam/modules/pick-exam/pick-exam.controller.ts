@@ -11,7 +11,10 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { PickExamService } from './pick-exam.service';
 import { StartPickExamBodyDto } from './dtos/pick-exam.dto';
-import { SubmitAnswersDto } from './dtos/submit-answers.dto';
+import {
+  GetPickExamBodyDto,
+  SubmitAnswersBodyDto,
+} from './dtos/submit-answers.dto';
 import { UserService } from 'src/account/modules/user/user.service';
 import { ExamService } from 'src/exam/exam.service';
 import { RequestModel } from 'src/common/models/request.model';
@@ -53,14 +56,16 @@ export class PickExamController {
 
   @Post(':pickExamId/submit')
   async submitExamWithAnswers(
-    @Param('pickExamId') pickExamId: number,
-    @Body() submitData: SubmitAnswersDto,
+    @Param() params: GetPickExamBodyDto,
+    @Body() body: SubmitAnswersBodyDto,
     @Req() req: RequestModel,
   ) {
-    const pickExam = await this.pickExamService.getPickExamById(pickExamId);
+    const pickExam = await this.pickExamService.getPickExamById(
+      params.pickExamId,
+    );
     return this.pickExamService.submitPickExamWithAnswers(
       pickExam,
-      submitData,
+      body,
       req.user.accountId,
     );
   }
