@@ -17,7 +17,7 @@ export class UserService {
     private readonly accountDetailService: AccountDetailService,
   ) {}
 
-  async getUser(userId: number): Promise<UserModel> {
+  async getUserById(userId: number): Promise<UserModel> {
     return this.userEntity
       .findOne({
         where: {
@@ -36,7 +36,7 @@ export class UserService {
   async getProfile(
     account: AccountModel,
   ): Promise<{ user: UserModel; accountDetail: AccountDetailModel }> {
-    const user = await this.getUser(account.id);
+    const user = await this.getUserById(account.id);
     const accountDetail =
       await this.accountDetailService.getAccountDetailByAccountId(account.id);
     return {

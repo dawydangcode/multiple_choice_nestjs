@@ -2,6 +2,8 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { PickExamDetailEntity } from './entities/pick-exam-detail.entity';
+import { PickExamDetailModel } from './models/pick-exam-detail.model';
+import { PickExamDetailDto } from './dtos/pick-exam-deltail.dto';
 
 @Injectable()
 export class PickExamDetailService {
@@ -12,18 +14,16 @@ export class PickExamDetailService {
 
   async savePickExamDetails(
     pickExamId: number,
-    answers: UserAnswerDto[],
+    answers: PickExamDetailDto[],
     reqAccountId: number,
   ): Promise<PickExamDetailModel[]> {
     const now = new Date();
 
-    // Soft delete existing details for this pick exam
     await this.pickExamDetailRepository.update(
       { pickExamId, deletedAt: IsNull() },
       { deletedAt: now, deletedBy: reqAccountId },
     );
 
-    // Create new details
     const entities = answers.map((answer) => {
       const entity = new PickExamDetailEntity();
       entity.pickExamId = pickExamId;

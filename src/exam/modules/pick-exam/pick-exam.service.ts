@@ -50,7 +50,6 @@ export class PickExamService {
   async startPickExam(
     exam: ExamModel,
     user: UserModel,
-    status: PickExamType,
     reqAccountId: number,
   ): Promise<PickExamModel> {
     if (!exam.isActive) {
@@ -59,7 +58,11 @@ export class PickExamService {
 
     const existingPickExam = await this.getPickExamByUserId(user, exam);
 
-    if (existingPickExam) {
+    console.log('Debug - existingPickExam:', existingPickExam);
+    console.log('Debug - user.id:', user.id);
+    console.log('Debug - exam.id:', exam.id);
+
+    if (existingPickExam.length > 0) {
       throw new ConflictException('User has already started this exam');
     }
 
