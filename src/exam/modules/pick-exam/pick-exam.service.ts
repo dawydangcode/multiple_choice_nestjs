@@ -2,21 +2,17 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { PickExamEntity } from './entities/pick-exam.entity';
 import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExamModel } from 'src/exam/models/exam.model';
 import { UserModel } from 'src/account/modules/user/model/user.model';
-import { get } from 'lodash';
 import { PickExamModel } from './models/pick-exam.model';
-import e from 'express';
 import { PickExamType } from './enum/pick-exam.type';
 import { PickExamDetailService } from '../pick-exam-detail/pick-exam-detail.service';
 import { SubmitAnswersDto } from './dtos/submit-answers.dto';
-import { PickExamDetailDto } from '../pick-exam-detail/dtos/pick-exam-deltail.dto';
-import { start } from 'repl';
+import { PickExamDetailDto } from '../pick-exam-detail/dtos/pick-exam-detail.dto';
 
 @Injectable()
 export class PickExamService {
@@ -81,12 +77,6 @@ export class PickExamService {
     entity.createdAt = new Date();
     entity.createdBy = reqAccountId;
 
-    console.log('Debug - Before save entity:', {
-      startTime: entity.startTime,
-      endTime: entity.endTime,
-      status: entity.status,
-    });
-
     const savedEntity = await this.pickExamRepository.save(entity);
 
     console.log('Debug - After save entity:', {
@@ -142,25 +132,11 @@ export class PickExamService {
   }
 
   async submitPickExamWithAnswers(
-    pickExamId: number,
+    pickExam: PickExamModel,
     submitAnswer: SubmitAnswersDto,
     reqAccountId: number,
-  ): Promise<{
-    pickExam: PickExamModel;
-    score: {
-      totalQuestions: number;
-      correctAnswers: number;
-      score: number;
-      percentage: number;
-    };
-  }> {
-    const pickExam = await this.pickExamRepository.findOne({
-      where: { id: pickExamId, deletedAt: IsNull() },
-    });
-
-    if (!pickExam) {
-      throw new NotFoundException('Pick exam not found');
-    }
+  ): Promise<PickExamModel> {
+    await this.getPickExamById(pickExam.id);
 
     if (pickExam.status !== PickExamType.IN_PROGRESS) {
       throw new BadRequestException('Exam is not in progress');
@@ -175,26 +151,31 @@ export class PickExamService {
     });
 
     await this.pickExamDetailService.savePickExamDetails(
-      pickExamId,
+      pickExam.id,
       pickExamDetails,
       reqAccountId,
     );
 
-    // Update pick exam status
-    const now = new Date();
-    pickExam.finishTime = now;
-    pickExam.status = PickExamType.COMPLETED;
-    pickExam.updatedAt = now;
-    pickExam.updatedBy = reqAccountId;
+    const score = await this.pickExamDetailService.calculateScore(pickExam.id);
 
-    const savedPickExam = await this.pickExamRepository.save(pickExam);
+    await this.pickExamRepository.update(
+      {
+        id: pickExam.id,
+        deletedAt: IsNull(),
+      },
+      {
+        finishTime: new Date(),
+        status: PickExamType.COMPLETED,
+        // TODO: Enable after database migration
+        // totalQuestions: score.totalQuestions,
+        // correctAnswers: score.correctAnswers,
+        // score: score.score,
+        // percentage: score.percentage,
+        updatedAt: new Date(),
+        updatedBy: reqAccountId,
+      },
+    );
 
-    // Calculate score
-    const score = await this.pickExamDetailService.calculateScore(pickExamId);
-
-    return {
-      pickExam: savedPickExam.toModel(),
-      score,
-    };
+    return await this.getPickExamById(pickExam.id);
   }
 }

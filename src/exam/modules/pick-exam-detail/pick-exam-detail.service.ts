@@ -1,9 +1,10 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { PickExamDetailEntity } from './entities/pick-exam-detail.entity';
 import { PickExamDetailModel } from './models/pick-exam-detail.model';
-import { PickExamDetailDto } from './dtos/pick-exam-deltail.dto';
+import { PickExamDetailDto } from './dtos/pick-exam-detail.dto';
+import { ScoreModel } from './models/score.model';
 
 @Injectable()
 export class PickExamDetailService {
@@ -52,12 +53,7 @@ export class PickExamDetailService {
     return details.map((detail) => detail.toModel());
   }
 
-  async calculateScore(pickExamId: number): Promise<{
-    totalQuestions: number;
-    correctAnswers: number;
-    score: number;
-    percentage: number;
-  }> {
+  async calculateScore(pickExamId: number): Promise<ScoreModel> {
     const details = await this.pickExamDetailRepository.find({
       where: {
         pickExamId,
@@ -77,29 +73,32 @@ export class PickExamDetailService {
         ? Math.round((correctAnswers / totalQuestions) * 100)
         : 0;
 
-    return {
-      totalQuestions,
-      correctAnswers,
-      score,
-      percentage,
-    };
+    return new ScoreModel(totalQuestions, correctAnswers, score, percentage);
+  }
+
+  async getUserAnswers(pickExamId: number): Promise<PickExamDetailModel[]> {
+    const details = await this.pickExamDetailRepository.find({
+      where: {
+        pickExamId,
+        deletedAt: IsNull(),
+      },
+      relations: ['question', 'answer'],
+    });
+
+    return details.map((detail) => detail.toModel());
   }
 
   async getDetailedResults(pickExamId: number): Promise<{
-    pickExamId: number;
-    totalQuestions: number;
-    correctAnswers: number;
-    score: number;
-    percentage: number;
-    details: {
+    score: ScoreModel;
+    details: Array<{
       questionId: number;
-      questionContent: string;
+      questionText: string;
       userAnswerId: number;
-      userAnswerContent: string;
+      userAnswerText: string;
       correctAnswerId: number;
-      correctAnswerContent: string;
+      correctAnswerText: string;
       isCorrect: boolean;
-    }[];
+    }>;
   }> {
     const details = await this.pickExamDetailRepository.find({
       where: {
@@ -109,40 +108,27 @@ export class PickExamDetailService {
       relations: ['question', 'answer', 'question.answers'],
     });
 
-    const totalQuestions = details.length;
-    const correctAnswers = details.filter(
-      (detail) => detail.answer?.isCorrect === true,
-    ).length;
+    const score = await this.calculateScore(pickExamId);
 
-    const score = correctAnswers;
-    const percentage =
-      totalQuestions > 0
-        ? Math.round((correctAnswers / totalQuestions) * 100)
-        : 0;
-
-    const detailedResults = details.map((detail) => {
+    const detailResults = details.map((detail) => {
       const correctAnswer = detail.question?.answers?.find(
-        (answer) => answer.isCorrect,
+        (answer) => answer.isCorrect === true,
       );
 
       return {
         questionId: detail.questionId,
-        questionContent: detail.question?.content || '',
+        questionText: detail.question?.content || '',
         userAnswerId: detail.answerId,
-        userAnswerContent: detail.answer?.content || '',
+        userAnswerText: detail.answer?.content || '',
         correctAnswerId: correctAnswer?.id || 0,
-        correctAnswerContent: correctAnswer?.content || '',
-        isCorrect: detail.answer?.isCorrect || false,
+        correctAnswerText: correctAnswer?.content || '',
+        isCorrect: detail.answer?.isCorrect === true,
       };
     });
 
     return {
-      pickExamId,
-      totalQuestions,
-      correctAnswers,
       score,
-      percentage,
-      details: detailedResults,
+      details: detailResults,
     };
   }
 }

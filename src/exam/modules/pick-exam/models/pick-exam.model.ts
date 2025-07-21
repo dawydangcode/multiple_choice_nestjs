@@ -8,6 +8,10 @@ export class PickExamModel {
   public readonly startTime: Date | undefined;
   public readonly endTime: Date | undefined;
   public readonly finishTime: Date | undefined;
+  public readonly totalQuestions: number | undefined;
+  public readonly correctAnswers: number | undefined;
+  public readonly score: number | undefined;
+  public readonly percentage: number | undefined;
   public readonly createdAt: Date | undefined;
   public readonly createdBy: number | undefined;
   public readonly updatedAt: Date | undefined;
@@ -23,6 +27,10 @@ export class PickExamModel {
     startTime: Date | undefined,
     endTime: Date | undefined,
     finishTime: Date | undefined,
+    totalQuestions: number | undefined,
+    correctAnswers: number | undefined,
+    score: number | undefined,
+    percentage: number | undefined,
     createdAt: Date | undefined,
     createdBy: number | undefined,
     updatedAt: Date | undefined,
@@ -37,6 +45,10 @@ export class PickExamModel {
     this.startTime = startTime;
     this.endTime = endTime;
     this.finishTime = finishTime;
+    this.totalQuestions = totalQuestions;
+    this.correctAnswers = correctAnswers;
+    this.score = score;
+    this.percentage = percentage;
     this.createdAt = createdAt;
     this.createdBy = createdBy;
     this.updatedAt = updatedAt;

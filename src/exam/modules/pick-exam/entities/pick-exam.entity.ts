@@ -34,7 +34,19 @@ export class PickExamEntity {
   endTime!: Date;
 
   @Column({ name: 'finish_time', nullable: true })
-  finishTime?: Date;
+  finishTime!: Date;
+
+  @Column({ name: 'total_questions' })
+  totalQuestions!: number;
+
+  @Column({ name: 'correct_answers' })
+  correctAnswers!: number;
+
+  @Column({ name: 'score' })
+  score!: number;
+
+  @Column({ name: 'percentage' })
+  percentage!: number;
 
   @Column({ name: 'created_at' })
   createdAt!: Date;
@@ -42,17 +54,17 @@ export class PickExamEntity {
   @Column({ name: 'created_by' })
   createdBy!: number;
 
-  @Column({ name: 'updated_at', nullable: true })
-  updatedAt?: Date;
+  @Column({ name: 'updated_at' })
+  updatedAt!: Date;
 
-  @Column({ name: 'updated_by', nullable: true })
-  updatedBy?: number;
+  @Column({ name: 'updated_by' })
+  updatedBy!: number;
 
-  @Column({ name: 'deleted_at', nullable: true })
-  deletedAt?: Date;
+  @Column({ name: 'deleted_at' })
+  deletedAt!: Date;
 
-  @Column({ name: 'deleted_by', nullable: true })
-  deletedBy?: number;
+  @Column({ name: 'deleted_by' })
+  deletedBy!: number;
 
   @ManyToOne(() => ExamEntity, (exam) => exam.pickExams)
   @JoinColumn({ name: 'exam_id' })
@@ -77,6 +89,10 @@ export class PickExamEntity {
       this.startTime,
       this.endTime,
       this.finishTime,
+      this.totalQuestions,
+      this.correctAnswers,
+      this.score,
+      this.percentage,
       this.createdAt,
       this.createdBy,
       this.updatedAt,

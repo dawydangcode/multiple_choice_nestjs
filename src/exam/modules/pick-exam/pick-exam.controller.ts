@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Req, Param, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Param,
+  Put,
+  HttpStatus,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PickExamService } from './pick-exam.service';
 import { StartPickExamBodyDto } from './dtos/pick-exam.dto';
@@ -8,6 +17,7 @@ import { ExamService } from 'src/exam/exam.service';
 import { RequestModel } from 'src/common/models/request.model';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
+import { PickExamModel } from './models/pick-exam.model';
 
 @Roles(RoleType.User)
 @Controller('api/v1/pick-exam')
@@ -20,7 +30,9 @@ export class PickExamController {
   ) {}
 
   @Get('pick-exam/:pickExamId/detail')
-  async getPickExams(@Param('pickExamId') pickExamId: number) {
+  async getPickExams(
+    @Param('pickExamId') pickExamId: number,
+  ): Promise<PickExamModel> {
     return await this.pickExamService.getPickExamById(pickExamId);
   }
 
@@ -28,7 +40,7 @@ export class PickExamController {
   async startPickExam(
     @Req() req: RequestModel,
     @Body() body: StartPickExamBodyDto,
-  ) {
+  ): Promise<PickExamModel> {
     const user = await this.userService.getUserById(req.user.accountId);
     const exam = await this.examService.getExamById(body.examId);
 
@@ -45,8 +57,9 @@ export class PickExamController {
     @Body() submitData: SubmitAnswersDto,
     @Req() req: RequestModel,
   ) {
+    const pickExam = await this.pickExamService.getPickExamById(pickExamId);
     return this.pickExamService.submitPickExamWithAnswers(
-      pickExamId,
+      pickExam,
       submitData,
       req.user.accountId,
     );
