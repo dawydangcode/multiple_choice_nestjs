@@ -33,7 +33,7 @@ export class PickExamEntity {
   @Column({ name: 'end_time' })
   endTime!: Date;
 
-  @Column({ name: 'finish_time', nullable: true })
+  @Column({ name: 'finish_time' })
   finishTime!: Date;
 
   @Column({ name: 'total_questions' })

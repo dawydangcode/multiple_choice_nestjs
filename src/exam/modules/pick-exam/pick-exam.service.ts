@@ -89,28 +89,6 @@ export class PickExamService {
     return savedEntity.toModel();
   }
 
-  async submitPickExam(
-    pickExam: PickExamModel,
-    reqAccountId: number,
-  ): Promise<PickExamModel> {
-    await this.getPickExamById(pickExam.id);
-
-    await this.pickExamRepository.update(
-      {
-        id: pickExam.id,
-        deletedAt: IsNull(),
-      },
-      {
-        finishTime: new Date(),
-        status: PickExamType.COMPLETED,
-        updatedAt: new Date(),
-        updatedBy: reqAccountId,
-      },
-    );
-
-    return this.getPickExamById(pickExam.id);
-  }
-
   async autoSubmitExpiredExams(): Promise<void> {
     const now = new Date();
 
@@ -143,11 +121,11 @@ export class PickExamService {
     }
 
     const pickExamDetails = submitAnswer.answers.map((answer) => {
-      const dto = new PickExamDetailDto();
-      dto.questionId = answer.questionId;
-      dto.answerId = answer.answerId;
-      dto.reqAccountId = reqAccountId;
-      return dto;
+      const pickExamDto = new PickExamDetailDto();
+      pickExamDto.questionId = answer.questionId;
+      pickExamDto.answerId = answer.answerId;
+      pickExamDto.reqAccountId = reqAccountId;
+      return pickExamDto;
     });
 
     await this.pickExamDetailService.savePickExamDetails(
@@ -164,13 +142,12 @@ export class PickExamService {
         deletedAt: IsNull(),
       },
       {
-        finishTime: new Date(),
         status: PickExamType.COMPLETED,
-        // TODO: Enable after database migration
-        // totalQuestions: score.totalQuestions,
-        // correctAnswers: score.correctAnswers,
-        // score: score.score,
-        // percentage: score.percentage,
+        finishTime: new Date(),
+        totalQuestions: score.totalQuestions,
+        correctAnswers: score.correctAnswers,
+        score: score.score,
+        percentage: score.percentage,
         updatedAt: new Date(),
         updatedBy: reqAccountId,
       },
