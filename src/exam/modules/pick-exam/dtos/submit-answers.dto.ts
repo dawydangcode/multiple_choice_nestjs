@@ -21,11 +21,3 @@ export class SubmitAnswersDto {
   @Type(() => AnswerDto)
   answers!: AnswerDto[];
 }
-
-export class SaveAnswersDto {
-  @ApiProperty()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AnswerDto)
-  answers!: AnswerDto[];
-}

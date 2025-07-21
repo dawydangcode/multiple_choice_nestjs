@@ -14,7 +14,7 @@ import { PickExamModel } from './models/pick-exam.model';
 import e from 'express';
 import { PickExamType } from './enum/pick-exam.type';
 import { PickExamDetailService } from '../pick-exam-detail/pick-exam-detail.service';
-import { SubmitAnswersDto, SaveAnswersDto } from './dtos/submit-answers.dto';
+import { SubmitAnswersDto } from './dtos/submit-answers.dto';
 import { PickExamDetailDto } from '../pick-exam-detail/dtos/pick-exam-deltail.dto';
 import { start } from 'repl';
 
@@ -141,10 +141,9 @@ export class PickExamService {
     }
   }
 
-  // ✅ Submit bài thi với câu trả lời
   async submitPickExamWithAnswers(
     pickExamId: number,
-    submitData: SubmitAnswersDto,
+    submitAnswer: SubmitAnswersDto,
     reqAccountId: number,
   ): Promise<{
     pickExam: PickExamModel;
@@ -167,8 +166,7 @@ export class PickExamService {
       throw new BadRequestException('Exam is not in progress');
     }
 
-    // Save pick exam details
-    const pickExamDetails = submitData.answers.map((answer) => {
+    const pickExamDetails = submitAnswer.answers.map((answer) => {
       const dto = new PickExamDetailDto();
       dto.questionId = answer.questionId;
       dto.answerId = answer.answerId;
@@ -198,57 +196,5 @@ export class PickExamService {
       pickExam: savedPickExam.toModel(),
       score,
     };
-  }
-
-  // ✅ Lưu câu trả lời tạm thời (không submit)
-  async saveAnswersTemporary(
-    pickExamId: number,
-    saveData: SaveAnswersDto,
-    reqAccountId: number,
-  ): Promise<void> {
-    const pickExam = await this.pickExamRepository.findOne({
-      where: { id: pickExamId, deletedAt: IsNull() },
-    });
-
-    if (!pickExam) {
-      throw new NotFoundException('Pick exam not found');
-    }
-
-    if (pickExam.status !== PickExamType.IN_PROGRESS) {
-      throw new BadRequestException('Exam is not in progress');
-    }
-
-    // Check if exam is expired
-    const now = new Date();
-    if (now > pickExam.endTime) {
-      throw new BadRequestException('Exam has expired');
-    }
-
-    // Save details temporarily
-    const pickExamDetails = saveData.answers.map((answer) => {
-      const dto = new PickExamDetailDto();
-      dto.questionId = answer.questionId;
-      dto.answerId = answer.answerId;
-      dto.reqAccountId = reqAccountId;
-      return dto;
-    });
-
-    await this.pickExamDetailService.savePickExamDetails(
-      pickExamId,
-      pickExamDetails,
-      reqAccountId,
-    );
-  }
-
-  // ✅ Get user answers
-  async getUserAnswers(pickExamId: number) {
-    return this.pickExamDetailService.getPickExamDetailsByPickExamId(
-      pickExamId,
-    );
-  }
-
-  // ✅ Get detailed results
-  async getDetailedResults(pickExamId: number) {
-    return this.pickExamDetailService.getDetailedResults(pickExamId);
   }
 }
