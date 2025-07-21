@@ -33,8 +33,8 @@ export class PickExamEntity {
   @Column({ name: 'end_time' })
   endTime!: Date;
 
-  @Column({ name: 'finish_time' })
-  finishTime!: Date;
+  @Column({ name: 'finish_time', nullable: true })
+  finishTime?: Date;
 
   @Column({ name: 'created_at' })
   createdAt!: Date;
@@ -42,17 +42,17 @@ export class PickExamEntity {
   @Column({ name: 'created_by' })
   createdBy!: number;
 
-  @Column({ name: 'updated_at' })
-  updatedAt!: Date;
+  @Column({ name: 'updated_at', nullable: true })
+  updatedAt?: Date;
 
-  @Column({ name: 'updated_by' })
-  updatedBy!: number;
+  @Column({ name: 'updated_by', nullable: true })
+  updatedBy?: number;
 
-  @Column({ name: 'deleted_at' })
-  deletedAt!: Date;
+  @Column({ name: 'deleted_at', nullable: true })
+  deletedAt?: Date;
 
-  @Column({ name: 'deleted_by' })
-  deletedBy!: number;
+  @Column({ name: 'deleted_by', nullable: true })
+  deletedBy?: number;
 
   @ManyToOne(() => ExamEntity, (exam) => exam.pickExams)
   @JoinColumn({ name: 'exam_id' })

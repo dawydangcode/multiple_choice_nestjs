@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsNumber } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class PickExamDetailDto {
   @ApiProperty()
@@ -17,8 +17,4 @@ export class PickExamDetailDto {
   @IsNumber()
   @Type(() => Number)
   reqAccountId!: number;
-
-  @IsArray()
-  @Type(() => PickExamDetailDto)
-  answers!: PickExamDetailDto[];
 }

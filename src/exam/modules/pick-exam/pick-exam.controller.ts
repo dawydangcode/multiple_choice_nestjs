@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, Req, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Req, Param, Put } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PickExamService } from './pick-exam.service';
 import { StartPickExamBodyDto } from './dtos/pick-exam.dto';
+import { SubmitAnswersDto, SaveAnswersDto } from './dtos/submit-answers.dto';
 import { UserService } from 'src/account/modules/user/user.service';
 import { ExamService } from 'src/exam/exam.service';
 import { RequestModel } from 'src/common/models/request.model';
@@ -36,5 +37,28 @@ export class PickExamController {
       user,
       req.user.accountId,
     );
+  }
+
+  @Post(':pickExamId/submit')
+  async submitExamWithAnswers(
+    @Param('pickExamId') pickExamId: number,
+    @Body() submitData: SubmitAnswersDto,
+    @Req() req: RequestModel,
+  ) {
+    return this.pickExamService.submitPickExamWithAnswers(
+      pickExamId,
+      submitData,
+      req.user.accountId,
+    );
+  }
+
+  @Get(':pickExamId/answers')
+  async getUserAnswers(@Param('pickExamId') pickExamId: number) {
+    return this.pickExamService.getUserAnswers(pickExamId);
+  }
+
+  @Get(':pickExamId/results')
+  async getDetailedResults(@Param('pickExamId') pickExamId: number) {
+    return this.pickExamService.getDetailedResults(pickExamId);
   }
 }
