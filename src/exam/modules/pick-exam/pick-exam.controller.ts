@@ -22,9 +22,9 @@ import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
 import { PickExamModel } from './models/pick-exam.model';
 
-@Roles(RoleType.User)
-@Controller('api/v1/pick-exam')
+@Controller('api/v1/')
 @ApiTags('Pick Exam')
+@Roles(RoleType.User)
 export class PickExamController {
   constructor(
     private readonly pickExamService: PickExamService,

@@ -5,6 +5,7 @@ import { PickExamDetailEntity } from './entities/pick-exam-detail.entity';
 import { PickExamDetailModel } from './models/pick-exam-detail.model';
 import { PickExamDetailDto } from './dtos/pick-exam-detail.dto';
 import { ScoreModel } from './models/score.model';
+import { PickExamModel } from '../pick-exam/models/pick-exam.model';
 
 @Injectable()
 export class PickExamDetailService {
@@ -53,10 +54,10 @@ export class PickExamDetailService {
     return details.map((detail) => detail.toModel());
   }
 
-  async calculateScore(pickExamId: number): Promise<ScoreModel> {
+  async calculateScore(pickExam: PickExamModel): Promise<ScoreModel> {
     const details = await this.pickExamDetailRepository.find({
       where: {
-        pickExamId,
+        id: pickExam.id,
         deletedAt: IsNull(),
       },
       relations: ['answer'],
@@ -88,7 +89,7 @@ export class PickExamDetailService {
     return details.map((detail) => detail.toModel());
   }
 
-  async getDetailedResults(pickExamId: number): Promise<{
+  async getDetailedResults(pickExam: PickExamModel): Promise<{
     score: ScoreModel;
     details: Array<{
       questionId: number;
@@ -102,13 +103,13 @@ export class PickExamDetailService {
   }> {
     const details = await this.pickExamDetailRepository.find({
       where: {
-        pickExamId,
+        id: pickExam.id,
         deletedAt: IsNull(),
       },
       relations: ['question', 'answer', 'question.answers'],
     });
 
-    const score = await this.calculateScore(pickExamId);
+    const score = await this.calculateScore(pickExam);
 
     const detailResults = details.map((detail) => {
       const correctAnswer = detail.question?.answers?.find(
