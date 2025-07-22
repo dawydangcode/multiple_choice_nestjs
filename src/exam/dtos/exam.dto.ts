@@ -1,9 +1,11 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class ExamDto {
   @ApiProperty()
+  @Type(() => Number)
+  @IsNumber()
   examId!: number;
 
   @ApiProperty()
@@ -12,6 +14,7 @@ export class ExamDto {
 
   @ApiProperty()
   @Type(() => Number)
+  @IsNumber()
   minuteDuration!: number;
 
   @ApiProperty()
