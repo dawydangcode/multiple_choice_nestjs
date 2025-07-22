@@ -170,24 +170,9 @@ export class ExamService {
         })
         .filter((question) => question !== null) || [];
 
-    const totalQuestions = questions.length;
-    const totalPoints = questions.reduce(
-      (sum, question) => sum + (question?.points || 0),
-      0,
-    );
+    const totalQuestions = questions.length;  
 
-    const averagePoints =
-      totalQuestions > 0
-        ? Math.round((totalPoints / totalQuestions) * 100) / 100
-        : 0;
-
-    return new ExamQuestionAnswerModel(
-      exam,
-      questions,
-      totalQuestions,
-      totalPoints,
-      averagePoints,
-    );
+    return new ExamQuestionAnswerModel(exam, questions, totalQuestions);
   }
 
   async checkExamQuestionsIsMoreThanLimit(exam: ExamModel): Promise<boolean> {

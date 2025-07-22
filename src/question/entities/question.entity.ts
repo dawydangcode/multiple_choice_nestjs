@@ -22,7 +22,10 @@ export class QuestionEntity {
   @Column({ name: 'content' })
   content!: string;
 
-  @Column({ name: 'points' })
+  @Column({
+    name: 'points',
+    type: 'decimal',
+  })
   points!: number;
 
   @Column({ name: 'created_at' })
