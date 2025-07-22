@@ -87,7 +87,7 @@ export class ExamQuestionService {
 
     const savedExamQuestions =
       await this.examQuestionRepository.save(examQuestions);
-    return savedExamQuestions.map((eq) => eq.toModel());
+    return savedExamQuestions.map((examQuestion) => examQuestion.toModel());
   }
 
   async deleteQuestionFromExam(

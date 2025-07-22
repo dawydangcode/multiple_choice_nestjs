@@ -5,16 +5,14 @@ import {
   Post,
   Req,
   Param,
-  Put,
-  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PickExamService } from './pick-exam.service';
-import { StartPickExamBodyDto } from './dtos/pick-exam.dto';
 import {
-  GetPickExamBodyDto,
-  SubmitAnswersBodyDto,
-} from './dtos/submit-answers.dto';
+  GetPickExamByIdBodyDto,
+  StartPickExamBodyDto,
+} from './dtos/pick-exam.dto';
+import { SubmitAnswersBodyDto } from './dtos/submit-answers.dto';
 import { UserService } from 'src/account/modules/user/user.service';
 import { ExamService } from 'src/exam/exam.service';
 import { RequestModel } from 'src/common/models/request.model';
@@ -54,9 +52,9 @@ export class PickExamController {
     );
   }
 
-  @Post(':pickExamId/submit')
+  @Post('pick-exam/:pickExamId/submit')
   async submitExamWithAnswers(
-    @Param() params: GetPickExamBodyDto,
+    @Param() params: GetPickExamByIdBodyDto,
     @Body() body: SubmitAnswersBodyDto,
     @Req() req: RequestModel,
   ) {

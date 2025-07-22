@@ -134,7 +134,7 @@ export class PickExamService {
       reqAccountId,
     );
 
-    const score = await this.pickExamDetailService.calculateScore(pickExam);
+    const score = await this.pickExamDetailService.calculateScore(pickExam.id);
 
     await this.pickExamRepository.update(
       {

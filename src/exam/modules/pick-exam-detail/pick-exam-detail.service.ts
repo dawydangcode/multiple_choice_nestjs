@@ -19,11 +19,9 @@ export class PickExamDetailService {
     answers: PickExamDetailDto[],
     reqAccountId: number,
   ): Promise<PickExamDetailModel[]> {
-    const now = new Date();
-
     await this.pickExamDetailRepository.update(
       { pickExamId, deletedAt: IsNull() },
-      { deletedAt: now, deletedBy: reqAccountId },
+      { deletedAt: new Date(), deletedBy: reqAccountId },
     );
 
     const entities = answers.map((answer) => {
@@ -31,12 +29,13 @@ export class PickExamDetailService {
       entity.pickExamId = pickExamId;
       entity.questionId = answer.questionId;
       entity.answerId = answer.answerId;
-      entity.createdAt = now;
+      entity.createdAt = new Date();
       entity.createdBy = reqAccountId;
       return entity;
     });
 
     const savedEntities = await this.pickExamDetailRepository.save(entities);
+
     return savedEntities.map((entity) => entity.toModel());
   }
 
@@ -54,10 +53,10 @@ export class PickExamDetailService {
     return details.map((detail) => detail.toModel());
   }
 
-  async calculateScore(pickExam: PickExamModel): Promise<ScoreModel> {
+  async calculateScore(pickExamId: number): Promise<ScoreModel> {
     const details = await this.pickExamDetailRepository.find({
       where: {
-        id: pickExam.id,
+        pickExamId: pickExamId,
         deletedAt: IsNull(),
       },
       relations: ['answer'],
@@ -87,49 +86,5 @@ export class PickExamDetailService {
     });
 
     return details.map((detail) => detail.toModel());
-  }
-
-  async getDetailedResults(pickExam: PickExamModel): Promise<{
-    score: ScoreModel;
-    details: Array<{
-      questionId: number;
-      questionText: string;
-      userAnswerId: number;
-      userAnswerText: string;
-      correctAnswerId: number;
-      correctAnswerText: string;
-      isCorrect: boolean;
-    }>;
-  }> {
-    const details = await this.pickExamDetailRepository.find({
-      where: {
-        id: pickExam.id,
-        deletedAt: IsNull(),
-      },
-      relations: ['question', 'answer', 'question.answers'],
-    });
-
-    const score = await this.calculateScore(pickExam);
-
-    const detailResults = details.map((detail) => {
-      const correctAnswer = detail.question?.answers?.find(
-        (answer) => answer.isCorrect === true,
-      );
-
-      return {
-        questionId: detail.questionId,
-        questionText: detail.question?.content || '',
-        userAnswerId: detail.answerId,
-        userAnswerText: detail.answer?.content || '',
-        correctAnswerId: correctAnswer?.id || 0,
-        correctAnswerText: correctAnswer?.content || '',
-        isCorrect: detail.answer?.isCorrect === true,
-      };
-    });
-
-    return {
-      score,
-      details: detailResults,
-    };
   }
 }

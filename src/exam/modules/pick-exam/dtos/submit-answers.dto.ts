@@ -2,7 +2,7 @@ import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsNumber, ValidateNested } from 'class-validator';
 
-export class AnswerDto {
+export class SubmitAnswerDto {
   @ApiProperty()
   @IsNumber()
   @Type(() => Number)
@@ -12,19 +12,12 @@ export class AnswerDto {
   @IsNumber()
   @Type(() => Number)
   answerId!: number;
+}
 
+export class SubmitAnswersBodyDto {
   @ApiProperty()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => AnswerDto)
-  answers!: AnswerDto[];
-
-  @ApiProperty()
-  @IsNumber()
-  @Type(() => Number)
-  pickExamId!: number;
+  @Type(() => SubmitAnswerDto)
+  answers!: SubmitAnswerDto[];
 }
-
-export class SubmitAnswersBodyDto extends PickType(AnswerDto, ['answers']) {}
-
-export class GetPickExamBodyDto extends PickType(AnswerDto, ['pickExamId']) {}
