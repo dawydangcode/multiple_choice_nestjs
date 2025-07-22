@@ -64,4 +64,10 @@ export class QuestionController {
   async getQuestionsByTopicId(@Param() params: GetQuestionByTopicParamsDto) {
     return await this.questionService.getQuestionsByTopicId(params.topicId);
   }
+
+  @Get('question/:questionId/question-answers')
+  async getQuestionAnswers(@Param('questionId') questionId: number) {
+    const question = await this.questionService.getQuestionById(questionId);
+    return await this.questionService.getQuestionByIdWithAnswers(question);
+  }
 }

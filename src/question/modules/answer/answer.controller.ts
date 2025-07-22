@@ -57,7 +57,7 @@ export class AnswerController {
     );
   }
 
-  @Put('answer/update')
+  @Put('answer/:answerId/update')
   async updateAnswer(
     @Req() req: RequestModel,
     @Param() params: UpdateAnswerParamsDto,
@@ -73,7 +73,7 @@ export class AnswerController {
     );
   }
 
-  @Delete('answer/delete')
+  @Delete('answer/:answerId/delete')
   async deleteAnswer(
     @Req() req: RequestModel,
     @Param() params: GetAnswerParamsDto,

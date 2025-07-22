@@ -7,6 +7,7 @@ import { TopicService } from 'src/topic/topic.service';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginationResponse } from 'src/common/models/pagination-response.model';
+import { AnswerModel } from './modules/answer/models/answer.model';
 
 @Injectable()
 export class QuestionService {
@@ -126,5 +127,32 @@ export class QuestionService {
     });
 
     return questions.map((question: QuestionEntity) => question.toModel());
+  }
+
+  async getQuestionEntityById(
+    question: QuestionModel,
+  ): Promise<QuestionEntity> {
+    const questionEntity = await this.questionRepository.findOne({
+      where: { id: question.id, deletedAt: IsNull() },
+      relations: ['answers'],
+    });
+
+    if (!questionEntity) {
+      throw new Error('Question not found');
+    }
+
+    return questionEntity;
+  }
+
+  async getQuestionByIdWithAnswers(question: QuestionModel) {
+    const questionEntity = await this.getQuestionEntityById(question);
+
+    const answers = (questionEntity.answers ?? [])
+      .filter((answer) => answer.deletedAt === null)
+      .map((answer) => answer.toModel());
+    return {
+      ...questionEntity.toModel(),
+      answers,
+    };
   }
 }
