@@ -89,25 +89,25 @@ export class PickExamService {
     return savedEntity.toModel();
   }
 
-  async autoSubmitExpiredExams(): Promise<void> {
-    const now = new Date();
+  // async autoSubmitExpiredExams(): Promise<void> {
+  //   const now = new Date();
 
-    const expiredExams = await this.pickExamRepository.find({
-      where: {
-        status: PickExamType.IN_PROGRESS,
-        deletedAt: IsNull(),
-      },
-    });
+  //   const expiredExams = await this.pickExamRepository.find({
+  //     where: {
+  //       status: PickExamType.IN_PROGRESS,
+  //       deletedAt: IsNull(),
+  //     },
+  //   });
 
-    const toUpdate = expiredExams.filter((exam) => now > exam.endTime);
+  //   const toUpdate = expiredExams.filter((exam) => now > exam.endTime);
 
-    for (const exam of toUpdate) {
-      exam.finishTime = exam.endTime;
-      exam.status = PickExamType.COMPLETED;
-      exam.updatedAt = now;
-      await this.pickExamRepository.save(exam);
-    }
-  }
+  //   for (const exam of toUpdate) {
+  //     exam.finishTime = exam.endTime;
+  //     exam.status = PickExamType.COMPLETED;
+  //     exam.updatedAt = now;
+  //     await this.pickExamRepository.save(exam);
+  //   }
+  // }
 
   async submitPickExamWithAnswers(
     pickExam: PickExamModel,
