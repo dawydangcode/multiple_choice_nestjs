@@ -1,8 +1,8 @@
 export class ExamModel {
   public readonly id: number;
-  public readonly title: string | undefined;
-  public readonly minuteDuration: number | undefined;
-  public readonly isActive: boolean | undefined;
+  public readonly title: string;
+  public readonly minuteDuration: number;
+  public readonly isActive: boolean;
   public readonly description: string | undefined;
   public readonly createdAt: Date | undefined;
   public readonly createdBy: number | undefined;
@@ -13,9 +13,9 @@ export class ExamModel {
 
   constructor(
     id: number,
-    title: string | undefined,
-    minuteDuration: number | undefined,
-    isActive: boolean | undefined,
+    title: string,
+    minuteDuration: number,
+    isActive: boolean,
     description: string | undefined,
     createdAt: Date | undefined,
     createdBy: number | undefined,

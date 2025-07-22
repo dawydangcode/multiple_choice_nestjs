@@ -28,8 +28,16 @@ export class ExamQuestionService {
     existingInExam: ExamQuestionEntity[];
     notFoundQuestions: number[];
   }> {
-    const existingQuestions =
-      await this.questionService.getQuestionsByIds(questionIds);
+    const existingQuestions = (
+      await this.questionService.getQuestions(
+        questionIds,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      )
+    ).data;
+
     const existingQuestionIds = existingQuestions.map((q) => q.id);
     const notFoundQuestionIds = questionIds.filter(
       (id) => !existingQuestionIds.includes(id),

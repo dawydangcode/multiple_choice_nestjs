@@ -20,7 +20,7 @@ import {
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginationResponse } from 'src/common/models/pagination-response.model';
+import { PageList } from 'src/common/models/page-list.model';
 
 @Controller('api/v1')
 @ApiTags('Exam')
@@ -34,7 +34,7 @@ export class ExamController {
   })
   async getExams(
     @Body() paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<ExamModel>> {
+  ): Promise<PageList<ExamModel>> {
     return this.examService.getExams(paginationDto);
   }
 

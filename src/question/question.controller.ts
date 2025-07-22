@@ -1,9 +1,19 @@
-import { Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { QuestionService } from './question.service';
 import {
   CreateQuestionBodyDto,
   GetQuestionByTopicParamsDto,
   GetQuestionParamsDto,
+  GetQuestionsQueryDto,
   UpdateQuestionBodyDto,
   UpdateQuestionParamsDto,
 } from './dtos/question.dto';
@@ -11,6 +21,7 @@ import { RequestModel } from 'src/common/models/request.model';
 import { RoleType } from 'src/role/enum/role.enum';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Controller('api/v1')
 @Roles(RoleType.Admin)
@@ -18,8 +29,14 @@ export class QuestionController {
   constructor(private readonly questionService: QuestionService) {}
 
   @Get('question/list')
-  async getQuestions(@Body() paginationDto: PaginationDto) {
-    return await this.questionService.getQuestions(paginationDto);
+  async getQuestions(@Query() query: GetQuestionsQueryDto) {
+    return await this.questionService.getQuestions(
+      undefined,
+      undefined,
+      new PaginationParamsModel(query.page, query.limit),
+      query.q,
+      undefined,
+    );
   }
 
   @Get('question/:questionId/detail')

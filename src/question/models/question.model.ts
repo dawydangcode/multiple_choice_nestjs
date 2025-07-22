@@ -1,3 +1,5 @@
+import { AnswerModel } from '../modules/answer/models/answer.model';
+
 export class QuestionModel {
   public readonly id: number;
   public readonly topicId: number;
@@ -9,6 +11,7 @@ export class QuestionModel {
   public readonly updatedBy: number | undefined;
   public readonly deletedAt: Date | undefined;
   public readonly deletedBy: number | undefined;
+  public readonly answers: AnswerModel[] | undefined;
 
   constructor(
     id: number,
@@ -21,6 +24,7 @@ export class QuestionModel {
     updatedBy: number | undefined,
     deletedAt: Date | undefined,
     deletedBy: number | undefined,
+    answers: AnswerModel[] | undefined,
   ) {
     this.id = id;
     this.topicId = topicId;
@@ -32,5 +36,6 @@ export class QuestionModel {
     this.updatedBy = updatedBy;
     this.deletedAt = deletedAt;
     this.deletedBy = deletedBy;
+    this.answers = answers;
   }
 }

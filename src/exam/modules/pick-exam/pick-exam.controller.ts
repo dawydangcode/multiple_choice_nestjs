@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Param,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PickExamService } from './pick-exam.service';
 import {
@@ -61,6 +54,7 @@ export class PickExamController {
     const pickExam = await this.pickExamService.getPickExamById(
       params.pickExamId,
     );
+
     return this.pickExamService.submitPickExamWithAnswers(
       pickExam,
       body,

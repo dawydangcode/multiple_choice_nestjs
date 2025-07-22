@@ -7,7 +7,7 @@ import { QuestionModel } from 'src/question/models/question.model';
 import { QuestionService } from 'src/question/question.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
-import { PaginationResponse } from 'src/common/models/pagination-response.model';
+import { PageList } from 'src/common/models/page-list.model';
 
 @Injectable()
 export class AnswerService {
@@ -19,7 +19,7 @@ export class AnswerService {
 
   async getAnswers(
     paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<AnswerModel>> {
+  ): Promise<PageList<AnswerModel>> {
     const { search, sortBy = 'createAt', sortOrder = 'DESC' } = paginationDto;
 
     const queryBuilder = this.answerRepository
@@ -38,7 +38,7 @@ export class AnswerService {
 
     const answers = result.data.map((answer: AnswerEntity) => answer.toModel());
 
-    return new PaginationResponse(answers, result.meta);
+    return new PageList(answers, result.meta);
   }
 
   async getAnswerById(answerId: number): Promise<AnswerModel> {

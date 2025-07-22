@@ -56,15 +56,14 @@ export class PickExamService {
   ): Promise<PickExamModel> {
     if (!exam.isActive) {
       throw new BadRequestException('Exam is not active');
-    }
+    } // To DO
 
     const existingPickExam = await this.getPickExamByUserId(user, exam);
 
     if (existingPickExam.length > 0) {
       throw new ConflictException('User has already started this exam');
     }
-    const minuteDuration = exam.minuteDuration ?? 0;
-
+    const minuteDuration = exam.minuteDuration;
     const startTime = new Date();
     const endTime = new Date(startTime.getTime() + minuteDuration * 60000);
 
@@ -126,7 +125,7 @@ export class PickExamService {
       pickExamDto.answerId = answer.answerId;
       pickExamDto.reqAccountId = reqAccountId;
       return pickExamDto;
-    });
+    }); // To DO
 
     await this.pickExamDetailService.savePickExamDetails(
       pickExam.id,

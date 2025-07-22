@@ -73,6 +73,7 @@ export class QuestionEntity {
       this.updatedBy,
       this.deletedAt,
       this.deletedBy,
+      this.answers,
     );
   }
 }

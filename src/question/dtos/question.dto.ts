@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsPositive, IsString } from 'class-validator';
 
 export class QuestionDto {
   @ApiProperty()
@@ -26,6 +26,20 @@ export class QuestionDto {
   @Type(() => Number)
   @IsNumber()
   reqAccountId!: number;
+
+  @ApiProperty()
+  @Type(() => Number)
+  @IsPositive()
+  page!: number;
+
+  @ApiProperty()
+  @Type(() => Number)
+  @IsPositive()
+  limit!: number;
+
+  @ApiProperty()
+  @IsString()
+  q!: string;
 }
 
 export class GetQuestionParamsDto extends PickType(QuestionDto, [
@@ -48,4 +62,8 @@ export class CreateQuestionBodyDto extends PickType(QuestionDto, [
 
 export class UpdateQuestionBodyDto extends PartialType(
   PickType(QuestionDto, ['topicId', 'content', 'points']),
+) {}
+
+export class GetQuestionsQueryDto extends PartialType(
+  PickType(QuestionDto, ['q', 'page', 'limit']),
 ) {}

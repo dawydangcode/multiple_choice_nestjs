@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QuestionEntity } from './entities/question.entity';
-import { In, IsNull, Repository } from 'typeorm';
+import { In, IsNull, Like, Repository } from 'typeorm';
 import { QuestionModel } from './models/question.model';
 import { TopicService } from 'src/topic/topic.service';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginationResponse } from 'src/common/models/pagination-response.model';
+import { PageList } from 'src/common/models/page-list.model';
 import { AnswerModel } from './modules/answer/models/answer.model';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Injectable()
 export class QuestionService {
@@ -18,39 +19,45 @@ export class QuestionService {
   ) {}
 
   async getQuestions(
-    paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<QuestionModel>> {
-    const { search, sortBy = 'createdAt', sortOrder = 'DESC' } = paginationDto;
+    questionIds: number[] | undefined,
+    topicIds: number[] | undefined,
+    pagination: PaginationParamsModel | undefined,
+    search: string | undefined,
+    relations: string[] | undefined,
+  ): Promise<PageList<QuestionModel>> {
+    const [questions, total] = await this.questionRepository.findAndCount({
+      where: {
+        id: questionIds ? In(questionIds) : undefined,
+        content: Like(`%${search}%`),
+        topicId: topicIds ? In(topicIds) : undefined,
+        deletedAt: IsNull(),
+      },
+      ...pagination?.toQuery(),
+      relations: relations,
+    });
 
-    const queryBuilder = this.questionRepository
-      .createQueryBuilder('question')
-      .where('question.deletedAt IS NULL');
-
-    if (search) {
-      queryBuilder.andWhere('question.content LIKE :search', {
-        search: `%${search}%`,
-      });
-    }
-
-    queryBuilder.orderBy(`question.${sortBy}`, sortOrder);
-
-    const result = await PaginationUtil.paginate(queryBuilder, paginationDto);
-
-    const questions = result.data.map((question: QuestionEntity) =>
-      question.toModel(),
+    return new PageList<QuestionModel>(
+      total,
+      questions.map((question: QuestionEntity) => question.toModel()),
     );
-
-    return new PaginationResponse(questions, result.meta);
   }
 
   async getQuestionById(questionId: number): Promise<QuestionModel> {
-    const question = await this.questionRepository.findOne({
-      where: { id: questionId, deletedAt: IsNull() },
-    });
+    const question = (
+      await this.getQuestions(
+        [questionId],
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      )
+    ).data.pop();
+
     if (!question) {
       throw new Error('Question not found');
     }
-    return question.toModel();
+
+    return question;
   }
 
   async createQuestion(
@@ -107,29 +114,8 @@ export class QuestionService {
     return await this.getQuestionById(question.id);
   }
 
-  async getQuestionsByTopicId(topicId: number): Promise<QuestionModel[]> {
-    const questions = await this.questionRepository.find({
-      where: {
-        topicId: topicId,
-        deletedAt: IsNull(),
-      },
-    });
-
-    return questions.map((question: QuestionEntity) => question.toModel());
-  }
-
-  async getQuestionsByIds(questionIds: number[]): Promise<QuestionModel[]> {
-    const questions = await this.questionRepository.find({
-      where: {
-        id: In(questionIds),
-        deletedAt: IsNull(),
-      },
-    });
-
-    return questions.map((question: QuestionEntity) => question.toModel());
-  }
-
   async getQuestionEntityById(
+    //remove
     question: QuestionModel,
   ): Promise<QuestionEntity> {
     const questionEntity = await this.questionRepository.findOne({

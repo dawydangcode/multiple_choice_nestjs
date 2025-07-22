@@ -8,7 +8,7 @@ import { SALT_OR_ROUNDS } from 'src/auth/constants/auth.const';
 import { RoleService } from 'src/role/role.service';
 import { RoleType } from 'src/role/enum/role.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginationResponse } from 'src/common/models/pagination-response.model';
+import { PageList } from 'src/common/models/page-list.model';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class AccountService {
 
   async getAccounts(
     paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<AccountModel>> {
+  ): Promise<PageList<AccountModel>> {
     const { search, sortBy = 'createdAt', sortOrder = 'DESC' } = paginationDto;
 
     const queryBuilder = this.accountRepository
@@ -41,7 +41,7 @@ export class AccountService {
       account.toModel(true),
     );
 
-    return new PaginationResponse(accounts, result.meta);
+    return new PageList(accounts, result.meta);
   }
 
   async getAccount(

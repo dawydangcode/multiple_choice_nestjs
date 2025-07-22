@@ -4,7 +4,7 @@ import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExamModel } from './models/exam.model';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginationResponse } from 'src/common/models/pagination-response.model';
+import { PageList } from 'src/common/models/page-list.model';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
 import { ExamQuestionAnswerModel } from './models/exam-question-answer.model';
 import { EXAM_QUESTION_LIMIT } from 'src/common/utils/constant';
@@ -16,9 +16,7 @@ export class ExamService {
     private readonly examRepository: Repository<ExamEntity>,
   ) {}
 
-  async getExams(
-    paginationDto: PaginationDto,
-  ): Promise<PaginationResponse<ExamModel>> {
+  async getExams(paginationDto: PaginationDto): Promise<PageList<ExamModel>> {
     const { search, sortBy = 'createdAt', sortOrder = 'DESC' } = paginationDto;
 
     const queryBuilder = this.examRepository
@@ -37,7 +35,7 @@ export class ExamService {
 
     const exams = result.data.map((exam: ExamEntity) => exam.toModel());
 
-    return new PaginationResponse(exams, result.meta);
+    return new PageList(exams, result.meta);
   }
 
   async getExamById(examId: number): Promise<ExamModel> {
@@ -170,7 +168,7 @@ export class ExamService {
         })
         .filter((question) => question !== null) || [];
 
-    const totalQuestions = questions.length;  
+    const totalQuestions = questions.length;
 
     return new ExamQuestionAnswerModel(exam, questions, totalQuestions);
   }
