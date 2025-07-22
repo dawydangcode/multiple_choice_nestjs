@@ -46,11 +46,6 @@ export class ExamService {
         id: examId,
         deletedAt: IsNull(),
       },
-      relations: [
-        'examQuestions',
-        'examQuestions.question',
-        'examQuestions.question.answers',
-      ],
     });
 
     if (!exam) {
@@ -177,9 +172,10 @@ export class ExamService {
 
     const totalQuestions = questions.length;
     const totalPoints = questions.reduce(
-      (sum, question) => sum + question.points,
+      (sum, question) => sum + (question?.points || 0),
       0,
     );
+
     const averagePoints =
       totalQuestions > 0
         ? Math.round((totalPoints / totalQuestions) * 100) / 100
