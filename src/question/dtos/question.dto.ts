@@ -1,14 +1,16 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class QuestionDto {
   @ApiProperty()
   @Type(() => Number)
+  @IsNumber()
   questionId!: number;
 
   @ApiProperty()
   @Type(() => Number)
+  @IsNumber()
   topicId!: number;
 
   @ApiProperty()
@@ -17,10 +19,12 @@ export class QuestionDto {
 
   @ApiProperty()
   @Type(() => Number)
+  @IsNumber()
   points!: number;
 
   @ApiProperty()
   @Type(() => Number)
+  @IsNumber()
   reqAccountId!: number;
 }
 

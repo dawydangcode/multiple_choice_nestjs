@@ -4,12 +4,9 @@ import { QuestionEntity } from './entities/question.entity';
 import { In, IsNull, Repository } from 'typeorm';
 import { QuestionModel } from './models/question.model';
 import { TopicService } from 'src/topic/topic.service';
-import { StringToNumber } from 'lodash';
-import { AnswerService } from 'src/question/modules/answer/answer.service';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginationResponse } from 'src/common/models/pagination-response.model';
-import { ExamModel } from 'src/exam/models/exam.model';
 
 @Injectable()
 export class QuestionService {

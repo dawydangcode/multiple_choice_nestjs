@@ -12,7 +12,6 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserModule } from 'src/account/modules/user/user.module';
 import { MailerModule } from 'src/mailer/mailer.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [

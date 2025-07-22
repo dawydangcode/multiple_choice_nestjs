@@ -20,6 +20,7 @@ export class EmailTemplateDto {
   description!: string;
 
   @ApiProperty()
+  @IsString()
   html!: string;
 }
 

@@ -11,7 +11,7 @@ export class PaginationDto {
 
   @ApiProperty()
   @IsString()
-  search?: string;
+  search!: string;
 
   @ApiProperty()
   @Type(() => Number)

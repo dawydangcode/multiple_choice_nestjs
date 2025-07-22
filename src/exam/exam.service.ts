@@ -3,13 +3,11 @@ import { ExamEntity } from './entities/exam.entity';
 import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExamModel } from './models/exam.model';
-import ms from 'ms';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginationResponse } from 'src/common/models/pagination-response.model';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
 import { ExamQuestionAnswerModel } from './models/exam-question-answer.model';
 import { EXAM_QUESTION_LIMIT } from 'src/common/utils/constant';
-import { ISO_8601 } from 'moment';
 
 @Injectable()
 export class ExamService {

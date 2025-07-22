@@ -5,7 +5,6 @@ import { PickExamDetailEntity } from './entities/pick-exam-detail.entity';
 import { PickExamDetailModel } from './models/pick-exam-detail.model';
 import { PickExamDetailDto } from './dtos/pick-exam-detail.dto';
 import { ScoreModel } from './models/score.model';
-import { PickExamModel } from '../pick-exam/models/pick-exam.model';
 
 @Injectable()
 export class PickExamDetailService {
@@ -74,17 +73,5 @@ export class PickExamDetailService {
         : 0;
 
     return new ScoreModel(totalQuestions, correctAnswers, score, percentage);
-  }
-
-  async getUserAnswers(pickExamId: number): Promise<PickExamDetailModel[]> {
-    const details = await this.pickExamDetailRepository.find({
-      where: {
-        pickExamId,
-        deletedAt: IsNull(),
-      },
-      relations: ['question', 'answer'],
-    });
-
-    return details.map((detail) => detail.toModel());
   }
 }

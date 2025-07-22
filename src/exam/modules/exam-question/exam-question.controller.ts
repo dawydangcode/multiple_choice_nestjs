@@ -2,21 +2,17 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   Param,
   Post,
-  Put,
   Req,
 } from '@nestjs/common';
 import { ExamQuestionService } from './exam-question.service';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { ExamService } from 'src/exam/exam.service';
 import { QuestionService } from 'src/question/question.service';
 import {
   AddQuestionsToExamBodyDto,
   AddQuestionToExamParamsDto,
-  GetExamsByQuestionParamsDto,
-  GetQuestionByExamParamsDto,
   RemoveQuestionFromExamParamsDto,
 } from './dtos/exam-question.dto';
 import { RequestModel } from 'src/common/models/request.model';

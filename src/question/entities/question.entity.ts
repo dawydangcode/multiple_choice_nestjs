@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   ManyToMany,
-  OneToOne,
 } from 'typeorm';
 import { QuestionModel } from '../models/question.model';
 import { ExamQuestionEntity } from '../../exam/modules/exam-question/entities/exam-question.entity';
@@ -23,12 +22,7 @@ export class QuestionEntity {
   @Column({ name: 'content' })
   content!: string;
 
-  @Column({
-    name: 'points',
-    type: 'float',
-    precision: 5,
-    scale: 2,
-  })
+  @Column({ name: 'points' })
   points!: number;
 
   @Column({ name: 'created_at' })

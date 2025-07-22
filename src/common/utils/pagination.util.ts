@@ -12,16 +12,12 @@ export class PaginationUtil {
   ): Promise<PaginationResponse<T>> {
     const { page = 1, limit = 10 } = paginationDto;
 
-    // Calculate offset
     const offset = (page - 1) * limit;
 
-    // Apply pagination
     queryBuilder.skip(offset).take(limit);
 
-    // Get data and count
     const [data, totalItems] = await queryBuilder.getManyAndCount();
 
-    // Create meta
     const meta = new PaginationMeta(page, limit, totalItems);
 
     return new PaginationResponse(data, meta);

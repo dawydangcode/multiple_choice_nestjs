@@ -1,7 +1,6 @@
-import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEmail, IsNumber, IsOptional, IsString } from 'class-validator';
-import { extend } from 'lodash';
 
 export class AuthDto {
   @ApiProperty()

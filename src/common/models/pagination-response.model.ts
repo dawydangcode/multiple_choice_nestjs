@@ -1,22 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PaginationMeta {
-  @ApiProperty({ description: 'Current page number', example: 1 })
   public readonly currentPage: number;
-
-  @ApiProperty({ description: 'Number of items per page', example: 10 })
   public readonly itemsPerPage: number;
-
-  @ApiProperty({ description: 'Total number of items', example: 25 })
   public readonly totalItems: number;
-
-  @ApiProperty({ description: 'Total number of pages', example: 3 })
   public readonly totalPages: number;
-
-  @ApiProperty({ description: 'Has previous page', example: false })
   public readonly hasPreviousPage: boolean;
-
-  @ApiProperty({ description: 'Has next page', example: true })
   public readonly hasNextPage: boolean;
 
   constructor(currentPage: number, itemsPerPage: number, totalItems: number) {
