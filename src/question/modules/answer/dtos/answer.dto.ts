@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsPositive, IsString } from 'class-validator';
 import { extend } from 'lodash';
 
 export class AnswerDto {
@@ -19,6 +19,22 @@ export class AnswerDto {
   @ApiProperty()
   @IsBoolean()
   isCorrect!: boolean;
+
+  @ApiProperty()
+  @IsNumber()
+  @Type(() => Number)
+  @IsPositive()
+  page!: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @Type(() => Number)
+  @IsPositive()
+  limit!: number;
+
+  @ApiProperty()
+  @IsString()
+  q!: string;
 }
 
 export class GetAnswerParamsDto extends PickType(AnswerDto, ['answerId']) {}
@@ -34,3 +50,7 @@ export class UpdateAnswerBodyDto extends PartialType(
 ) {}
 
 export class UpdateAnswerParamsDto extends PickType(AnswerDto, ['answerId']) {}
+
+export class GetAnswersQueryDto extends PartialType(
+  PickType(AnswerDto, ['page', 'limit', 'q']),
+) {}

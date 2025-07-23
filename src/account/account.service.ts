@@ -7,9 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { SALT_OR_ROUNDS } from 'src/auth/constants/auth.const';
 import { RoleService } from 'src/role/role.service';
 import { RoleType } from 'src/role/enum/role.enum';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PageList } from 'src/common/models/page-list.model';
-import { PaginationUtil } from 'src/common/utils/pagination.util';
 import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Injectable()
@@ -29,7 +27,7 @@ export class AccountService {
     const [accounts, total] = await this.accountRepository.findAndCount({
       where: {
         id: accountIds ? In(accountIds) : undefined,
-        username: Like(`%${search}%`),
+        username: search ? Like(`%${search}%`) : undefined,
         deletedAt: IsNull(),
       },
       ...pagination?.toQuery(),

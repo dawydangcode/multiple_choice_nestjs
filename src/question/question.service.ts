@@ -4,10 +4,7 @@ import { QuestionEntity } from './entities/question.entity';
 import { In, IsNull, Like, Repository } from 'typeorm';
 import { QuestionModel } from './models/question.model';
 import { TopicService } from 'src/topic/topic.service';
-import { PaginationUtil } from 'src/common/utils/pagination.util';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PageList } from 'src/common/models/page-list.model';
-import { AnswerModel } from './modules/answer/models/answer.model';
 import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Injectable()
@@ -28,7 +25,7 @@ export class QuestionService {
     const [questions, total] = await this.questionRepository.findAndCount({
       where: {
         id: questionIds ? In(questionIds) : undefined,
-        content: Like(`%${search}%`),
+        content: search ? Like(`%${search}%`) : undefined,
         topicId: topicIds ? In(topicIds) : undefined,
         deletedAt: IsNull(),
       },

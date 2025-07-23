@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AnswerEntity } from './entities/answer.entity';
-import { IsNull, Repository } from 'typeorm';
+import { In, IsNull, Like, Repository } from 'typeorm';
 import { AnswerModel } from './models/answer.model';
 import { QuestionModel } from 'src/question/models/question.model';
 import { QuestionService } from 'src/question/question.service';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { PaginationUtil } from 'src/common/utils/pagination.util';
 import { PageList } from 'src/common/models/page-list.model';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Injectable()
 export class AnswerService {
@@ -18,9 +17,25 @@ export class AnswerService {
   ) {}
 
   async getAnswers(
-    paginationDto: PaginationDto,
+    answerIds: number[] | undefined,
+    pagination: PaginationParamsModel | undefined,
+    search: string | undefined,
+    relations: string[] | undefined,
   ): Promise<PageList<AnswerModel>> {
-    // TO DO
+    const [answer, total] = await this.answerRepository.findAndCount({
+      where: {
+        id: answerIds ? In(answerIds) : undefined,
+        content: search ? Like(`%${search}%`) : undefined,
+        deletedAt: IsNull(),
+      },
+      relations: relations,
+      ...pagination?.toQuery(),
+    });
+
+    return new PageList<AnswerModel>(
+      total,
+      answer.map((answer: AnswerEntity) => answer.toModel()),
+    );
   }
 
   async getAnswerById(answerId: number): Promise<AnswerModel> {

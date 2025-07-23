@@ -23,7 +23,6 @@ export class UserService {
     userIds: number[],
     pagination: PaginationParamsModel | undefined,
   ): Promise<PageList<UserModel>> {
-    // TO DO
     const [users, total] = await this.userRepository.findAndCount({
       where: { id: userIds ? In(userIds) : undefined, deletedAt: IsNull() },
       ...pagination?.toQuery(),

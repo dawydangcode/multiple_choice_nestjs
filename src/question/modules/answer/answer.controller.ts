@@ -6,12 +6,14 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import { AnswerService } from './answer.service';
 import {
   CreateAnswerBodyDto,
   GetAnswerParamsDto,
+  GetAnswersQueryDto,
   UpdateAnswerBodyDto,
   UpdateAnswerParamsDto,
 } from './dtos/answer.dto';
@@ -21,6 +23,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Controller('api/v1')
 @ApiTags('Question / Answer')
@@ -32,8 +35,13 @@ export class AnswerController {
   ) {}
 
   @Get('answer/list')
-  async getAnswers(@Body() paginationDto: PaginationDto) {
-    return await this.answerService.getAnswers(paginationDto);
+  async getAnswers(@Query() query: GetAnswersQueryDto) {
+    return await this.answerService.getAnswers(
+      undefined,
+      new PaginationParamsModel(query.page, query.limit),
+      undefined,
+      undefined,
+    );
   }
 
   @Get('answer/:answerId/detail')

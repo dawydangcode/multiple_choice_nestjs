@@ -21,11 +21,11 @@ export class AccountDetailService {
     search: string | undefined,
     relations: string[] | undefined,
   ): Promise<PageList<AccountDetailModel>> {
-    // TO DO
     const [accountDetails, total] =
       await this.accountDetailRepository.findAndCount({
         where: {
           id: accountDetailIds ? In(accountDetailIds) : undefined,
+          accountId: accountIds ? In(accountIds) : undefined,
           deletedAt: IsNull(),
         },
         ...pagination?.toQuery(),
