@@ -69,3 +69,383 @@ bài thi tự động kết thúc, người dự thi kết thúc bài thi
 	+ nếu bài thi kết thúc bởi người dự thi: EXAM_DURATION - currenttime - startTime
 khi kết thúc bài thi sẽ gửi array question answer -> check câu trả lời của người user với array đáp án của đề thi
 => total points
+
+question : phan page, sap xep
+
+exam: rm active/deactive -> update
+
+gộp validate logic 
+
+pagiation
+
+Delete Column Dead ... 
+
+khoong lay cung relations
+
+fix pagination
+
+gop nhung component trong get 's 
+
+pick exam detail dto XXXX
+
+mysql transaction
+
+ham` tinh toan ko get thong tin pickExam -> getPickExamDetail
+
+check question + exam khi submit answer
+
+VALIDATE SUBMIT ANSWER
+
+Tôi sẽ giúp bạn thêm validation chống gian lận khi submit bài thi. Đây là version có đầy đủ security checks:
+
+✅ Enhanced submitPickExamWithAnswers với Anti-Cheat Validation:
+
+async submitPickExamWithAnswers(
+  pickExam: PickExamModel,
+  submitAnswer: SubmitAnswersBodyDto,
+  reqAccountId: number,
+): Promise<PickExamModel> {
+  // ✅ 1. Validate pick exam exists
+  await this.getPickExamById(pickExam.id);
+
+  // ✅ 2. Validate exam is in progress
+  const pickExamResults = await this.getPickExams(
+    [pickExam.id],
+    undefined,
+    undefined,
+    PickExamType.IN_PROGRESS,
+    undefined,
+    undefined,
+    undefined,
+  );
+
+  if (pickExamResults.total === 0) {
+    throw new BadRequestException('Pick exam is not in progress');
+  }
+
+  // ✅ 3. Validate exam hasn't expired
+  const currentPickExam = pickExamResults.data[0];
+  const now = new Date();
+  if (now > currentPickExam.endTime) {
+    throw new BadRequestException('Exam time has expired');
+  }
+
+  // ✅ 4. Get exam with questions and answers for validation
+  const examModel = await this.examService.getExamById(currentPickExam.examId);
+  const examWithQuestions = await this.examService.getExamWithQuestionsAndAnswersById(examModel);
+
+  // ✅ 5. Validate submitted answers against exam questions
+  await this.validateSubmittedAnswers(examWithQuestions, submitAnswer.answers);
+
+  // ✅ 6. Save each answer individually with validation
+  for (const answer of submitAnswer.answers) {
+    console.log(`Processing answer for question ${answer.questionId}`);
+    
+    // ✅ Additional validation per answer
+    await this.validateIndividualAnswer(examWithQuestions, answer.questionId, answer.answerId);
+    
+    const pickExamDto = new PickExamDetailDto();
+    pickExamDto.questionId = answer.questionId;
+    pickExamDto.answerId = answer.answerId;
+    pickExamDto.reqAccountId = reqAccountId;
+
+    await this.pickExamDetailService.savePickExamDetails(
+      pickExam.id,
+      [pickExamDto],
+      reqAccountId,
+    );
+
+    console.log(`✅ Saved valid answer for question ${answer.questionId}`);
+  }
+
+  const score = await this.pickExamDetailService.calculateScore(pickExam.id);
+
+  await this.pickExamRepository.update(
+    {
+      id: pickExam.id,
+      deletedAt: IsNull(),
+    },
+    {
+      status: PickExamType.COMPLETED,
+      finishTime: new Date(),
+      totalQuestions: score.totalQuestions,
+      correctAnswers: score.correctAnswers,
+      score: score.score,
+      percentage: score.percentage,
+      updatedAt: new Date(),
+      updatedBy: reqAccountId,
+    },
+  );
+
+  return await this.getPickExamById(pickExam.id);
+}
+
+✅ Thêm các validation methods:
+// ✅ Validate tất cả câu trả lời được submit
+private async validateSubmittedAnswers(
+  examWithQuestions: ExamQuestionAnswerModel,
+  submittedAnswers: Array<{ questionId: number; answerId: number }>,
+): Promise<void> {
+  console.log('🔍 Validating submitted answers...');
+
+  // ✅ Check if exam has questions
+  if (examWithQuestions.totalQuestions === 0) {
+    throw new BadRequestException('Exam has no questions');
+  }
+
+  // ✅ Validate number of submitted answers
+  if (submittedAnswers.length === 0) {
+    throw new BadRequestException('No answers submitted');
+  }
+
+  if (submittedAnswers.length > examWithQuestions.totalQuestions) {
+    throw new BadRequestException(
+      `Too many answers submitted. Expected max: ${examWithQuestions.totalQuestions}, got: ${submittedAnswers.length}`
+    );
+  }
+
+  // ✅ Check for duplicate question IDs
+  const questionIds = submittedAnswers.map(a => a.questionId);
+  const uniqueQuestionIds = new Set(questionIds);
+  if (questionIds.length !== uniqueQuestionIds.size) {
+    throw new BadRequestException('Duplicate answers for the same question are not allowed');
+  }
+
+  // ✅ Validate each question exists in exam
+  const examQuestionIds = examWithQuestions.questions.map(q => q.id);
+  for (const answer of submittedAnswers) {
+    if (!examQuestionIds.includes(answer.questionId)) {
+      throw new BadRequestException(
+        `Question ID ${answer.questionId} is not part of this exam`
+      );
+    }
+  }
+
+  console.log(`✅ All ${submittedAnswers.length} submitted answers are valid`);
+}
+
+// ✅ Validate từng câu trả lời cụ thể
+private async validateIndividualAnswer(
+  examWithQuestions: ExamQuestionAnswerModel,
+  questionId: number,
+  answerId: number,
+): Promise<void> {
+  // ✅ Find question in exam
+  const question = examWithQuestions.questions.find(q => q.id === questionId);
+  if (!question) {
+    throw new BadRequestException(`Question ${questionId} not found in this exam`);
+  }
+
+  // ✅ Check if answer belongs to this question
+  const validAnswer = question.answers.find(a => a.id === answerId);
+  if (!validAnswer) {
+    throw new BadRequestException(
+      `Answer ${answerId} is not valid for question ${questionId}`
+    );
+  }
+
+  // ✅ Additional check: Verify answer exists in database
+  const answerFromDb = await this.validateAnswerInDatabase(questionId, answerId);
+  if (!answerFromDb) {
+    throw new BadRequestException(
+      `Answer ${answerId} does not exist in database for question ${questionId}`
+    );
+  }
+
+  console.log(`✅ Answer ${answerId} is valid for question ${questionId}`);
+}
+
+// ✅ Validate answer tồn tại trong database
+private async validateAnswerInDatabase(
+  questionId: number,
+  answerId: number,
+): Promise<boolean> {
+  try {
+    // ✅ Direct database check để đảm bảo data integrity
+    const answerExists = await this.pickExamDetailService.checkAnswerExists(questionId, answerId);
+    return answerExists;
+  } catch (error) {
+    console.error(`Error validating answer in database:`, error);
+    return false;
+  }
+}
+
+✅ Thêm method vào PickExamDetailService:
+// Thêm vào PickExamDetailService
+async checkAnswerExists(questionId: number, answerId: number): Promise<boolean> {
+  const query = `
+    SELECT COUNT(*) as count 
+    FROM answer a 
+    WHERE a.id = ? 
+    AND a.question_id = ? 
+    AND a.deleted_at IS NULL
+  `;
+  
+  const result = await this.pickExamDetailRepository.query(query, [answerId, questionId]);
+  return result[0]?.count > 0;
+}
+
+✅ Enhanced version với thêm security checks:
+
+async submitPickExamWithAnswers(
+  pickExam: PickExamModel,
+  submitAnswer: SubmitAnswersBodyDto,
+  reqAccountId: number,
+): Promise<PickExamModel> {
+  console.log(`🔐 Starting secure exam submission for pickExam ${pickExam.id}`);
+
+  // ✅ 1. Basic validations
+  await this.getPickExamById(pickExam.id);
+
+  const pickExamResults = await this.getPickExams(
+    [pickExam.id],
+    undefined,
+    undefined,
+    PickExamType.IN_PROGRESS,
+    undefined,
+    undefined,
+    undefined,
+  );
+
+  if (pickExamResults.total === 0) {
+    throw new BadRequestException('Pick exam is not in progress');
+  }
+
+  const currentPickExam = pickExamResults.data[0];
+
+  // ✅ 2. Time validation
+  const now = new Date();
+  if (now > currentPickExam.endTime) {
+    console.warn(`⚠️ Exam ${pickExam.id} submission after deadline. EndTime: ${currentPickExam.endTime}, Now: ${now}`);
+    throw new BadRequestException('Exam time has expired');
+  }
+
+  // ✅ 3. Prevent multiple submissions
+  const existingSubmission = await this.pickExamDetailService.checkExistingSubmission(pickExam.id);
+  if (existingSubmission) {
+    throw new BadRequestException('Exam has already been submitted');
+  }
+
+  // ✅ 4. Get exam structure for validation
+  const examModel = await this.examService.getExamById(currentPickExam.examId);
+  const examWithQuestions = await this.examService.getExamWithQuestionsAndAnswersById(examModel);
+
+  // ✅ 5. Comprehensive validation
+  await this.validateSubmittedAnswers(examWithQuestions, submitAnswer.answers);
+
+  // ✅ 6. Additional security checks
+  await this.performSecurityChecks(pickExam.id, reqAccountId, submitAnswer.answers);
+
+  // ✅ 7. Save answers with validation
+  const savedAnswers: number[] = [];
+  try {
+    for (const answer of submitAnswer.answers) {
+      await this.validateIndividualAnswer(examWithQuestions, answer.questionId, answer.answerId);
+      
+      const pickExamDto = new PickExamDetailDto();
+      pickExamDto.questionId = answer.questionId;
+      pickExamDto.answerId = answer.answerId;
+      pickExamDto.reqAccountId = reqAccountId;
+
+      await this.pickExamDetailService.savePickExamDetails(
+        pickExam.id,
+        [pickExamDto],
+        reqAccountId,
+      );
+
+      savedAnswers.push(answer.questionId);
+      console.log(`✅ Saved secure answer for question ${answer.questionId}`);
+    }
+  } catch (error) {
+    console.error(`❌ Failed to save answers. Successfully saved: ${savedAnswers.join(', ')}`);
+    throw error;
+  }
+
+  // ✅ 8. Calculate score and complete exam
+  const score = await this.pickExamDetailService.calculateScore(pickExam.id);
+
+  await this.pickExamRepository.update(
+    {
+      id: pickExam.id,
+      deletedAt: IsNull(),
+    },
+    {
+      status: PickExamType.COMPLETED,
+      finishTime: new Date(),
+      totalQuestions: score.totalQuestions,
+      correctAnswers: score.correctAnswers,
+      score: score.score,
+      percentage: score.percentage,
+      updatedAt: new Date(),
+      updatedBy: reqAccountId,
+    },
+  );
+
+  console.log(`🎉 Exam ${pickExam.id} completed successfully with score: ${score.score}/${score.totalQuestions}`);
+
+  return await this.getPickExamById(pickExam.id);
+}
+
+// ✅ Additional security checks
+private async performSecurityChecks(
+  pickExamId: number,
+  reqAccountId: number,
+  answers: Array<{ questionId: number; answerId: number }>,
+): Promise<void> {
+  console.log('🔐 Performing additional security checks...');
+
+  // ✅ Check submission rate (prevent rapid fire submissions)
+  const recentSubmissions = await this.checkRecentSubmissions(reqAccountId);
+  if (recentSubmissions > 5) { // Max 5 submissions in last minute
+    throw new BadRequestException('Too many submission attempts. Please wait.');
+  }
+
+  // ✅ Validate answer pattern (detect suspicious patterns)
+  this.validateAnswerPattern(answers);
+
+  console.log('✅ Security checks passed');
+}
+
+private async checkRecentSubmissions(accountId: number): Promise<number> {
+  const oneMinuteAgo = new Date(Date.now() - 60000);
+  const count = await this.pickExamRepository.count({
+    where: {
+      createdBy: accountId,
+      createdAt: MoreThan(oneMinuteAgo),
+    },
+  });
+  return count;
+}
+
+private validateAnswerPattern(answers: Array<{ questionId: number; answerId: number }>): void {
+  // ✅ Detect suspicious patterns (e.g., all same answer ID)
+  const answerIds = answers.map(a => a.answerId);
+  const uniqueAnswerIds = new Set(answerIds);
+  
+  if (uniqueAnswerIds.size === 1 && answers.length > 3) {
+    console.warn('⚠️ Suspicious answer pattern detected: all same answer');
+    // Could log for admin review but don't block automatically
+  }
+
+  // ✅ Check for sequential answer IDs (another suspicious pattern)
+  const sortedAnswerIds = [...answerIds].sort((a, b) => a - b);
+  let sequential = 0;
+  for (let i = 1; i < sortedAnswerIds.length; i++) {
+    if (sortedAnswerIds[i] === sortedAnswerIds[i-1] + 1) {
+      sequential++;
+    }
+  }
+  
+  if (sequential === sortedAnswerIds.length - 1 && answers.length > 5) {
+    console.warn('⚠️ Suspicious answer pattern detected: sequential answer IDs');
+  }
+}
+
+🔐 Security Features được thêm:
+✅ Question-Answer Validation - Đảm bảo answer thuộc về question đúng
+✅ Database Integrity Check - Verify answer tồn tại trong DB
+✅ Time Validation - Prevent submission sau deadline
+✅ Duplicate Prevention - Không cho phép submit nhiều lần
+✅ Rate Limiting - Giới hạn số lần submit trong thời gian ngắn
+✅ Pattern Detection - Phát hiện pattern đáng ngờ
+✅ Data Integrity - Validate structure của exam và answers

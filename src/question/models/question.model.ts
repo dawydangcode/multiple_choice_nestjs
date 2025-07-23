@@ -12,6 +12,7 @@ export class QuestionModel {
   public readonly deletedAt: Date | undefined;
   public readonly deletedBy: number | undefined;
   public readonly answers: AnswerModel[] | undefined;
+  public readonly question: QuestionModel | undefined;
 
   constructor(
     id: number,

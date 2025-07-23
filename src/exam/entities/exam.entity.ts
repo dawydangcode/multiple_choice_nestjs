@@ -69,6 +69,7 @@ export class ExamEntity {
       this.updatedBy,
       this.deletedAt,
       this.deletedBy,
+      undefined,
     );
   }
 }

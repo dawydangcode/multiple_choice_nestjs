@@ -1,3 +1,5 @@
+import { QuestionModel } from 'src/question/models/question.model';
+
 export class ExamModel {
   public readonly id: number;
   public readonly title: string;
@@ -10,6 +12,7 @@ export class ExamModel {
   public readonly updatedBy: number | undefined;
   public readonly deletedAt: Date | undefined;
   public readonly deletedBy: number | undefined;
+  public readonly examQuestions: QuestionModel[] | undefined;
 
   constructor(
     id: number,
@@ -23,6 +26,7 @@ export class ExamModel {
     updatedBy: number | undefined,
     deletedAt: Date | undefined,
     deletedBy: number | undefined,
+    examQuestions: QuestionModel[] | undefined,
   ) {
     this.id = id;
     this.title = title;
@@ -35,5 +39,6 @@ export class ExamModel {
     this.updatedBy = updatedBy;
     this.deletedAt = deletedAt;
     this.deletedBy = deletedBy;
+    this.examQuestions = examQuestions;
   }
 }
