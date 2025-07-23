@@ -35,6 +35,7 @@ export class ExamController {
   async getExams(@Query() query: GetExamsQueryDto) {
     return await this.examService.getExams(
       undefined,
+      undefined,
       new PaginationParamsModel(query.page, query.limit),
       undefined,
       undefined,

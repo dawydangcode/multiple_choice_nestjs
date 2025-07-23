@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PickExamEntity } from './entities/pick-exam.entity';
-import { IsNull, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExamModel } from 'src/exam/models/exam.model';
 import { UserModel } from 'src/account/modules/user/model/user.model';
@@ -13,6 +13,10 @@ import { PickExamType } from './enum/pick-exam.type';
 import { PickExamDetailService } from '../pick-exam-detail/pick-exam-detail.service';
 import { PickExamDetailDto } from '../pick-exam-detail/dtos/pick-exam-detail.dto';
 import { SubmitAnswersBodyDto } from './dtos/submit-answers.dto';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
+import { PageList } from 'src/common/models/page-list.model';
+import { PickType } from '@nestjs/swagger';
+import { ExamService } from 'src/exam/exam.service';
 
 @Injectable()
 export class PickExamService {
@@ -20,8 +24,35 @@ export class PickExamService {
     @InjectRepository(PickExamEntity)
     private readonly pickExamRepository: Repository<PickExamEntity>,
     private readonly pickExamDetailService: PickExamDetailService,
+    private readonly examService: ExamService,
   ) {}
 
+  async getPickExams(
+    pickExamIds: number[] | undefined,
+    userIds: number[] | undefined,
+    examIds: number[] | undefined,
+    status: PickExamType | undefined,
+    pagination: PaginationParamsModel | undefined,
+    search: string | undefined,
+    relations: string[] | undefined,
+  ): Promise<PageList<PickExamModel>> {
+    const [pickExams, total] = await this.pickExamRepository.findAndCount({
+      where: {
+        id: pickExamIds ? In(pickExamIds) : undefined,
+        userId: userIds ? In(userIds) : undefined,
+        examId: examIds ? In(examIds) : undefined,
+        status: status ? status : undefined,
+        deletedAt: IsNull(),
+      },
+      relations: relations,
+      ...pagination?.toQuery(),
+    });
+
+    return new PageList<PickExamModel>(
+      total,
+      pickExams.map((pickExam: PickExamEntity) => pickExam.toModel()),
+    );
+  }
   async getPickExamById(pickExamId: number): Promise<PickExamModel> {
     const pickExam = await this.pickExamRepository.findOne({
       where: {
@@ -54,9 +85,17 @@ export class PickExamService {
     user: UserModel,
     reqAccountId: number,
   ): Promise<PickExamModel> {
-    if (!exam.isActive) {
-      throw new BadRequestException('Exam is not active');
-    } // To DO
+    const activeExams = await this.examService.getExams(
+      [exam.id],
+      true,
+      undefined,
+      undefined,
+      undefined,
+    );
+
+    if (activeExams.total === 0) {
+      throw new BadRequestException('Exam not active');
+    }
 
     const existingPickExam = await this.getPickExamByUserId(user, exam);
 
@@ -115,9 +154,15 @@ export class PickExamService {
   ): Promise<PickExamModel> {
     await this.getPickExamById(pickExam.id);
 
-    if (pickExam.status !== PickExamType.IN_PROGRESS) {
-      throw new BadRequestException('Exam is not in progress');
-    }
+    await this.getPickExams(
+      [pickExam.id],
+      undefined,
+      undefined,
+      PickExamType.IN_PROGRESS,
+      undefined,
+      undefined,
+      undefined,
+    );
 
     const pickExamDetails = submitAnswer.answers.map((answer) => {
       const pickExamDto = new PickExamDetailDto();

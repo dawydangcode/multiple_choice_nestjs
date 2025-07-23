@@ -17,6 +17,7 @@ export class ExamService {
 
   async getExams(
     examIds: number[] | undefined,
+    isActive: boolean | undefined,
     pagination: PaginationParamsModel | undefined,
     search: string | undefined,
     relations: string[] | undefined,
@@ -25,6 +26,7 @@ export class ExamService {
       where: {
         id: examIds ? In(examIds) : undefined,
         title: search ? Like(`%${search}%`) : undefined,
+        isActive: isActive !== undefined ? isActive : undefined,
         deletedAt: IsNull(),
       },
       ...pagination?.toQuery(),
