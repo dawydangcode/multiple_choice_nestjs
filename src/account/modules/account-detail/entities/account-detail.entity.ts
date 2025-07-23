@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { AccountDetailModel } from '../models/account-detail.model';
 import { GenderType } from '../enums/gender.type';
 
@@ -34,7 +34,7 @@ export class AccountDetailEntity {
   @Column({ name: 'updated_by' })
   updatedBy!: number;
 
-  @Column({ name: 'deleted_at' })
+  @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt!: Date;
 
   @Column({ name: 'deleted_by' })

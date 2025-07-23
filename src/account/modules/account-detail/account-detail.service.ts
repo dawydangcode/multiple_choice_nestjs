@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Param } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Repository } from 'typeorm';
+import { In, IsNull, Like, Repository } from 'typeorm';
 import { AccountDetailEntity } from './entities/account-detail.entity';
 import { AccountDetailModel } from './models/account-detail.model';
 import { GenderType } from './enums/gender.type';
@@ -26,6 +26,7 @@ export class AccountDetailService {
         where: {
           id: accountDetailIds ? In(accountDetailIds) : undefined,
           accountId: accountIds ? In(accountIds) : undefined,
+          name: search ? Like(`%${search}%`) : undefined,
           deletedAt: IsNull(),
         },
         ...pagination?.toQuery(),

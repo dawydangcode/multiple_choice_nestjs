@@ -4,6 +4,8 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   ManyToMany,
+  DeleteDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ExamModel } from '../models/exam.model';
 import { ExamQuestionEntity } from '../modules/exam-question/entities/exam-question.entity';
@@ -33,13 +35,13 @@ export class ExamEntity {
   @Column({ name: 'created_by' })
   createdBy!: number;
 
-  @Column({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
   @Column({ name: 'updated_by' })
   updatedBy!: number;
 
-  @Column({ name: 'deleted_at' })
+  @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt!: Date;
 
   @Column({ name: 'deleted_by' })

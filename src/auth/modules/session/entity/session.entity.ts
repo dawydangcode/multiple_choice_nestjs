@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { SessionModel } from '../model/session.model';
 import { SessionType } from '../enums/session.type';
 
@@ -34,7 +34,7 @@ export class SessionEntity {
   @Column({ name: 'updated_by' })
   updatedBy!: number;
 
-  @Column({ name: 'deleted_at' })
+  @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt!: Date;
 
   @Column({ name: 'deleted_by' })

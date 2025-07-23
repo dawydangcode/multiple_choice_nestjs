@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { AccountModel } from '../models/account.model';
 import { RoleEntity } from 'src/role/entities/role.entity';
@@ -37,7 +38,7 @@ export class AccountEntity {
   @Column('bigint', { name: 'updated_by', nullable: true })
   updatedBy!: number | undefined;
 
-  @Column('timestamp', { name: 'deleted_at', nullable: true })
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt!: Date | undefined;
 
   @Column('bigint', { name: 'deleted_by', nullable: true })

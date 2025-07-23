@@ -1,5 +1,5 @@
 import { cp } from 'fs';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, DeleteDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { EmailTemplateModel } from '../models/email-template.model';
 
 @Entity('email_template')
@@ -31,7 +31,7 @@ export class EmailTemplateEntity {
   @Column({ name: 'updated_by' })
   updatedBy!: number;
 
-  @Column({ name: 'deleted_at' })
+  @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt!: Date;
 
   @Column({ name: 'deleted_by' })

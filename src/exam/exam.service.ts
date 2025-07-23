@@ -156,13 +156,11 @@ export class ExamService {
             points: question.points,
             topicId: question.topicId,
             answers:
-              question.answers
-                ?.filter((answer) => answer.deletedAt === null)
-                .map((answer) => ({
-                  id: answer.id,
-                  content: answer.content,
-                  isCorrect: answer.isCorrect,
-                })) || [],
+              question.answers?.map((answer) => ({
+                id: answer.id,
+                content: answer.content,
+                isCorrect: answer.isCorrect,
+              })) || [],
           };
         })
         .filter((question) => question !== null) || [];
