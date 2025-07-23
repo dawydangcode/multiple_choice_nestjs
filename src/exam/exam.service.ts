@@ -17,25 +17,7 @@ export class ExamService {
   ) {}
 
   async getExams(paginationDto: PaginationDto): Promise<PageList<ExamModel>> {
-    const { search, sortBy = 'createdAt', sortOrder = 'DESC' } = paginationDto;
-
-    const queryBuilder = this.examRepository
-      .createQueryBuilder('exam')
-      .where('exam.deletedAt IS NULL');
-
-    if (search) {
-      queryBuilder.andWhere('exam.title LIKE :search', {
-        search: `%${search}%`,
-      });
-    }
-
-    queryBuilder.orderBy(`exam.${sortBy}`, sortOrder);
-
-    const result = await PaginationUtil.paginate(queryBuilder, paginationDto);
-
-    const exams = result.data.map((exam: ExamEntity) => exam.toModel());
-
-    return new PageList(exams, result.meta);
+    // TO DO
   }
 
   async getExamById(examId: number): Promise<ExamModel> {

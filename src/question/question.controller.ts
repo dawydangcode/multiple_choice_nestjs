@@ -79,7 +79,13 @@ export class QuestionController {
 
   @Get('question/topic/:topicId/list')
   async getQuestionsByTopicId(@Param() params: GetQuestionByTopicParamsDto) {
-    return await this.questionService.getQuestionsByTopicId(params.topicId);
+    return await this.questionService.getQuestions(
+      [params.topicId],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    );
   }
 
   @Get('question/:questionId/question-answers')

@@ -13,14 +13,7 @@ export class AccountDetailService {
   ) {}
 
   async getAccountDetails(): Promise<AccountDetailModel[]> {
-    const accountDetails = this.accountDetailRepository.find({
-      where: {
-        deletedAt: IsNull(),
-      },
-    });
-    return (await accountDetails).map((accountDetail: AccountDetailEntity) =>
-      accountDetail.toModel(),
-    );
+    // TO DO
   }
 
   async checkAccountDetailExists(accountId: number): Promise<boolean> {

@@ -8,7 +8,7 @@ import {
 } from './dto/user.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { AccountService } from 'src/account/account.service';
-import { UpdateAccountBodyDto } from 'src/account/dto/account.dto';
+import { UpdateAccountBodyDto } from 'src/account/dtos/account.dto';
 
 @Controller('api/v1/user')
 @ApiTags('User')

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { In, IsNull, Like, Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
 import { AccountModel } from './models/account.model';
 import * as bcrypt from 'bcrypt';
@@ -10,6 +10,7 @@ import { RoleType } from 'src/role/enum/role.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PageList } from 'src/common/models/page-list.model';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Injectable()
 export class AccountService {
@@ -20,28 +21,25 @@ export class AccountService {
   ) {}
 
   async getAccounts(
-    paginationDto: PaginationDto,
+    accountIds: number[] | undefined,
+    pagination: PaginationParamsModel | undefined,
+    search: string | undefined,
+    relations: string[] | undefined,
   ): Promise<PageList<AccountModel>> {
-    const { search, sortBy = 'createdAt', sortOrder = 'DESC' } = paginationDto;
+    const [accounts, total] = await this.accountRepository.findAndCount({
+      where: {
+        id: accountIds ? In(accountIds) : undefined,
+        username: Like(`%${search}%`),
+        deletedAt: IsNull(),
+      },
+      ...pagination?.toQuery(),
+      relations: relations,
+    });
 
-    const queryBuilder = this.accountRepository
-      .createQueryBuilder('account')
-      .where('account.deletedAt IS NULL');
-    if (search) {
-      queryBuilder.andWhere('account.username LIKE :search', {
-        search: `%${search}%`,
-      });
-    }
-
-    queryBuilder.orderBy(`account.${sortBy}`, sortOrder);
-
-    const result = await PaginationUtil.paginate(queryBuilder, paginationDto);
-
-    const accounts = result.data.map((account: AccountEntity) =>
-      account.toModel(true),
+    return new PageList<AccountModel>(
+      total,
+      accounts.map((account: AccountEntity) => account.toModel(true)),
     );
-
-    return new PageList(accounts, result.meta);
   }
 
   async getAccount(

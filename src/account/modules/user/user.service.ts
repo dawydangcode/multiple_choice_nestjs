@@ -17,6 +17,10 @@ export class UserService {
     private readonly accountDetailService: AccountDetailService,
   ) {}
 
+  async getUsers(): Promise<UserModel[]> {
+    // TO DO
+  }
+
   async getUserById(userId: number): Promise<UserModel> {
     return this.userEntity
       .findOne({

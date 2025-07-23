@@ -8,6 +8,7 @@ import { Type } from 'class-transformer';
 import {
   IsEmail,
   IsNumber,
+  IsPositive,
   IsString,
   MaxLength,
   MinLength,
@@ -40,6 +41,20 @@ export class AccountDto {
   @IsString()
   @IsEmail()
   email!: string;
+
+  @ApiProperty()
+  @Type(() => Number)
+  @IsPositive()
+  page!: number;
+
+  @ApiProperty()
+  @Type(() => Number)
+  @IsPositive()
+  limit!: number;
+
+  @ApiProperty()
+  @IsString()
+  q!: string;
 }
 
 export class CreateAccountBodyDto extends PickType(AccountDto, [
@@ -58,3 +73,7 @@ export class GetAccountParamsDto extends PickType(AccountDto, ['accountId']) {}
 export class UpdateAccountParamsDto extends PickType(AccountDto, [
   'accountId',
 ]) {}
+
+export class GetAccountsQueryDto extends PartialType(
+  PickType(AccountDto, ['limit', 'page', 'q']),
+) {}

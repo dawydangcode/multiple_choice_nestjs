@@ -20,25 +20,7 @@ export class AnswerService {
   async getAnswers(
     paginationDto: PaginationDto,
   ): Promise<PageList<AnswerModel>> {
-    const { search, sortBy = 'createAt', sortOrder = 'DESC' } = paginationDto;
-
-    const queryBuilder = this.answerRepository
-      .createQueryBuilder('answer')
-      .where('answer.deletedAt IS NULL');
-
-    if (search) {
-      queryBuilder.andWhere('answer.content LIKE :search', {
-        search: `%${search}%`,
-      });
-    }
-
-    queryBuilder.orderBy(`answer.${sortBy}`, sortOrder);
-
-    const result = await PaginationUtil.paginate(queryBuilder, paginationDto);
-
-    const answers = result.data.map((answer: AnswerEntity) => answer.toModel());
-
-    return new PageList(answers, result.meta);
+    // TO DO
   }
 
   async getAnswerById(answerId: number): Promise<AnswerModel> {

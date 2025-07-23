@@ -6,19 +6,22 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import {
   CreateAccountBodyDto,
   GetAccountParamsDto,
+  GetAccountsQueryDto,
   UpdateAccountParamsDto,
-} from './dto/account.dto';
+} from './dtos/account.dto';
 import { AccountModel } from './models/account.model';
 
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @ApiTags('Account')
 @Controller('api/v1')
@@ -27,8 +30,13 @@ export class AccountController {
 
   @Roles(RoleType.Admin)
   @Get('account/list')
-  async getAccounts(@Body() paginationDto: PaginationDto) {
-    return await this.accountService.getAccounts(paginationDto);
+  async getAccounts(@Query() query: GetAccountsQueryDto) {
+    return await this.accountService.getAccounts(
+      undefined,
+      new PaginationParamsModel(query.page, query.limit),
+      query.q,
+      undefined,
+    );
   }
 
   @Roles(RoleType.Admin)

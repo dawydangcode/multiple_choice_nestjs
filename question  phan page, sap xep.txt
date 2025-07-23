@@ -1,0 +1,23 @@
+question : phan page, sap xep
+
+exam: rm active/deactive -> update
+
+gộp validate logic 
+
+pagiation
+
+Delete Column Dead ... 
+
+khoong lay cung relations
+
+fix pagination
+
+gop nhung component trong get 's 
+
+pick exam detail dto XXXX
+
+mysql transaction
+
+ham` tinh toan ko get thong tin pickExam -> getPickExamDetail
+
+check question + exam khi submit answer

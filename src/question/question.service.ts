@@ -75,7 +75,9 @@ export class QuestionService {
     entity.createdBy = reqAccountId;
     entity.createdAt = new Date();
 
-    return await this.questionRepository.save(entity);
+    const savedEntity = await this.questionRepository.save(entity);
+
+    return savedEntity.toModel();
   }
 
   async updateQuestion(
