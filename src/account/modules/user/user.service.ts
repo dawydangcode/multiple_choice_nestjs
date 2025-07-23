@@ -1,28 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Query } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entity/user.entity';
-import { IsNull, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { AccountService } from 'src/account/account.service';
 import { AccountDetailService } from '../account-detail/account-detail.service';
 import { AccountModel } from 'src/account/models/account.model';
 import { UserModel } from './model/user.model';
 import { AccountDetailModel } from '../account-detail/models/account-detail.model';
 import { GenderType } from '../account-detail/enums/gender.type';
+import { PageList } from 'src/common/models/page-list.model';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly userEntity: Repository<UserEntity>,
+    private readonly userRepository: Repository<UserEntity>,
     private readonly accountDetailService: AccountDetailService,
   ) {}
 
-  async getUsers(): Promise<UserModel[]> {
+  async getUsers(
+    userIds: number[],
+    pagination: PaginationParamsModel | undefined,
+  ): Promise<PageList<UserModel>> {
     // TO DO
+    const [users, total] = await this.userRepository.findAndCount({
+      where: { id: userIds ? In(userIds) : undefined, deletedAt: IsNull() },
+      ...pagination?.toQuery(),
+    });
+
+    return new PageList<UserModel>(
+      total,
+      users.map((user: UserEntity) => user.toModel()),
+    );
   }
 
   async getUserById(userId: number): Promise<UserModel> {
-    return this.userEntity
+    return this.userRepository
       .findOne({
         where: {
           id: userId,
@@ -56,7 +70,7 @@ export class UserService {
     entity.createdBy = account.id;
     entity.cvUrl = undefined;
 
-    const newUser = await this.userEntity.save(entity);
+    const newUser = await this.userRepository.save(entity);
     return newUser.toModel();
   }
 
@@ -67,7 +81,7 @@ export class UserService {
     entity.createdBy = account.id;
     entity.cvUrl = cvUrl;
 
-    const newUser = await this.userEntity.save(entity);
+    const newUser = await this.userRepository.save(entity);
     return newUser.toModel();
   }
 

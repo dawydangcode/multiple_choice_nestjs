@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
 } from '@nestjs/common';
 import { ExamService } from './exam.service';
@@ -15,12 +16,14 @@ import { ExamModel } from './models/exam.model';
 import {
   CreateExamBodyDto,
   GetExamDto,
+  GetExamsQueryDto,
   UpdateExamBodyDto,
 } from './dtos/exam.dto';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PageList } from 'src/common/models/page-list.model';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Controller('api/v1')
 @ApiTags('Exam')
@@ -29,13 +32,13 @@ export class ExamController {
   constructor(private readonly examService: ExamService) {}
 
   @Get('exam/list')
-  @ApiResponse({
-    type: ExamModel,
-  })
-  async getExams(
-    @Body() paginationDto: PaginationDto,
-  ): Promise<PageList<ExamModel>> {
-    return this.examService.getExams(paginationDto);
+  async getExams(@Query() query: GetExamsQueryDto) {
+    return await this.examService.getExams(
+      undefined,
+      new PaginationParamsModel(query.page, query.limit),
+      undefined,
+      undefined,
+    );
   }
 
   @Get('exam/:examId/detail')

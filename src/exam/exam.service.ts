@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ExamEntity } from './entities/exam.entity';
-import { IsNull, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExamModel } from './models/exam.model';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
@@ -8,6 +8,7 @@ import { PageList } from 'src/common/models/page-list.model';
 import { PaginationUtil } from 'src/common/utils/pagination.util';
 import { ExamQuestionAnswerModel } from './models/exam-question-answer.model';
 import { EXAM_QUESTION_LIMIT } from 'src/common/utils/constant';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Injectable()
 export class ExamService {
@@ -16,8 +17,27 @@ export class ExamService {
     private readonly examRepository: Repository<ExamEntity>,
   ) {}
 
-  async getExams(paginationDto: PaginationDto): Promise<PageList<ExamModel>> {
+  async getExams(
+    examIds: number[] | undefined,
+    pagination: PaginationParamsModel | undefined,
+    search: string | undefined,
+    relations: string[] | undefined,
+  ): Promise<PageList<ExamModel>> {
     // TO DO
+    const [exams, total] = await this.examRepository.findAndCount({
+      where: {
+        id: examIds ? In(examIds) : undefined,
+        title: `%${search}%`,
+        deletedAt: IsNull(),
+      },
+      ...pagination?.toQuery(),
+      relations: relations,
+    });
+
+    return new PageList<ExamModel>(
+      total,
+      exams.map((exam: ExamEntity) => exam.toModel()),
+    );
   }
 
   async getExamById(examId: number): Promise<ExamModel> {
