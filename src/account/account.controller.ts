@@ -20,7 +20,6 @@ import { AccountModel } from './models/account.model';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @ApiTags('Account')

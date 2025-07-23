@@ -1,9 +1,11 @@
 import { HttpException, HttpStatus, Injectable, Param } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { AccountDetailEntity } from './entities/account-detail.entity';
 import { AccountDetailModel } from './models/account-detail.model';
 import { GenderType } from './enums/gender.type';
+import { PageList } from 'src/common/models/page-list.model';
+import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Injectable()
 export class AccountDetailService {
@@ -12,8 +14,30 @@ export class AccountDetailService {
     private readonly accountDetailRepository: Repository<AccountDetailEntity>,
   ) {}
 
-  async getAccountDetails(): Promise<AccountDetailModel[]> {
+  async getAccountDetails(
+    accountDetailIds: number[] | undefined,
+    accountIds: number[] | undefined,
+    pagination: PaginationParamsModel | undefined,
+    search: string | undefined,
+    relations: string[] | undefined,
+  ): Promise<PageList<AccountDetailModel>> {
     // TO DO
+    const [accountDetails, total] =
+      await this.accountDetailRepository.findAndCount({
+        where: {
+          id: accountDetailIds ? In(accountDetailIds) : undefined,
+          deletedAt: IsNull(),
+        },
+        ...pagination?.toQuery(),
+        relations: relations,
+      });
+
+    return new PageList<AccountDetailModel>(
+      total,
+      accountDetails.map((accountDetail: AccountDetailEntity) =>
+        accountDetail.toModel(),
+      ),
+    );
   }
 
   async checkAccountDetailExists(accountId: number): Promise<boolean> {

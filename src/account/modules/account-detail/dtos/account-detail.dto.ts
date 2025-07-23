@@ -1,4 +1,4 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -6,6 +6,7 @@ import {
   IsDateString,
   IsEnum,
   IsNumber,
+  IsPositive,
   IsString,
 } from 'class-validator';
 import { GenderType } from '../enums/gender.type';
@@ -36,6 +37,22 @@ export class AccountDetailDto {
   @ApiProperty()
   @IsString()
   imageUrl!: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @Type(() => Number)
+  @IsPositive()
+  page!: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @Type(() => Number)
+  @IsPositive()
+  limit!: number;
+
+  @ApiProperty()
+  @IsString()
+  q!: string;
 }
 
 export class CreateAccountDetailBodyDto extends PickType(AccountDetailDto, [
@@ -65,4 +82,8 @@ export class UpdateAccountDetailParamsDto extends PickType(AccountDetailDto, [
 export class GetAccountDetailByAccountIdParamsDto extends PickType(
   AccountDetailDto,
   ['accountId'],
+) {}
+
+export class GetAccountDetailsQueryDto extends PartialType(
+  PickType(AccountDetailDto, ['page', 'limit', 'q']),
 ) {}
