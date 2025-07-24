@@ -14,7 +14,6 @@ import { RoleModel } from './models/role.model';
 import { ApiTags } from '@nestjs/swagger';
 import { RoleType } from './enum/role.enum';
 import { Roles } from './decorator/roles.decorator';
-import { Public } from 'src/middlewares/guards/jwt-auth.guard';
 
 @ApiTags('Role')
 @Controller('api/v1')

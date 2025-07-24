@@ -20,7 +20,6 @@ import {
 import { RequestModel } from 'src/common/models/request.model';
 import { RoleType } from 'src/role/enum/role.enum';
 import { Roles } from 'src/role/decorator/roles.decorator';
-import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 
 @Controller('api/v1')

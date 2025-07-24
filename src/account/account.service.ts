@@ -181,13 +181,4 @@ export class AccountService {
     );
     return true;
   }
-
-  async getAccountRole(accountId: number): Promise<AccountModel> {
-    const account = await this.getAccount(accountId, true);
-    const role = await this.roleService.getRole(account.roleId);
-    return {
-      ...account,
-      roleId: role.id,
-    };
-  }
 }
