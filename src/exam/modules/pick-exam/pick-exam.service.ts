@@ -17,6 +17,11 @@ import { PaginationParamsModel } from 'src/common/models/pagination-params.model
 import { PageList } from 'src/common/models/page-list.model';
 import { PickType } from '@nestjs/swagger';
 import { ExamService } from 'src/exam/exam.service';
+import {
+  StartPickExamResponseModel,
+  ExamQuestionModel,
+  ExamAnswerModel,
+} from './models/start-pick-exam-response.model';
 
 @Injectable()
 export class PickExamService {
@@ -125,6 +130,46 @@ export class PickExamService {
     });
 
     return savedEntity.toModel();
+  }
+
+  async startPickExamWithQuestions(
+    exam: ExamModel,
+    user: UserModel,
+    reqAccountId: number,
+  ): Promise<StartPickExamResponseModel> {
+    const pickExam = await this.startPickExam(exam, user, reqAccountId);
+
+    const examWithQuestions =
+      await this.examService.getExamWithQuestionsAndAnswersById(exam);
+
+    const questions: ExamQuestionModel[] = examWithQuestions.questions.map(
+      (question) => {
+        const answers: ExamAnswerModel[] = question.answers.map(
+          (answer) => new ExamAnswerModel(answer.id, answer.content),
+        );
+        return new ExamQuestionModel(
+          question.id,
+          question.content,
+          question.points,
+          question.topicId,
+          answers,
+        );
+      },
+    );
+
+    // Ensure startTime and endTime are not undefined
+    if (!pickExam.startTime || !pickExam.endTime) {
+      throw new BadRequestException('Invalid exam timing data');
+    }
+
+    return new StartPickExamResponseModel(
+      pickExam,
+      questions,
+      examWithQuestions.totalQuestions,
+      pickExam.startTime,
+      pickExam.endTime,
+      exam.minuteDuration,
+    );
   }
 
   // async autoSubmitExpiredExams(): Promise<void> {

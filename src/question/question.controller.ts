@@ -21,8 +21,10 @@ import { RequestModel } from 'src/common/models/request.model';
 import { RoleType } from 'src/role/enum/role.enum';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('api/v1')
+@ApiTags('Question')
 @Roles(RoleType.Admin)
 export class QuestionController {
   constructor(private readonly questionService: QuestionService) {}

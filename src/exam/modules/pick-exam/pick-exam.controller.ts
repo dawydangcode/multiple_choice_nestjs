@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Req, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiResponse } from '@nestjs/swagger';
 import { PickExamService } from './pick-exam.service';
 import {
   GetPickExamByIdBodyDto,
@@ -12,6 +12,7 @@ import { RequestModel } from 'src/common/models/request.model';
 import { Roles } from 'src/role/decorator/roles.decorator';
 import { RoleType } from 'src/role/enum/role.enum';
 import { PickExamModel } from './models/pick-exam.model';
+import { StartPickExamResponseModel } from './models/start-pick-exam-response.model';
 
 @Controller('api/v1/')
 @ApiTags('Pick Exam')
@@ -34,11 +35,11 @@ export class PickExamController {
   async startPickExam(
     @Req() req: RequestModel,
     @Body() body: StartPickExamBodyDto,
-  ): Promise<PickExamModel> {
+  ): Promise<StartPickExamResponseModel> {
     const user = await this.userService.getUserById(req.user.accountId);
     const exam = await this.examService.getExamById(body.examId);
 
-    return await this.pickExamService.startPickExam(
+    return await this.pickExamService.startPickExamWithQuestions(
       exam,
       user,
       req.user.accountId,
