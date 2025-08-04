@@ -22,6 +22,10 @@ import {
   ExamQuestionModel,
   ExamAnswerModel,
 } from './models/start-pick-exam-response.model';
+import {
+  SubmittedAnswersModel,
+  SubmittedAnswerModel,
+} from './models/submitted-answers.model';
 
 @Injectable()
 export class PickExamService {
@@ -157,7 +161,6 @@ export class PickExamService {
       },
     );
 
-    // Ensure startTime and endTime are not undefined
     if (!pickExam.startTime || !pickExam.endTime) {
       throw new BadRequestException('Invalid exam timing data');
     }
@@ -192,11 +195,81 @@ export class PickExamService {
   //   }
   // }
 
+  /**
+   * Convert DTO to domain model để tách biệt presentation layer và business logic layer
+   * Đây là adapter pattern để không để DTO "leak" vào service logic
+   */
+  private convertDtoToSubmittedAnswers(
+    submitAnswer: SubmitAnswersBodyDto,
+  ): SubmittedAnswersModel {
+    const answerModels = submitAnswer.answers.map(
+      (answer) => new SubmittedAnswerModel(answer.questionId, answer.answerId),
+    );
+
+    return new SubmittedAnswersModel(answerModels);
+  }
+
+  private async validateSubmittedAnswers(
+    pickExam: PickExamModel,
+    submittedAnswers: SubmittedAnswersModel,
+  ): Promise<true> {
+    const submittedQuestionIds = submittedAnswers.answers.map(
+      (answer) => answer.questionId,
+    );
+    const uniqueQuestionIds = new Set(submittedQuestionIds);
+
+    if (submittedQuestionIds.length !== uniqueQuestionIds.size) {
+      throw new BadRequestException(
+        'Duplicate question answers detected. Each question can only be answered once.',
+      );
+    }
+
+    const exam = await this.examService.getExamById(pickExam.examId);
+    const examWithQuestions =
+      await this.examService.getExamWithQuestionsAndAnswersById(exam);
+
+    if (submittedAnswers.answers.length > examWithQuestions.questions.length) {
+      throw new BadRequestException(
+        `Too many answers submitted. Expected maximum ${examWithQuestions.questions.length} answers, got ${submittedAnswers.answers.length}.`,
+      );
+    }
+
+    const validQuestionIds = new Set(
+      examWithQuestions.questions.map((question) => question.id),
+    );
+    const validAnswersByQuestion = new Map<number, Set<number>>();
+
+    examWithQuestions.questions.forEach((question) => {
+      const answerIds = new Set(question.answers.map((answer) => answer.id));
+      validAnswersByQuestion.set(question.id, answerIds);
+    });
+
+    for (const answer of submittedAnswers.answers) {
+      if (!validQuestionIds.has(answer.questionId)) {
+        throw new BadRequestException(
+          `Invalid question ID ${answer.questionId}. This question does not belong to the exam.`,
+        );
+      }
+
+      const validAnswers = validAnswersByQuestion.get(answer.questionId);
+      if (!validAnswers || !validAnswers.has(answer.answerId)) {
+        throw new BadRequestException(
+          `Invalid answer ID ${answer.answerId} for question ${answer.questionId}. This answer does not belong to the question.`,
+        );
+      }
+    }
+
+    return true;
+  }
+
   async submitPickExamWithAnswers(
     pickExam: PickExamModel,
     submitAnswer: SubmitAnswersBodyDto,
     reqAccountId: number,
   ): Promise<PickExamModel> {
+    const submittedAnswers = this.convertDtoToSubmittedAnswers(submitAnswer);
+    await this.validateSubmittedAnswers(pickExam, submittedAnswers);
+
     await this.getPickExamById(pickExam.id);
 
     await this.getPickExams(

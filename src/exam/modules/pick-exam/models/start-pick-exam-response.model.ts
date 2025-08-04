@@ -2,13 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PickExamModel } from './pick-exam.model';
 
 export class ExamAnswerModel {
-  @ApiProperty({ description: 'ID của câu trả lời', example: 1 })
   public readonly questionId: number;
-
-  @ApiProperty({
-    description: 'Nội dung câu trả lời',
-    example: 'A programming language',
-  })
   public readonly content: string;
 
   constructor(questionId: number, content: string) {
@@ -18,19 +12,10 @@ export class ExamAnswerModel {
 }
 
 export class ExamQuestionModel {
-  @ApiProperty()
   public readonly questionId: number;
-
-  @ApiProperty()
   public readonly content: string;
-
-  @ApiProperty()
   public readonly points: number;
-
-  @ApiProperty()
   public readonly topicId: number;
-
-  @ApiProperty()
   public readonly answers: ExamAnswerModel[];
 
   constructor(
@@ -49,22 +34,11 @@ export class ExamQuestionModel {
 }
 
 export class StartPickExamResponseModel {
-  @ApiProperty()
   public readonly pickExam: PickExamModel;
-
-  @ApiProperty()
   public readonly questions: ExamQuestionModel[];
-
-  @ApiProperty()
   public readonly totalQuestions: number;
-
-  @ApiProperty()
   public readonly startTime: Date;
-
-  @ApiProperty()
   public readonly endTime: Date;
-
-  @ApiProperty()
   public readonly remainingTime: number;
 
   constructor(
