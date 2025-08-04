@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { PickExamDetailEntity } from './entities/pick-exam-detail.entity';
 import { PickExamDetailModel } from './models/pick-exam-detail.model';
-import { PickExamDetailDto } from './dtos/pick-exam-detail.dto';
 import { ScoreModel } from './models/score.model';
 import { PickExamModel } from '../pick-exam/models/pick-exam.model';
 
@@ -16,7 +15,7 @@ export class PickExamDetailService {
 
   async savePickExamDetails(
     pickExamId: number,
-    answers: PickExamDetailDto[],
+    answers: PickExamDetailEntity[],
     reqAccountId: number,
   ): Promise<PickExamDetailModel[]> {
     await this.pickExamDetailRepository.update(

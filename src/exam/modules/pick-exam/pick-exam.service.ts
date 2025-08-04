@@ -11,21 +11,16 @@ import { UserModel } from 'src/account/modules/user/model/user.model';
 import { PickExamModel } from './models/pick-exam.model';
 import { PickExamType } from './enum/pick-exam.type';
 import { PickExamDetailService } from '../pick-exam-detail/pick-exam-detail.service';
-import { PickExamDetailDto } from '../pick-exam-detail/dtos/pick-exam-detail.dto';
-import { SubmitAnswersBodyDto } from './dtos/submit-answers.dto';
 import { PaginationParamsModel } from 'src/common/models/pagination-params.model';
 import { PageList } from 'src/common/models/page-list.model';
-import { PickType } from '@nestjs/swagger';
 import { ExamService } from 'src/exam/exam.service';
 import {
   StartPickExamResponseModel,
   ExamQuestionModel,
   ExamAnswerModel,
 } from './models/start-pick-exam-response.model';
-import {
-  SubmittedAnswersModel,
-  SubmittedAnswerModel,
-} from './models/submitted-answers.model';
+import { SubmittedAnswersModel } from './models/submitted-answers.model';
+import { PickExamDetailEntity } from '../pick-exam-detail/entities/pick-exam-detail.entity';
 
 @Injectable()
 export class PickExamService {
@@ -195,20 +190,6 @@ export class PickExamService {
   //   }
   // }
 
-  /**
-   * Convert DTO to domain model để tách biệt presentation layer và business logic layer
-   * Đây là adapter pattern để không để DTO "leak" vào service logic
-   */
-  private convertDtoToSubmittedAnswers(
-    submitAnswer: SubmitAnswersBodyDto,
-  ): SubmittedAnswersModel {
-    const answerModels = submitAnswer.answers.map(
-      (answer) => new SubmittedAnswerModel(answer.questionId, answer.answerId),
-    );
-
-    return new SubmittedAnswersModel(answerModels);
-  }
-
   private async validateSubmittedAnswers(
     pickExam: PickExamModel,
     submittedAnswers: SubmittedAnswersModel,
@@ -219,9 +200,7 @@ export class PickExamService {
     const uniqueQuestionIds = new Set(submittedQuestionIds);
 
     if (submittedQuestionIds.length !== uniqueQuestionIds.size) {
-      throw new BadRequestException(
-        'Duplicate question answers detected. Each question can only be answered once.',
-      );
+      throw new BadRequestException('Duplicate question answers detected.');
     }
 
     const exam = await this.examService.getExamById(pickExam.examId);
@@ -264,43 +243,49 @@ export class PickExamService {
 
   async submitPickExamWithAnswers(
     pickExam: PickExamModel,
-    submitAnswer: SubmitAnswersBodyDto,
+    submittedAnswers: SubmittedAnswersModel,
     reqAccountId: number,
   ): Promise<PickExamModel> {
-    const submittedAnswers = this.convertDtoToSubmittedAnswers(submitAnswer);
-    await this.validateSubmittedAnswers(pickExam, submittedAnswers);
+    const currentPickExam = await this.getPickExamById(pickExam.id);
 
-    await this.getPickExamById(pickExam.id);
+    if (currentPickExam.status !== PickExamType.IN_PROGRESS) {
+      throw new ConflictException(
+        `Cannot submit exam. Current status is ${currentPickExam.status}. Only IN_PROGRESS exams can be submitted.`,
+      );
+    }
 
-    await this.getPickExams(
-      [pickExam.id],
-      undefined,
-      undefined,
-      PickExamType.IN_PROGRESS,
-      undefined,
-      undefined,
-      undefined,
-    );
+    if (currentPickExam.finishTime) {
+      throw new ConflictException('Exam has already been submitted.');
+    }
 
-    const pickExamDetails = submitAnswer.answers.map((answer) => {
-      const pickExamDto = new PickExamDetailDto();
-      pickExamDto.questionId = answer.questionId;
-      pickExamDto.answerId = answer.answerId;
-      pickExamDto.reqAccountId = reqAccountId;
-      return pickExamDto;
-    }); // To DO
+    await this.validateSubmittedAnswers(currentPickExam, submittedAnswers);
+
+    console.log('All validations passed:', currentPickExam.id);
+
+    const pickExamDetails: PickExamDetailEntity[] =
+      submittedAnswers.answers.map((answer) => {
+        const detail = new PickExamDetailEntity();
+        detail.questionId = answer.questionId;
+        detail.answerId = answer.answerId;
+        detail.createdBy = reqAccountId;
+        detail.createdAt = new Date();
+
+        return detail;
+      });
 
     await this.pickExamDetailService.savePickExamDetails(
-      pickExam.id,
+      currentPickExam.id,
       pickExamDetails,
       reqAccountId,
     );
 
-    const score = await this.pickExamDetailService.calculateScore(pickExam.id);
+    const score = await this.pickExamDetailService.calculateScore(
+      currentPickExam.id,
+    );
 
     await this.pickExamRepository.update(
       {
-        id: pickExam.id,
+        id: currentPickExam.id,
         deletedAt: IsNull(),
       },
       {
@@ -315,6 +300,6 @@ export class PickExamService {
       },
     );
 
-    return await this.getPickExamById(pickExam.id);
+    return await this.getPickExamById(currentPickExam.id);
   }
 }
