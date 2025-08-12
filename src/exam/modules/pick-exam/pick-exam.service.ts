@@ -248,11 +248,15 @@ export class PickExamService {
   ): Promise<PickExamModel> {
     const currentPickExam = await this.getPickExamById(pickExam.id);
 
-    if (currentPickExam.status !== PickExamType.IN_PROGRESS) {
-      throw new ConflictException(
-        `Cannot submit exam. Current status is ${currentPickExam.status}. Only IN_PROGRESS exams can be submitted.`,
-      );
-    }
+    await this.getPickExams(
+      [pickExam.id],
+      [currentPickExam.userId],
+      [currentPickExam.examId],
+      PickExamType.IN_PROGRESS,
+      undefined,
+      undefined,
+      undefined,
+    );
 
     if (currentPickExam.finishTime) {
       throw new ConflictException('Exam has already been submitted.');
