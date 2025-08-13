@@ -1,0 +1,9 @@
+export enum ErrorCode {
+  // User Module
+  USER_NOT_FOUND = '1|USER_NOT_FOUND',
+  USER_ALREADY_EXISTS = '2|USER_ALREADY_EXISTS',
+
+  // Role Module
+  ROLE_NOT_FOUND = '3|ROLE_NOT_FOUND',
+  ROLE_ALREADY_EXISTS = '4|ROLE_ALREADY_EXISTS',
+}

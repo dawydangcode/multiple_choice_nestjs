@@ -7,9 +7,11 @@ import { ConfigService } from '@nestjs/config';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { throwError } from './common/utils/function';
 import * as cookieParser from 'cookie-parser';
+import { AllExceptionsFilter } from './common/utils/filter/all-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalFilters(new AllExceptionsFilter());
   setupSwagger(app);
   app.useGlobalPipes(
     new ValidationPipe({
