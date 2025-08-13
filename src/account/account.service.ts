@@ -1,4 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { LogicalException } from 'src/common/utils/exception/logical.exception';
+import { ErrorCode } from 'src/common/enum/error-code';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Like, Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
@@ -50,8 +52,13 @@ export class AccountService {
         deletedAt: IsNull(),
       },
     });
+
     if (!account) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new LogicalException(
+        ErrorCode.USER_NOT_FOUND,
+        'USER_NOT_FOUND',
+        undefined,
+      );
     }
 
     return account.toModel(isHiddenPassword);
