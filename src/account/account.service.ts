@@ -55,7 +55,7 @@ export class AccountService {
 
     if (!account) {
       throw new LogicalException(
-        ErrorCode.USER_NOT_FOUND,
+        ErrorCode.ACCOUNT_NOT_FOUND,
         'USER_NOT_FOUND',
         undefined,
       );
