@@ -11,7 +11,7 @@ import { AllExceptionsFilter } from './common/utils/filter/all-exception.filter'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalFilters(new AllExceptionsFilter());
+  // app.useGlobalFilters(new AllExceptionsFilter());
   setupSwagger(app);
   app.useGlobalPipes(
     new ValidationPipe({

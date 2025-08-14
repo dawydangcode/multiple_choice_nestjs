@@ -16,7 +16,7 @@ import { StartPickExamResponseModel } from './models/start-pick-exam-response.mo
 
 @Controller('api/v1/')
 @ApiTags('Pick Exam')
-@Roles(RoleType.User)
+@Roles(RoleType.User, RoleType.Admin)
 export class PickExamController {
   constructor(
     private readonly pickExamService: PickExamService,
