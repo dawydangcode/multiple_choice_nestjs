@@ -15,8 +15,11 @@ import {
   UpdateTopicBodyDto,
 } from './dtos/topic.dto';
 import { RequestModel } from 'src/common/models/request.model';
+import { RoleType } from 'src/role/enum/role.enum';
+import { Roles } from 'src/role/decorator/roles.decorator';
 
 @Controller('api/v1/')
+@Roles(RoleType.Admin)
 export class TopicController {
   constructor(private readonly topicService: TopicService) {}
 
