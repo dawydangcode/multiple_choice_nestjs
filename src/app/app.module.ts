@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule, TypeOrmModuleAsyncOptions } from '@nestjs/typeorm';
@@ -10,6 +10,7 @@ import { AccountDetailModule } from 'src/account/modules/account-detail/account-
 import { SessionModule } from 'src/auth/modules/session/session.module';
 import { JwtAuthGuard } from 'src/middlewares/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/middlewares/guards/role.guard';
+import { LoggerMiddleware } from 'src/middlewares/logger.middleware';
 import database from 'src/config/database';
 import app from 'src/config/app';
 import { UserModule } from 'src/account/modules/user/user.module';
@@ -60,4 +61,8 @@ import { PickExamDetailModule } from 'src/exam/modules/pick-exam-detail/pick-exa
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
