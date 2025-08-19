@@ -21,3 +21,28 @@ mysql transaction
 ham` tinh toan ko get thong tin pickExam -> getPickExamDetail
 
 check question + exam khi submit answer
+
+Tuần 10: Từ ngày 04/08/2025 đến ngày 10/08/2025
+Công việc được giao: Tăng cường bảo mật API và hoàn thiện tài liệu dự án cá nhân.
+Chi tiết công việc:
+-	Tích hợp các biện pháp bảo mật như helmet, CORS, CSRF protection để bảo vệ API.
+-	Triển khai cơ chế refresh token rotation để tăng cường bảo mật xác thực.
+-	Hoàn thiện tài liệu dự án, bao gồm thông số API (API specs), hướng dẫn triển khai và sử dụng.
+-	Kiểm thử các biện pháp bảo mật để đảm bảo hệ thống không có lỗ hổng rõ ràng.
+Kết quả đạt được:
+-	Các biện pháp bảo mật (helmet, CORS, CSRF) được tích hợp, tăng cường an toàn cho API.
+-	Refresh token rotation hoạt động ổn định, cải thiện bảo mật xác thực người dùng.
+-	Tài liệu dự án được hoàn thiện, bao gồm API specs chi tiết và hướng dẫn triển khai rõ ràng.
+-	Kiểm thử bảo mật cho thấy hệ thống không có lỗ hổng nghiêm trọng.
+
+Tuần 11: Từ ngày 11/08/2025 đến ngày 17/08/2025
+Công việc được giao: Thử nghiệm triển khai serverless, tách module thành microservice và chuẩn bị báo cáo thực tập.
+-	Thử nghiệm triển khai ứng dụng trên môi trường serverless sử dụng AWS Lambda hoặc Vercel.
+-	Tách một module (ví dụ: module xử lý bài kiểm tra) thành microservice sử dụng @nestjs/microservices.
+-	Chuẩn bị báo cáo thực tập chi tiết, bao gồm mô tả công việc, kết quả đạt được và bài học kinh nghiệm.
+-	Kiểm thử microservice để đảm bảo tính tương thích với hệ thống chính.
+Kết quả đạt được:
+-	Ứng dụng được triển khai thử nghiệm thành công trên AWS Lambda/Vercel với hiệu suất tốt.
+-	Module được tách thành microservice, giao tiếp ổn định với hệ thống chính qua @nestjs/microservices.
+-	Báo cáo thực tập được soạn thảo chi tiết, sẵn sàng cho giai đoạn tổng kết.
+-	Microservice hoạt động ổn định, đảm bảo tính mở rộng của hệ thống.
