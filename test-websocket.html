@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Exam Notification Test</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #666;
+            margin-top: 0;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        textarea {
+            min-height: 80px;
+            font-family: monospace;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .disconnect-btn {
+            background-color: #f44336;
+        }
+        .disconnect-btn:hover {
+            background-color: #da190b;
+        }
+        #status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        #messages {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+            background-color: white;
+        }
+        .message.info {
+            border-left-color: #2196F3;
+        }
+        .message.success {
+            border-left-color: #4CAF50;
+        }
+        .message.warning {
+            border-left-color: #ff9800;
+        }
+        .message.error {
+            border-left-color: #f44336;
+        }
+        .timestamp {
+            color: #999;
+            font-size: 11px;
+        }
+        .event-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 5px 0;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔔 WebSocket Exam Notification Test Client</h1>
+    
+    <div class="container">
+        <h2>Connection Settings</h2>
+        <div class="input-group">
+            <label for="serverUrl">WebSocket Server URL:</label>
+            <input type="text" id="serverUrl" value="http://localhost:3000/exam-notifications" />
+        </div>
+        <div class="input-group">
+            <label for="token">JWT Token (Bearer Token):</label>
+            <textarea id="token" placeholder="Paste your JWT token here..."></textarea>
+        </div>
+        <div id="status" class="disconnected">Status: Disconnected</div>
+        <div class="actions">
+            <button id="connectBtn" onclick="connect()">Connect</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            <button onclick="clearMessages()">Clear Messages</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Actions</h2>
+        <div class="input-group">
+            <label for="examId">Exam ID:</label>
+            <input type="text" id="examId" placeholder="Enter exam ID" />
+        </div>
+        <div class="actions">
+            <button onclick="joinExam()" id="joinBtn" disabled>Join Exam Room</button>
+            <button onclick="leaveExam()" id="leaveBtn" disabled>Leave Exam Room</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📨 Messages</h2>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        let socket = null;
+        const messagesDiv = document.getElementById('messages');
+        const statusDiv = document.getElementById('status');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const joinBtn = document.getElementById('joinBtn');
+        const leaveBtn = document.getElementById('leaveBtn');
+
+        function addMessage(eventName, data, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `
+                <div class="timestamp">${timestamp}</div>
+                <div class="event-name">Event: ${eventName}</div>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            messagesDiv.insertBefore(messageDiv, messagesDiv.firstChild);
+        }
+
+        function updateStatus(connected) {
+            if (connected) {
+                statusDiv.textContent = 'Status: Connected ✓';
+                statusDiv.className = 'connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                joinBtn.disabled = false;
+                leaveBtn.disabled = false;
+            } else {
+                statusDiv.textContent = 'Status: Disconnected ✗';
+                statusDiv.className = 'disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                joinBtn.disabled = true;
+                leaveBtn.disabled = true;
+            }
+        }
+
+        function connect() {
+            const serverUrl = document.getElementById('serverUrl').value;
+            const token = document.getElementById('token').value.trim();
+
+            if (!token) {
+                alert('Please enter a JWT token!');
+                return;
+            }
+
+            socket = io(serverUrl, {
+                auth: {
+                    token: token
+                }
+            });
+
+            socket.on('connect', () => {
+                addMessage('connect', { socketId: socket.id }, 'success');
+                updateStatus(true);
+            });
+
+            socket.on('disconnect', (reason) => {
+                addMessage('disconnect', { reason }, 'warning');
+                updateStatus(false);
+            });
+
+            socket.on('connect_error', (error) => {
+                addMessage('connect_error', { message: error.message }, 'error');
+                updateStatus(false);
+            });
+
+            // Listen to custom events
+            socket.on('connected', (data) => {
+                addMessage('connected', data, 'success');
+            });
+
+            socket.on('joinedExam', (data) => {
+                addMessage('joinedExam', data, 'success');
+            });
+
+            socket.on('leftExam', (data) => {
+                addMessage('leftExam', data, 'info');
+            });
+
+            socket.on('examStarted', (data) => {
+                addMessage('examStarted', data, 'success');
+            });
+
+            socket.on('examResult', (data) => {
+                addMessage('examResult', data, 'success');
+            });
+
+            socket.on('timeWarning', (data) => {
+                addMessage('timeWarning', data, 'warning');
+            });
+
+            socket.on('examExpiring', (data) => {
+                addMessage('examExpiring', data, 'warning');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                updateStatus(false);
+            }
+        }
+
+        function joinExam() {
+            const examId = document.getElementById('examId').value.trim();
+            if (!examId) {
+                alert('Please enter an exam ID!');
+                return;
+            }
+            if (socket && socket.connected) {
+                socket.emit('joinExam', { examId }, (response) => {
+                    addMessage('joinExam (acknowledgment)', response, 'info');
+                });
+            }
+        }
+
+        function leaveExam() {
+            const examId = document.getElementById('examId').value.trim();
+            if (!examId) {
+                alert('Please enter an exam ID!');
+                return;
+            }
+            if (socket && socket.connected) {
+                socket.emit('leaveExam', { examId }, (response) => {
+                    addMessage('leaveExam (acknowledgment)', response, 'info');
+                });
+            }
+        }
+
+        function clearMessages() {
+            messagesDiv.innerHTML = '';
+        }
+
+        // Initialize
+        updateStatus(false);
+    </script>
+</body>
+</html>

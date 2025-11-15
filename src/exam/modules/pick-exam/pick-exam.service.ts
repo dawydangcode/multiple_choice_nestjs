@@ -21,6 +21,7 @@ import {
 } from './models/start-pick-exam-response.model';
 import { SubmittedAnswersModel } from './models/submitted-answers.model';
 import { PickExamDetailEntity } from '../pick-exam-detail/entities/pick-exam-detail.entity';
+import { ExamNotificationGateway } from 'src/exam/gateways/exam-notification.gateway';
 
 @Injectable()
 export class PickExamService {
@@ -29,6 +30,7 @@ export class PickExamService {
     private readonly pickExamRepository: Repository<PickExamEntity>,
     private readonly pickExamDetailService: PickExamDetailService,
     private readonly examService: ExamService,
+    private readonly examNotificationGateway: ExamNotificationGateway,
   ) {}
 
   async getPickExams(
@@ -126,6 +128,16 @@ export class PickExamService {
       startTime: savedEntity.startTime,
       endTime: savedEntity.endTime,
       status: savedEntity.status,
+    });
+
+    // Gửi thông báo WebSocket khi bắt đầu làm bài
+    this.examNotificationGateway.notifyExamStarted(user.id.toString(), {
+      pickExamId: savedEntity.id,
+      examId: exam.id,
+      examTitle: exam.title,
+      startTime: savedEntity.startTime,
+      endTime: savedEntity.endTime,
+      duration: exam.minuteDuration,
     });
 
     return savedEntity.toModel();
@@ -304,6 +316,23 @@ export class PickExamService {
       },
     );
 
-    return await this.getPickExamById(currentPickExam.id);
+    const finalResult = await this.getPickExamById(currentPickExam.id);
+
+    // Gửi thông báo WebSocket khi hoàn thành bài thi
+    this.examNotificationGateway.notifyExamResult(
+      currentPickExam.userId.toString(),
+      {
+        pickExamId: finalResult.id,
+        examId: finalResult.examId,
+        status: finalResult.status,
+        score: finalResult.score,
+        percentage: finalResult.percentage,
+        totalQuestions: finalResult.totalQuestions,
+        correctAnswers: finalResult.correctAnswers,
+        finishTime: finalResult.finishTime,
+      },
+    );
+
+    return finalResult;
   }
 }

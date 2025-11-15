@@ -1,0 +1,200 @@
+{
+  "info": {
+    "name": "WebSocket Exam Notifications Test",
+    "description": "Collection để test WebSocket notifications cho exam system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Login (Get Token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Lưu access token vào biến môi trường",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    const jsonData = pm.response.json();",
+              "    pm.environment.set('accessToken', jsonData.accessToken);",
+              "    pm.environment.set('userId', jsonData.user.id);",
+              "    console.log('Access token saved:', jsonData.accessToken);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"your_username\",\n  \"password\": \"your_password\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "login"]
+        },
+        "description": "Login để lấy JWT token. Token sẽ được tự động lưu vào environment variable."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Start Exam (Trigger examStarted event)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Kiểm tra response",
+              "pm.test('Status code is 200 or 201', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "// Lưu pickExamId để sử dụng cho submit",
+              "if (pm.response.code === 200 || pm.response.code === 201) {",
+              "    const jsonData = pm.response.json();",
+              "    pm.environment.set('pickExamId', jsonData.pickExam.id);",
+              "    console.log('PickExam ID saved:', jsonData.pickExam.id);",
+              "    console.log('🔔 Check WebSocket client - should receive \"examStarted\" event');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"examId\": 1,\n  \"userId\": {{userId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/pick-exam/start",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "pick-exam", "start"]
+        },
+        "description": "Bắt đầu làm bài thi. WebSocket sẽ gửi event 'examStarted' tới client."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Submit Exam (Trigger examResult event)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200 or 201', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "pm.test('Exam result returned', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('score');",
+              "    pm.expect(jsonData).to.have.property('percentage');",
+              "    console.log('Score:', jsonData.score);",
+              "    console.log('Percentage:', jsonData.percentage);",
+              "    console.log('🔔 Check WebSocket client - should receive \"examResult\" event');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"answers\": [\n    {\n      \"questionId\": 1,\n      \"answerId\": 2\n    },\n    {\n      \"questionId\": 2,\n      \"answerId\": 5\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/pick-exam/{{pickExamId}}/submit",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "pick-exam", "{{pickExamId}}", "submit"]
+        },
+        "description": "Nộp bài thi. WebSocket sẽ gửi event 'examResult' tới client với kết quả chi tiết."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Get Exam List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/exam/list?page=1&limit=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "exam", "list"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Lấy danh sách exam để chọn examId cho test"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Get Exam Detail with Questions",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/exam/:examId/questions-with-answers",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "exam", ":examId", "questions-with-answers"],
+          "variable": [
+            {
+              "key": "examId",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Lấy chi tiết exam với câu hỏi và đáp án để biết questionId và answerId cho submit"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}
